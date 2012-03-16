@@ -110,6 +110,29 @@ Rules
 * 2 or more horizontally
 * 1 or more vertically
 
+### Jagged Lines
+
+    \/\/\/\    \  
+               /                 
+               \                 
+               
+* Horizontal alternating slashes
+* Vertical alternating slashes
+* 2 or more horizontally
+* 2 or more vertically
+
+### Fluffy lines
+
+    nnnnn  )  uuuuu  (           .-----------------------.    
+           )         (           (/                       )
+           )         (           .                       )
+                                 (       INTERNET        )
+                                 (                       )
+                                 (                       )
+                                 (                       )
+                                 '-----------------------'
+                           
+
 ### Square Corners / Intersections
 
                          |/
@@ -121,12 +144,14 @@ Rules
 * 2 or more lines
 
 ### Rounded Corners
+                               .
+                               |\     
+    ----.    .----.      .   . ' \   /
+        |    |     \    / \ /|/   ' .  
+        '----'      '--'   ' '    | |        
 
-    ----.    .----.      .   .
-        |    |     \    / \ /|/
-        '----'      '--'   ' '
-
-* Period ending ( hori | diag below ) and ( vert | diag ) below
+* Period ending horizontal line and diagonal/vertical below
+* Period ending 
 * Apostraphe ending ( hori | diag above) and ( vert | diag ) above
 * Exactly 2 lines
 
@@ -214,14 +239,14 @@ Rules
 * At least 7 wide
 * At least 3 high (single content line)
 
-### Ellipse
+### Ellipses
 
-      .--.       .-------.
-     /    \     /         \
-    '      '   /           \
-    |      |  '             '
-    '      '  |             |
-     \    /   |             |
+      .--.       .-------.     
+     /    \     /         \    
+    '      '   /           \     
+    |      |  '             '  
+    '      '  |             |  
+     \    /   |             |   
       '--'    '             '
                \           /
                 \         /
