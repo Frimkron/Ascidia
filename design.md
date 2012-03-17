@@ -293,3 +293,10 @@ Rules
 
 * Rounded, elongated octogon
 
+
+Parsing
+-------
+
+What's the best way to parse a 2-dimensional character array? We can assume the
+array is all held in memory at once - don't have to be concerned about 
+lookaheads because we can access whatever cells we need as and when.
