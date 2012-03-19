@@ -123,14 +123,11 @@ Rules
 
 ### Fluffy lines
 
-    nnnnn  )  uuuuu  (           .-----------------------.    
-           )         (           (/                       )
-           )         (           .                       )
-                                 (       INTERNET        )
-                                 (                       )
-                                 (                       )
-                                 (                       )
-                                 '-----------------------'
+    )    (           
+    )    (           
+    )    (           
+
+* __TODO__
                            
 
 ### Square Corners / Intersections
@@ -154,6 +151,7 @@ Rules
 * Period ending 
 * Apostraphe ending ( hori | diag above) and ( vert | diag ) above
 * Exactly 2 lines
+* __TODO__ those last 2 corners
 
 ### Jumps
 
@@ -253,3 +251,14 @@ Rules
                  '-------'
 
 * Rounded, elongated octogon
+
+__TODO__ Proper circles e.g. state diagram
+__TODO__ Diamonds
+__TODO__ 3d Boxes
+__TODO__ Stick figures
+__TODO__ Crow's feet
+__TODO__ Diamond line endings
+__TODO__ Circlce line endings
+__TODO__ Square line endings
+__TODO__ Cloud bubbles
+__TODO__ Folded corner documents
