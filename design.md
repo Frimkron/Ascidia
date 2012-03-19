@@ -123,13 +123,14 @@ Rules
 
 ### Fluffy lines
 
-    )    (           
-    )    (           
-    )    (           
-
-* __TODO__
+    )    (        
+    )    (                                  
+    )    (                                  
                            
+* Runs of 2 or more vertical left parentheses
+* Runs of 2 or more vertical right parentheses
 
+                               
 ### Square Corners / Intersections
 
                          |/
@@ -144,14 +145,15 @@ Rules
                                .
                                |\     
     ----.    .----.      .   . ' \   /
-        |    |     \    / \ /|/   ' .  
+        |    |     \    / \ /|/   : :  
         '----'      '--'   ' '    | |        
-
-* Period ending horizontal line and diagonal/vertical below
-* Period ending 
-* Apostraphe ending ( hori | diag above) and ( vert | diag ) above
+        
+* Period joining 2 diag/vert lines below
+* Period joining horiz line and diag/vert line below
+* Apostraphe joining 2 diag/vert lines above
+* Apostraphe joining horiz line and diag/vert line above
+* Colon joining diag/vert line above and diag/vert line below
 * Exactly 2 lines
-* __TODO__ those last 2 corners
 
 ### Jumps
 
@@ -174,6 +176,42 @@ Rules
 * Lowercase v ending vertical line
 * Uppercase v ending vertical line
 * Caret ending vertical line
+
+### Crows Feet
+
+        |  |        |    -----
+    ---<|  |>---    ^      V
+        |  |      -----    |
+        
+* Left chevron with horizontal line to left and vertical to right
+* Right chevron with horizontal line to right and vertical to left
+* Carent with vertical line above an horizontal line below
+* Upper/lowercase v with vertical line below and horizontal above
+
+### Empty Diamond Association
+
+                        |    -----
+          |  |          ^      ^   
+    ---< >|  |< >---    v      v   
+          |  |        -----    |    
+
+* Chevrons enclosing optional space with horizontal line on one side
+  and vertical on the other
+* Caret over upper/lower v with optional space between and vertical 
+  line on one side, horizontal on the other
+  
+## Filled Diamond Association
+
+                        |    -----
+          |  |          ^      ^
+    ---<#>|  |<#>---    #      #
+          |  |          v      v
+                      -----    |
+
+* Chevrons enclosing hash with horizontal line on one side and 
+  vertical on the other
+* Caret over hash over v with with vertical line on one size and 
+  horizontal on the other
 
 ### Small Circles
 
@@ -199,12 +237,15 @@ Rules
     +--------+   |               |
                  |               |
                  +---------------+
+                 |               |
+                 |               |
+                 +---------------+
 
-* Pair of enclosed rectangles
+* 2 or 3 of enclosed, stacked rectangles
 * One flush above other
 * At least 10 wide
 * Top box at least 3 high (single content line)
-* Bottom box at least 4 high (2 content lines)
+* Bottom boxes at least 4 high each (2 content lines)
 
 ### Database Cylinder
 
@@ -237,7 +278,7 @@ Rules
 * At least 7 wide
 * At least 3 high (single content line)
 
-### Ellipses
+### Large Circle
 
       .--.       .-------.     
      /    \     /         \    
@@ -262,3 +303,10 @@ __TODO__ Circlce line endings
 __TODO__ Square line endings
 __TODO__ Cloud bubbles
 __TODO__ Folded corner documents
+
+Parsing
+-------
+
+What's the best way to parse a 2-dimensional character array? We can assume the
+array is all held in memory at once - don't have to be concerned about 
+lookaheads because we can access whatever cells we need as and when.
