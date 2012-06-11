@@ -1,0 +1,41 @@
+2D Parsing
+
+[!] Best way to parse an array of characters, identifying symbols made up of
+	multiple lines of characters. Symbols would be defined as 2D patterns - 
+	the 2D equivalent of regular expressions
+[!] Best way to define 2D symbols
+
+     a
+  +-----+     a == b
+c |     |     c == d
+  |     | d
+  +-----+
+     b
+
+  \+(-+)\+\n         |$1| syntax gets length of match
+  (\| {|$1|}\|\n)+   Wow that expression is ugly
+  \+$1\+\n           Successfully collapses 2d symbol into 
+                     1d regex, though
+
+Special part is the handling of newlines - newlines continue from symbol
+on next line down from start of pattern
+
+
+\.(-{5,})\.\n         These really are horrendously ugly.
+('-{|$1|}'\n)         They look nothing like their resulting symbol
+(\| {|$1|}\|\n){1,}   Might be a way to bootstrap the parsing chain, anyway!
+$2                    Could use linear regexes to parse the symbol definitions,
+                      whatever they're going to look like
+
+      left     left
+( + )-->--( - )-->--( + )
+  |        ^ |
+  v        '-'
+  |down     left
+( | )-.
+  | ^ | down
+  v '-'
+  | down
+( + )
+
+
