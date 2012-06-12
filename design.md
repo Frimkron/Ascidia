@@ -9,14 +9,14 @@ Motivation
 This is great, but the syntax relies heavily on extra annotations for doing 
 things like colours, box types and so on.
 
-[1]: __TODO__ ditaa url
+[1]: http://ditaa.org
 
 [Ascii2svg][2] is a similar project written in PHP, inspired by Ditaa, but 
 but which focuses on outputting to a scalable format - namely svg. It has nicer
 rounded corner syntax. The author is fan of markdown, however Ascii2svg still 
 suffers from the same syntax issue.
 
-[2]: __TODO__ ascii2svg url
+[2]: http://9vx.org/~dho/a2s/
 
 [Markdown][3] is awesome both in its philosophy and its implementation. But it 
 would be nice to be able to embed diagrams in it and have them transformed to 
@@ -27,14 +27,14 @@ Markdown's syntax attempts to work on conventions that people already use and
 are familiar with, and would recognise the significance of in other peoples' 
 documents.
 
-[3]: __TODO__ markdown url
+[3]: http://daringfireball.net/projects/markdown/
 
 [Pandoc-ditaa][4] is a quick perl script that someone wrote to pre-process a 
 Pandoc document, extract code blocks marked as ditaa format, render them to 
 images, and substitude them with image links in the document before it is 
 converted. This is a great idea.
 
-[4]: __TODO__ pandoc-ditaa url
+[4]: http://nichtich.github.com/ditaa-markdown/README.html
 
 The problem with ditaa and ascii2svg is that they both rely on special syntax 
 that a person viewing the ascii diagram would not be able to make any sense of.
@@ -61,10 +61,8 @@ such as a database cylinder:
     +--------+ 
     |[1]     |
     | Master |
-    |        |  [1]: { "type": "database" }
+    |        |  [1]: { "a2s:type": "storage" }
     +--------+
-
-(Or something like that).
 
 So, the intention is to create an ascii diagram format which follows the 
 Markdown philosophy. It has a set of rules which attempt to turn existing 
