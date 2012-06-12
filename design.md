@@ -265,9 +265,13 @@ Rules
 
 ### Document Symbol
 
-    +-----+  +---------+  +---------+  
-    |     |  |         |  |         |  
-    |.-._.'  | Content |  |         |   
+__TODO__: Wave is other way round
+__TODO__: Stacked boxes
+
+                            +---------+
+    +-----+  +---------+  +---------+ | 
+    |     |  |         |  |         | |  
+    |.-._.'  | Content |  |         |_'  
              |         |  |.-._.-._.'
              |.---.___.'
 
@@ -303,6 +307,11 @@ __TODO__ Circlce line endings
 __TODO__ Square line endings
 __TODO__ Cloud bubbles
 __TODO__ Folded corner documents
+__TODO__ Stacked boxes
+__TODO__ Computer symbol
+__TODO__ IO rhombus
+__TODO__ Points on lines using asterisk
+
 
 Parsing
 -------
