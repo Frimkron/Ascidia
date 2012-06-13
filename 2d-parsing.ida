@@ -38,4 +38,72 @@ $2                    Could use linear regexes to parse the symbol definitions,
   | down
 ( + )
 
+[!] Newlining to a space *before* the start of the line above
+- would need syntax for going back spaces, e.g. "^{5}"
 
+  /\
+ /  \   Diamonds:
+/    \  (/( {$L*2})\\\n)+
+\    /  (\\( {(|$1|-($L-|$1|))*2})/\n)+
+ \  /
+  \/    Diamond isn't possible without quantifiers proportional to 
+        line number and other crazy arithmetic in the quantifier 
+        bracket
+
+[!] Need to *record* state in order to linear-ise some of these patterns.
+
+REs deficiency for this problem is equivalent to the following 1D problem:
+
+	all 2:1 ratio forms of "sssshh"
+
+Here we'd need to remember the number of S's in order to match the H's.
+
+[?] Can a more general grammar express this?
+
+S -> A
+A -> 's' 's' B 'h'
+B -> A | e
+
+sssssshhh:
+
+S
+'-- A
+    |-- 's'
+    |-- 's'
+    |-- B
+    |   '-- A
+    |       |-- 's'
+    |       |-- 's'
+    |       |-- B
+    |       |   '-- A
+    |       |       |-- 's'
+    |       |       |-- 's'
+    |       |       |-- B
+    |       |       |   '-- e
+    |       |       '-- 'h' 
+    |       '-- 'h'
+    '-- 'h'
+
+[?] Ok, so what about 3:2:1 ratio forms of "aaaggh" ?
+- Yeah I haven't got a clue, there. Nothing springs to mind. Its not a case of finding
+  an X for every Y, so the presence of a stack won't help - a bespoke algorithm is 
+  required.
+
+(aaa)+(gg){|$1|}(h){|$1|}
+            ^
+          Have to refer to a variable in which we store 
+          the number of times we've matched something.
+
+( "Scream" (
+	( one-or-more 
+		( capture-group
+			( "a" "a" "a" )))
+	( let x 
+		( size-of
+			( backref 1 ))
+		(
+			( n-of x ( "g" "g" ))
+			( n-of x "h" )))))
+				
+	
+	
