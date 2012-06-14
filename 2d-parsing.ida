@@ -1,0 +1,109 @@
+2D Parsing
+
+[!] Best way to parse an array of characters, identifying symbols made up of
+	multiple lines of characters. Symbols would be defined as 2D patterns - 
+	the 2D equivalent of regular expressions
+[!] Best way to define 2D symbols
+
+     a
+  +-----+     a == b
+c |     |     c == d
+  |     | d
+  +-----+
+     b
+
+  \+(-+)\+\n         |$1| syntax gets length of match
+  (\| {|$1|}\|\n)+   Wow that expression is ugly
+  \+$1\+\n           Successfully collapses 2d symbol into 
+                     1d regex, though
+
+Special part is the handling of newlines - newlines continue from symbol
+on next line down from start of pattern
+
+
+\.(-{5,})\.\n         These really are horrendously ugly.
+('-{|$1|}'\n)         They look nothing like their resulting symbol
+(\| {|$1|}\|\n){1,}   Might be a way to bootstrap the parsing chain, anyway!
+$2                    Could use linear regexes to parse the symbol definitions,
+                      whatever they're going to look like
+
+      left     left
+( + )-->--( - )-->--( + )
+  |        ^ |
+  v        '-'
+  |down     left
+( | )-.
+  | ^ | down
+  v '-'
+  | down
+( + )
+
+[!] Newlining to a space *before* the start of the line above
+- would need syntax for going back spaces, e.g. "^{5}"
+
+  /\
+ /  \   Diamonds:
+/    \  (/( {$L*2})\\\n)+
+\    /  (\\( {(|$1|-($L-|$1|))*2})/\n)+
+ \  /
+  \/    Diamond isn't possible without quantifiers proportional to 
+        line number and other crazy arithmetic in the quantifier 
+        bracket
+
+[!] Need to *record* state in order to linear-ise some of these patterns.
+
+REs deficiency for this problem is equivalent to the following 1D problem:
+
+	all 2:1 ratio forms of "sssshh"
+
+Here we'd need to remember the number of S's in order to match the H's.
+
+[?] Can a more general grammar express this?
+
+S -> A
+A -> 's' 's' B 'h'
+B -> A | e
+
+sssssshhh:
+
+S
+'-- A
+    |-- 's'
+    |-- 's'
+    |-- B
+    |   '-- A
+    |       |-- 's'
+    |       |-- 's'
+    |       |-- B
+    |       |   '-- A
+    |       |       |-- 's'
+    |       |       |-- 's'
+    |       |       |-- B
+    |       |       |   '-- e
+    |       |       '-- 'h' 
+    |       '-- 'h'
+    '-- 'h'
+
+[?] Ok, so what about 3:2:1 ratio forms of "aaaggh" ?
+- Yeah I haven't got a clue, there. Nothing springs to mind. Its not a case of finding
+  an X for every Y, so the presence of a stack won't help - a bespoke algorithm is 
+  required.
+
+(aaa)+(gg){|$1|}(h){|$1|}
+            ^
+          Have to refer to a variable in which we store 
+          the number of times we've matched something.
+
+( "Scream" (
+	( one-or-more 
+		( capture-group
+			( "a" "a" "a" )))
+	( let x 
+		( size-of
+			( backref 1 ))
+		(
+			( n-of x ( "g" "g" ))
+			( n-of x "h" )))))
+				
+	
+	
