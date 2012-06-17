@@ -105,5 +105,17 @@ S
 			( n-of x ( "g" "g" ))
 			( n-of x "h" )))))
 				
-	
-	
+S-Expressions are a data representation. They're merely nested lists. There are 
+parentheses, symbols, strings and numbers (afaik). What the nested lists represent 
+is entirely up to the application.
+
+[?] How is lisp evaluated? 
+- I guess each component is evaluated in order. 
+[?] How does lisp recognise a function?
+- I guess there's logic that looks up the first symbol of of list to see if its a 
+function. I wonder if every list starting with a symbol is assumed to be a function.
+- I guess the interpreter could make a decision based on what it finds in the list. 
+The first atom in the list would dicatate how to continue to evaluate it.
+
+
+
