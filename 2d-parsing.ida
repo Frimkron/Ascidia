@@ -117,5 +117,41 @@ function. I wonder if every list starting with a symbol is assumed to be a funct
 - I guess the interpreter could make a decision based on what it finds in the list. 
 The first atom in the list would dicatate how to continue to evaluate it.
 
+- Lisp evaluates lists by treating the first atom as a function name and the rest
+as arguments. However, macros can override this to create arbitrary syntax.
 
+- So I could do the same - have a fixed set of functions with their own evaluation
+  rules. The language doesn't even need to be turing complete.
+- The program could evaluate lone string literals by attempting to consume that 
+  character, returning a boolean to indicate success.
+  
+(def-symbol "box"
+	(with-vars (first-line mid-bar) 
+		(capture first-line 
+			(one "+") (capture mid-bar (one-or-more "-")) (one "+") (nl))
+		(one-or-more (one "|") (n-of (length mid-bar) " ") (one "|") (nl))
+		(one first-line)))
+		
+- fn def-symbol name stmt stmt ... -> nil
+		defines a new symbol pattern
+- fn with-vars (var var ...) stmt stmt ... -> nil
+		creates variables for the scope of the statements
+- fn capture var stmt stmt ... -> nil
+		buffers consumed input for inner statements and stores it in var 
+- fn one str str ... -> boolean 
+		attempts to consume the given list of strings		
+- fn one-or-more str str ... -> boolean
+		attempts to consume the given list of strings at least once. Returns true
+		if this was the case, false otherwise
+- fn zero-or-more str str ... -> boolean
+		attempts to consume the given list of strings multiple times. Returns 
+		true regardless of how many times this succeeded
+- fn zero-or-one str str ... -> boolean
+		attempts to consume the given list of strings once, returning true whether 
+		it succeeded or not
+- fn n-of n str str ... -> boolean
+		attempts to consume the given list of strings exactly n times, returning 
+		false if this fails
+- fn length str -> int
+		returns the length in character of the given string
 
