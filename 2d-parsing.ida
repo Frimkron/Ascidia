@@ -128,8 +128,8 @@ as arguments. However, macros can override this to create arbitrary syntax.
 (def-symbol "box"
 	(with-vars (first-line mid-bar) 
 		(capture first-line 
-			(one "+") (capture mid-bar (one-or-more "-")) (one "+") (nl))
-		(one-or-more (one "|") (n-of (length mid-bar) " ") (one "|") (nl))
+			(one "+") (capture mid-bar (one-or-more "-")) (one "+") (eol))
+		(one-or-more (one "|") (n-of (width mid-bar) " ") (one "|") (eol))
 		(one first-line)))
 		
 - fn def-symbol name stmt stmt ... -> nil
@@ -137,7 +137,8 @@ as arguments. However, macros can override this to create arbitrary syntax.
 - fn with-vars (var var ...) stmt stmt ... -> nil
 		creates variables for the scope of the statements
 - fn capture var stmt stmt ... -> nil
-		buffers consumed input for inner statements and stores it in var 
+		buffers consumed input for inner statements and stores it in var. The buffer
+		is built as the statements are evaluated.
 - fn one str str ... -> boolean 
 		attempts to consume the given list of strings		
 - fn one-or-more str str ... -> boolean
@@ -152,6 +153,40 @@ as arguments. However, macros can override this to create arbitrary syntax.
 - fn n-of n str str ... -> boolean
 		attempts to consume the given list of strings exactly n times, returning 
 		false if this fails
-- fn length str -> int
-		returns the length in character of the given string
+- fn width str -> int
+		returns the width in characters of the given string - that is, the length
+		of the longest line.
+- fn height str -> int
+		returns the height in characters of the given string - that is, the number
+		of lines it contains.
+- fn eol [int] -> nil
+		indicates the end of a pattern's line. Can specify the relative offset of 
+		the new line start position in characters. 0 or unspecified indicates the 
+		new line begins directly under the current one. -2 indicates the new line
+		begins 2 characters left of the current one.
+- fn - int int ... -> int
+		subtracts the given integers from one another, returning the result
+- fn + int int ... -> int
+		adds the given integers to each other, returning the result
+- fn * int int ... -> int
+		multiplies the given integers with each other, returning the result
+- fn / int int ... -> int
+		divides the given integers by each other, returning the result
+		
+(def-symbol "diamond"
+	(with-vars (top bottom)
+		(capture top 
+			(one-or-more
+				(one "/")
+				(n-of (- (height top) 1) " ")
+				(one "\\")
+				(eol)))
+		(capture bottom
+			(n-of (height top)
+				(one "\\")
+				(n-of (- (height top)(height bottom)) " ")
+				(one "/")
+				(eol)))))
 
+This definition relies on being able to monitor the height of a captured
+buffer as it is being buffered.
