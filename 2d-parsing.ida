@@ -190,3 +190,60 @@ as arguments. However, macros can override this to create arbitrary syntax.
 
 This definition relies on being able to monitor the height of a captured
 buffer as it is being buffered.
+
+[!] I need a special function, like the newline function, to indicate empty space
+    i.e. characters which are allowed to have other patterns occupying them.
+    For example, a box is allowed to have other patterns inside it.
+
+[!] Patterns need to be able to look ahead to what the *next* character is.
+
+Pattern: bc
+
+[a][b][c][d]  [a][b][c][d]  [a][b][c][d]  [a][b][c][d]
+ ^                ^                ^                ^
+next (nope)     next (make)      next (more)      next (complete)
+
+[!] Need an arbitraty length of look-ahead e.g: "a(bcdef)?
+    i.e, backtracking
+    
+X: a(bcdef)?
+    +
+Y: abc
+ =                
+                   
+   a     b     c     d     e     f
+(s)-->(1)--> 2 -->(3)--> 4 --> 5 -->(6)
+       X           Y                 X
+
+[!] Buildup of potential patterns
+
+a+
+    
+a a a a a a a a a a a a a a a 
+V_/_/_/_/
+  V_/_/_/
+    V_/_/ ....
+      V_/
+        V
+        
+[!] Pattern priorities
+
+              b eliminates    d eliminates
+               a and c         b, freeing up a and c
+                  v             v
+- - - - - - - - - - - - - - - - -
+    \_____________/
+  \___/ b \___/ \_______________/
+    a       c           d
+
+- Patterns have a priority order
+- Scan the canvas from left to right, a line at a time. 
+- For each patten in the ongoing list in priority order, test whether they accept the 
+  current character
+- Pattern will return "more", "complete" or "aborted" to indicate their state.
+- "Aborted" means the pattern didnt match - it is removed from the ongoing list.
+- "More" means the pattern accepted the character but is not complete yet
+- "Complete" means the pattern is fully matched - the matching pattern is recorded as
+  a potential pattern position
+- Identify any patterns which might begin with the current character and add them to
+  the ongoing list.
