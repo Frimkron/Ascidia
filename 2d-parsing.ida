@@ -247,3 +247,36 @@ V_/_/_/_/
   a potential pattern position
 - Identify any patterns which might begin with the current character and add them to
   the ongoing list.
+
+[*] Why not get it working the simplest way first - make a pass for each pattern, in
+    priority order, trying to find matches
+
+[?] Any reason why I shouldn't discard other ongoing instances of the same pattern 
+    upon finding a match?
+- Matches are greedy, I think
+
+ababab
+a b a b a b a b
+\_________/
+    \_________/     Should be ok
+        \______
+            \__
+
+[?] Can we get away with not allowing any other ongoing instances at all?
+
+bbba
+b b b b a
+\_____x
+  \_____/    No, we would miss valid matches.
+    \___x
+      \_x
+
+[*] Upon matching multiple instances of the same pattern at once, should accept the 
+    oldest one.
+
+[!] Discarding ongoing patterns fails for multi-line patterns. Such patterns are 
+    allowed to overlap (effectively)
+
+[!] Ongoing instances need to somehow record the characters they consist of, so 
+    that other overlapping instances are aborted upon finding a match.
+    
