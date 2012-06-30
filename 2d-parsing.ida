@@ -280,3 +280,28 @@ b b b b a
 [!] Ongoing instances need to somehow record the characters they consist of, so 
     that other overlapping instances are aborted upon finding a match.
     
+[?] In what way should the transformation from ascii pattern to vector be
+    defined? 
+- For each matched pattern, the constituent cells and their contents must 
+  be recorded. 
+- The pattern will need to note the positions of particular vertices and such.
+- e.g. for the database cylinder, matcher would note the height of the top
+  and bottom circles, and the width and height of the overall pattern
+  
+          .--------.   ^ top      - Having noted these values, pattern can
+       ^  '--------'   v height     later return the necessary shapes, positioned
+bottom |  |        |                relative to the first cell of the match
+height |  |        |   ^ bottom   
+       v  '--------'   v height
+          <-------->
+            width
+
+[*] Storing values can be boiled down to recording the current cell position
+    in various variables during the match - noting key locations for later
+    calculating widths and heights
+
+[*] The current character can also be stored or tested during the match, in
+    order to identify optional stuff
+
+[!] Completed matches must be stored somewhere along with the cells they occupy
+    so that they can be tested for on subsequent passes
