@@ -1,25 +1,29 @@
-P_IGNORED = "IGNORED"
-P_ACCEPTED = "ACCEPTED"
-P_FINISHED = "FINISHED"
-P_ABORTED = "ABORTED"
-
 import xml.dom
 import xml.dom.minidom
 import math
 from collections import defaultdict
 from collections import namedtuple
 
+P_IGNORED = "IGNORED"
+P_ACCEPTED = "ACCEPTED"
+P_FINISHED = "FINISHED"
+P_ABORTED = "ABORTED"
+
+CHAR_H_RATIO = 2.0
+
 Line = namedtuple("Line","a b z stroke w")
 Rectangle = namedtuple("Rectangle","a b z stroke w fill")
 Ellipse = namedtuple("Ellipse", "a b z stroke w fill")
 Arc = namedtuple("Arc","a b z start end stroke w fill")
+Text = namedtuple("Text","pos z text colour size")
 
 
 class SvgOutput(object):
 
 	CHAR_W = 12.0
-	CHAR_H = 24.0
+	CHAR_H = CHAR_W * CHAR_H_RATIO
 	STROKE_W = 2.5
+	FONT_SIZE = 16.0
 
 	@staticmethod
 	def output(items,stream):
@@ -99,6 +103,16 @@ class SvgOutput(object):
 		self._style_attrs(arc,el)
 		parent.appendChild(el)
 		
+	def _do_Text(self,text,doc,parent):
+		el = doc.createElement("text")
+		el.setAttribute("x",self._x(text.pos[0]))
+		el.setAttribute("y",self._y(text.pos[1]+0.75))
+		el.setAttribute("font-family","monospace")
+		el.appendChild(doc.createTextNode(text.text))
+		el.setAttribute("fill",self._colour(text.colour))
+		el.setAttribute("font-size",str(int(text.size*SvgOutput.FONT_SIZE)))
+		parent.appendChild(el)
+		
 	
 SvgOutput.INST = SvgOutput()
 
@@ -115,6 +129,9 @@ class Pattern(object):
 		yield
 		yield P_ABORTED
 		
+	def _expect(self,c,char):
+		return P_ACCEPTED if c==char else P_ABORTED 
+		
 	def test(self,row,col,char):
 		try:
 			return self._gen.send((row,col,char))
@@ -123,6 +140,71 @@ class Pattern(object):
 		
 	def render(self):
 		return []
+
+
+class LiteralPattern(Pattern):
+
+	pos = None
+	char = None
+	
+	def _matcher(self):
+		j,i,c = yield
+		yield P_ACCEPTED if not c.isspace() else P_ABORTED
+		self.pos = i,j
+		self.char = c
+		yield P_FINISHED	
+		
+	def render(self):
+		return [ Text(self.pos,1,self.char,"brown",1) ]
+
+
+class DiamondPattern(Pattern):
+
+	tl = None
+	br = None
+	
+	def _matcher(self):
+		j,i,c = yield
+		startj,starti = j,i
+		lasti = i
+		rowcount = 0
+		j,i,c = yield self._expect(c,"/")
+		j,i,c = yield self._expect(c,"\\")
+		while True:
+			while i!=lasti-1: j,i,c = yield P_IGNORED
+			if c != "/": break
+			rowcount += 1
+			j,i,c = yield self._expect(c,"/")
+			for n in range(rowcount*2): j,i,c = yield P_IGNORED
+			j,i,c = yield self._expect(c,"\\")
+			lasti -= 1
+		j,i,c = yield P_IGNORED
+		w = rowcount*2 + 2
+		h = (rowcount+1) * 2
+		while rowcount >= 0:
+			j,i,c = yield self._expect(c,"\\")
+			for n in range(rowcount*2): j,i,c = yield P_IGNORED
+			j,i,c = yield self._expect(c,"/")
+			if rowcount > 0: 
+				while i!=lasti+1: j,i,c = yield P_IGNORED
+			lasti += 1
+			rowcount -= 1			
+		self.tl = (starti-(w/2-1),startj)
+		self.br = (starti+(w/2),startj+(h-1))		
+		yield P_FINISHED
+		
+	def render(self):
+		w = self.br[0]-self.tl[0]+1
+		h = self.br[1]-self.tl[1]+1
+		return [		
+			Line( (self.tl[0]+w/2.0, self.tl[1]),
+				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1),
+			Line( (self.tl[0]+w/2.0, self.tl[1]),
+				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1),
+			Line( (self.tl[0]+w/2.0, self.br[1]+1.0),
+				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1),
+			Line( (self.tl[0]+w/2.0, self.br[1]+1.0),
+				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1) ]
 		
 		
 class DbCylinderPattern(Pattern):
@@ -251,9 +333,55 @@ class HorizLinePattern(Pattern):
 	def render(self):
 		return [Line((self.start[0],self.start[1]+0.5),
 			(self.end[0]+1.0,self.end[1]+0.5),1,"blue",1)]
+			
+
+class TinyCirclePattern(Pattern):
+
+	pos = None
+	
+	def _matcher(self):
+		j,i,c = yield
+		if c.isalpha(): yield P_ABORTED
+		j,i,c = yield P_IGNORED
+		self.pos = i,j
+		j,i,c = yield self._expect(c,"O")
+		if c.isalpha(): yield P_ABORTED
+		yield P_FINISHED
+		
+	def render(self):
+		return [ Ellipse((self.pos[0]+0.5-0.4,self.pos[1]+0.5-0.4/CHAR_H_RATIO), 
+				(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), 1, "magenta", 1, None) ]
+				
+class SmallCirclePattern(Pattern):
+	
+	left = None
+	right = None
+	y = None
+	
+	def _matcher(self):
+		j,i,c = yield
+		self.left = i
+		self.y = j
+		j,i,c = yield self._expect(c,"(")
+		for n in range(3):
+			if c == ")": break
+			j,i,c = yield P_IGNORED
+		else:
+			yield P_ABORTED
+		self.right = i
+		j,i,c = yield self._expect(c,")")
+		yield P_FINISHED
+		
+	def render(self):
+		d = self.right-self.left
+		print self.left,self.right,d
+		return [ Ellipse((self.left+0.5,self.y+0.5-d/2.0/CHAR_H_RATIO),
+				(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), 1, "green",1,None) ]
+	
 		
 		
-PATTERNS = [DbCylinderPattern,BoxPattern,HorizLinePattern]
+PATTERNS = [DbCylinderPattern,DiamondPattern,BoxPattern,SmallCirclePattern,
+			TinyCirclePattern,HorizLinePattern,LiteralPattern]
 
 
 class MatchLookup(object):
@@ -308,14 +436,17 @@ class MatchLookup(object):
 if __name__ == "__main__":
 
 	INPUT = """\
-+---+  +-<>  ---+ +-------+ .-----. 
-|   |  |  +------+| +---+ | '-----' 
-+---+--+  | ***  || |   | | | --- |
-    |  |  +------+| +---+ | | --- |
-    +--+   .--.   +-------+ '-----'
-           '--'
-           |  |
-           '--'"""
+MiniOreos Oranges O O O test
++---+  +-<>  ---+ +-------+ .-----.  /`
+| O |  |  +------+| +---+ | '-----' //``
++---+--+  | ***  || |(*)| | | --- | ``//
+/`  |O |  +------+| +---+ | | --- |  `/+-+
+    +--+   .--.   +-------+ '-----' /` | |
+() (A)     '--' /`This is a test   /  `+-+
+  (  )     |  | `/                /    `
+   (   )   '--'                   `    /
+                                   `  /
+                                    `/""".replace("`","\\")
 		
 	complete = MatchLookup()
 	for pclass in PATTERNS:
