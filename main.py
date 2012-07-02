@@ -17,6 +17,18 @@ Ellipse = namedtuple("Ellipse", "a b z stroke w fill")
 Arc = namedtuple("Arc","a b z start end stroke w fill")
 Text = namedtuple("Text","pos z text colour size")
 
+M_GENERAL = (1<<0)
+M_LINE_SQ_CORNER = (1<<1)
+M_BOX_TOP = (1<<2)
+M_BOX_BOTTOM = (1<<3)
+M_BOX_LEFT = (1<<4)
+M_BOX_RIGHT = (1<<5)
+M_LINE = (1<<6)
+M_VERTICAL = (1<<7)
+M_HORIZONTAL = (1<<8)
+M_UP_DIAGONAL = (1<<9)
+M_DOWN_DIAGONAL = (1<<10)
+
 
 class SvgOutput(object):
 
@@ -129,12 +141,15 @@ class Pattern(object):
 		yield
 		yield P_ABORTED
 		
-	def _expect(self,c,char):
-		return P_ACCEPTED if c==char else P_ABORTED 
+	def _expect(self,curr,char):
+		if curr.char == char and not curr.occupied:
+			return P_ACCEPTED
+		else:
+			return P_ABORTED
 		
-	def test(self,row,col,char):
+	def test(self,currentchar):
 		try:
-			return self._gen.send((row,col,char))
+			return self._gen.send(currentchar)
 		except StopIteration:
 			return P_IGNORED
 		
@@ -148,14 +163,17 @@ class LiteralPattern(Pattern):
 	char = None
 	
 	def _matcher(self):
-		j,i,c = yield
-		yield P_ACCEPTED if not c.isspace() else P_ABORTED
-		self.pos = i,j
-		self.char = c
+		curr = yield
+		if not curr.occupied and not curr.char.isspace():  
+			yield P_ACCEPTED
+		else:
+			yield P_ABORTED
+		self.pos = curr.col,curr.row
+		self.char = curr.char
 		yield P_FINISHED	
 		
 	def render(self):
-		return [ Text(self.pos,1,self.char,"brown",1) ]
+		return [ Text(self.pos,0,self.char,"brown",1) ]
 
 
 class DiamondPattern(Pattern):
@@ -164,29 +182,29 @@ class DiamondPattern(Pattern):
 	br = None
 	
 	def _matcher(self):
-		j,i,c = yield
-		startj,starti = j,i
-		lasti = i
+		curr = yield
+		startj,starti = curr.row,curr.col
+		lasti = curr.col
 		rowcount = 0
-		j,i,c = yield self._expect(c,"/")
-		j,i,c = yield self._expect(c,"\\")
+		curr = yield self._expect(curr,"/")
+		curr = yield self._expect(curr,"\\")
 		while True:
-			while i!=lasti-1: j,i,c = yield P_IGNORED
-			if c != "/": break
+			while curr.col!=lasti-1: curr = yield P_IGNORED
+			if curr.char != "/": break
 			rowcount += 1
-			j,i,c = yield self._expect(c,"/")
-			for n in range(rowcount*2): j,i,c = yield P_IGNORED
-			j,i,c = yield self._expect(c,"\\")
+			curr = yield self._expect(curr,"/")
+			for n in range(rowcount*2): curr = yield P_IGNORED
+			curr = yield self._expect(curr,"\\")
 			lasti -= 1
-		j,i,c = yield P_IGNORED
+		curr = yield P_IGNORED
 		w = rowcount*2 + 2
 		h = (rowcount+1) * 2
 		while rowcount >= 0:
-			j,i,c = yield self._expect(c,"\\")
-			for n in range(rowcount*2): j,i,c = yield P_IGNORED
-			j,i,c = yield self._expect(c,"/")
+			curr = yield self._expect(curr,"\\")
+			for n in range(rowcount*2): curr = yield P_IGNORED
+			curr = yield self._expect(curr,"/")
 			if rowcount > 0: 
-				while i!=lasti+1: j,i,c = yield P_IGNORED
+				while curr.col!=lasti+1: curr = yield P_IGNORED
 			lasti += 1
 			rowcount -= 1			
 		self.tl = (starti-(w/2-1),startj)
@@ -214,46 +232,36 @@ class DbCylinderPattern(Pattern):
 	
 	def _matcher(self):
 		w,h = 0,0
-		j,i,c = yield
-		self.tl = (i,j)
-		if c != ".": yield P_ABORTED
-		j,i,c = yield P_ACCEPTED
-		if c != "-": yield P_ABORTED
-		j,i,c = yield P_ACCEPTED
+		curr = yield
+		self.tl = (curr.col,curr.row)
+		curr = yield self._expect(curr,".")
+		curr = yield self._expect(curr,"-")
 		while True:
-			if c == ".": break
-			elif c != "-": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
-		w = i-self.tl[0]+1
-		j,i,c = yield P_ACCEPTED
-		while i!=self.tl[0]:
-			j,i,c = yield P_IGNORED
-		if c != "'": yield P_ABORTED
-		j,i,c = yield P_ACCEPTED
+			if curr.char == ".": break
+			curr = yield self._expect(curr,"-")
+		w = curr.col-self.tl[0]+1
+		curr = yield self._expect(curr,".")
+		while curr.col!=self.tl[0]:
+			curr = yield P_IGNORED
+		curr = yield self._expect(curr,"'")
 		for n in range(w-2):
-			if c != "-": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
-		if c != "'": yield P_ABORTED
-		j,i,c = yield P_ACCEPTED
-		while i!=self.tl[0]:
-			j,i,c = yield P_IGNORED
-		while True:					
-			if c != "|": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
+			curr = yield self._expect(curr,"-")
+		curr = yield self._expect(curr,"'")
+		while curr.col!=self.tl[0]:
+			curr = yield P_IGNORED
+		while True:	
+			curr = yield self._expect(curr,"|")
 			for n in range(w-2):
-				j,i,c = yield P_IGNORED
-			if c != "|": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
-			while i!=self.tl[0]:
-				j,i,c = yield P_IGNORED
-			if c == "'": break
-		j,i,c = yield P_ACCEPTED
+				curr = yield P_IGNORED
+			curr = yield self._expect(curr,"|")
+			while curr.col!=self.tl[0]:
+				curr = yield P_IGNORED
+			if curr.char == "'": break
+		curr = yield self._expect(curr,"'")
 		for n in range(w-2):
-			if c != "-": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
-		if c != "'": yield P_ABORTED
-		self.br = (i,j)
-		yield P_ACCEPTED
+			curr = yield self._expect(curr,"-")
+		self.br = (curr.col,curr.row)
+		curr = yield self._expect(curr,"'")
 		yield P_FINISHED
 		
 	def render(self):
@@ -277,37 +285,30 @@ class BoxPattern(Pattern):
 	
 	def _matcher(self):
 		w,h = 0,0
-		j,i,c = yield
-		self.tl = (i,j)
-		if c != "+": yield P_ABORTED
-		j,i,c = yield P_ACCEPTED
-		if c != "-": yield P_ABORTED
-		j,i,c = yield P_ACCEPTED
+		curr = yield
+		self.tl = (curr.col,curr.row)
+		curr = yield self._expect(curr,"+")
+		curr = yield self._expect(curr,"-")
 		while True:
-			if c == "+": break
-			elif c != "-": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
-		w = i-self.tl[0]+1
-		j,i,c = yield P_ACCEPTED
-		while i!=self.tl[0]:
-			j,i,c = yield P_IGNORED
+			if curr.char == "+": break
+			curr = yield self._expect(curr,"-")
+		w = curr.col-self.tl[0]+1
+		curr = yield self._expect(curr,"+")
+		while curr.col!=self.tl[0]:
+			curr = yield P_IGNORED
 		while True:
-			if c != "|": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
+			curr = yield self._expect(curr,"|")
 			for n in range(w-2):
-				j,i,c = yield P_IGNORED
-			if c != "|": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
-			while i!=self.tl[0]:
-				j,i,c = yield P_IGNORED
-			if c == "+": break
-		j,i,c = yield P_ACCEPTED
+				curr = yield P_IGNORED
+			curr = yield self._expect(curr,"|")
+			while curr.col!=self.tl[0]:
+				curr = yield P_IGNORED
+			if curr.char == "+": break
+		curr = yield self._expect(curr,"+")
 		for n in range(w-2):
-			if c != "-": yield P_ABORTED
-			j,i,c = yield P_ACCEPTED
-		if c != "+": yield P_ABORTED
-		self.br = (i,j)
-		yield P_ACCEPTED
+			curr = yield self._expect(curr,"-")
+		self.br = (curr.col,curr.row)
+		curr = yield self._expect(curr,"+")
 		yield P_FINISHED
 		
 	def render(self):
@@ -321,13 +322,13 @@ class HorizLinePattern(Pattern):
 	end = None
 
 	def _matcher(self):
-		j,i,c = yield
-		self.start = (i,j)
-		if c != "-": yield P_ABORTED
+		curr = yield
+		self.start = (curr.col,curr.row)
+		curr = yield self._expect(curr,"-")
 		while True:
-			j,i,c = yield P_ACCEPTED
-			if c != "-": break
-		self.end = (i-1,j)
+			if curr.char != "-": break
+			curr = yield self._expect(curr,"-")
+		self.end = (curr.col-1,curr.row)
 		yield P_FINISHED
 		
 	def render(self):
@@ -340,17 +341,18 @@ class TinyCirclePattern(Pattern):
 	pos = None
 	
 	def _matcher(self):
-		j,i,c = yield
-		if c.isalpha(): yield P_ABORTED
-		j,i,c = yield P_IGNORED
-		self.pos = i,j
-		j,i,c = yield self._expect(c,"O")
-		if c.isalpha(): yield P_ABORTED
+		curr = yield
+		if curr.char.isalpha(): yield P_ABORTED
+		curr = yield P_IGNORED
+		self.pos = curr.col,curr.row
+		curr = yield self._expect(curr,"O")
+		if curr.char.isalpha(): yield P_ABORTED
 		yield P_FINISHED
 		
 	def render(self):
 		return [ Ellipse((self.pos[0]+0.5-0.4,self.pos[1]+0.5-0.4/CHAR_H_RATIO), 
 				(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), 1, "magenta", 1, None) ]
+
 				
 class SmallCirclePattern(Pattern):
 	
@@ -359,29 +361,35 @@ class SmallCirclePattern(Pattern):
 	y = None
 	
 	def _matcher(self):
-		j,i,c = yield
-		self.left = i
-		self.y = j
-		j,i,c = yield self._expect(c,"(")
+		curr = yield
+		self.left = curr.col
+		self.y = curr.row
+		curr = yield self._expect(curr,"(")
 		for n in range(3):
-			if c == ")": break
-			j,i,c = yield P_IGNORED
+			if curr.char == ")": break
+			curr = yield P_IGNORED
 		else:
 			yield P_ABORTED
-		self.right = i
-		j,i,c = yield self._expect(c,")")
+		self.right = curr.col
+		curr = yield self._expect(curr,")")
 		yield P_FINISHED
 		
 	def render(self):
 		d = self.right-self.left
-		print self.left,self.right,d
 		return [ Ellipse((self.left+0.5,self.y+0.5-d/2.0/CHAR_H_RATIO),
 				(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), 1, "green",1,None) ]
 	
 		
 		
-PATTERNS = [DbCylinderPattern,DiamondPattern,BoxPattern,SmallCirclePattern,
-			TinyCirclePattern,HorizLinePattern,LiteralPattern]
+PATTERNS = [
+	DbCylinderPattern,
+	DiamondPattern,
+	BoxPattern,
+	SmallCirclePattern,
+	TinyCirclePattern,
+	HorizLinePattern,
+	LiteralPattern
+]
 
 
 class MatchLookup(object):
@@ -431,6 +439,8 @@ class MatchLookup(object):
 			for m in self.get_matches(pos):
 				self.remove_match(m)
 		
+		
+CurrentChar = namedtuple("CurrentChar","row col char meta")
 
 
 if __name__ == "__main__":
@@ -439,7 +449,7 @@ if __name__ == "__main__":
 MiniOreos Oranges O O O test
 +---+  +-<>  ---+ +-------+ .-----.  /`
 | O |  |  +------+| +---+ | '-----' //``
-+---+--+  | ***  || |(*)| | | --- | ``//
++---+--+ O| ***  || |(*)| | | --- | ``//
 /`  |O |  +------+| +---+ | | --- |  `/+-+
     +--+   .--.   +-------+ '-----' /` | |
 () (A)     '--' /`This is a test   /  `+-+
@@ -447,36 +457,36 @@ MiniOreos Oranges O O O test
    (   )   '--'                   `    /
                                    `  /
                                     `/""".replace("`","\\")
+#	INPUT = """\
+#   O+--+r
+#    |  |
+#    +--+"""
 		
 	complete = MatchLookup()
 	for pclass in PATTERNS:
+	
+		#if pclass == TinyCirclePattern:
+		#	import pdb
+		#	pdb.set_trace()		
+	
+		# TODO: need to pass meta data back to algorithm to
+		# store alongside match's costituent characters
+	
 		ongoing = MatchLookup()	
 		for j,line in enumerate((INPUT+"\x00").splitlines()):
-			#print "line %d: [%s]" % (j+1,line)
-			for i,c in enumerate(line):
-				#print "char [%s]" % c
-				if complete.has_match_at((j,i)):
-					#print "%d,%d is occupied" % (j,i)
-					#for foo in complete.get_matches((j,i)):
-					#	print "%d,%d occupied by %s" % (j,i,str(foo))
-					#	for bar in complete.get_positions(foo):
-					#		print "also occupies %d,%d" % bar
-					continue
+			for i,c in enumerate(line):				
+				occupied = complete.has_match_at((j,i))
 				newp = pclass()
 				ongoing.add_match(newp)
 				for p in ongoing.get_all_matches():
 					if not p in ongoing.get_all_matches():
 						continue
-					r = p.test(j,i,c)
-					#print "%s testing [%s]" % (type(p).__name__,c)
+					r = p.test(CurrentChar(j,i,c,occupied))
 					if r == P_ABORTED: 
 						ongoing.remove_match(p)
 					elif r == P_FINISHED:
-						#print "matched %s at line %d char %d: %s" % (
-						#	str(p),(j+1),(i+1),str(ongoing.get_positions(p)))
 						complete.add_match(p)
 						for pos in ongoing.get_positions(p):
-							#print "occupying %d,%d" % pos
 							complete.add_position(p,pos)
 						ongoing.remove_matches_overlapping(p)
 					elif r == P_ACCEPTED:

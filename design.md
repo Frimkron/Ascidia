@@ -155,9 +155,9 @@ Rules
 
 ### Jumps
 
-       |        |        |
-    ---)---  ---(---  ---^---
-       |        |        |
+       |        |        |     
+    ---)---  ---(---  ---^---  
+       |        |        |     
 
 * Left bracket at end of 4 lines (horizontal goes under)
 * Right bracket at end of 4 lines (horizontal goes under)

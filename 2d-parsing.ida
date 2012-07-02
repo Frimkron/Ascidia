@@ -305,3 +305,13 @@ height |  |        |   ^ bottom
 
 [!] Completed matches must be stored somewhere along with the cells they occupy
     so that they can be tested for on subsequent passes
+
+[!] Some components such as box connectors need to test for what type of pattern
+    a character is part of and, indeed, what aspect of the pattern the character 
+    is - e.g. left or right side of a box
+    
+  .-------.  
+ (         )
+(           )
+ (         )
+  '-------'
