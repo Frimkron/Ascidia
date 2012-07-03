@@ -310,8 +310,23 @@ height |  |        |   ^ bottom
     a character is part of and, indeed, what aspect of the pattern the character 
     is - e.g. left or right side of a box
     
-  .-------.  
- (         )
-(           )
- (         )
-  '-------'
+   .------------.  
+  (              )
+ (                )
+ (                )
+ (                )
+  (              )
+   '------------'
+
+[!] Should be able to set meta data separately from whether a space is occupied
+    or not.
+- On completion of a pattern match, it should stamp the board with an array of
+  metadata which is combined with other patterns' data.
+
+[*] matcher could return metadata for each character as it matches it. It's 
+    assumed that the progress of a pattern can be determined by the current
+    character anyway
+- instead of accept or ignore, could simply return metadata. 
+- Could have a metadata flag to say whether a space is occupied or not
+- If matcher returns no flags, and none is set on the space already, no need
+  to store any data
