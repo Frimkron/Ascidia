@@ -317,3 +317,22 @@ Parsing
 What's the best way to parse a 2-dimensional character array? We can assume the
 array is all held in memory at once - don't have to be concerned about 
 lookaheads because we can access whatever cells we need as and when.
+
+	 ____          +---+     .-----.
+	/___/|  .-.   +---+|    (       )       .-.                     .---.
+	|   ||  '-'   |   |+   (         )     ( A )     (  foo  )     (     )
+	|___|/  '-'   +---+     (       )       '-'          |         (     )
+	                         '-----'                     v          '---'
+	                                                 (  bar  )
+	        +---.                                                ^
+	        |  |_\          .--.       ^                   are all files   Y      +------+
+	        |    |         ( 12 )   < foo >   [ foo ]   <   ready to be   >--->---| blah |
+	        +----+          '--'       v                   pre-processed?         +------+
+	                                                             v
+	                                                             |
+	      <#>-- ^           /\       +---.    +-----+            v
+	            #         /    \     |  |_\   |file |            |
+                v         \    /     |     |  |     |         .-----.
+	            |           \/       '._.-.|  '._.-.|        ( stop  )
+	                                                          '-----'
+
