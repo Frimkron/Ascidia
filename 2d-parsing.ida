@@ -330,3 +330,20 @@ height |  |        |   ^ bottom
 - Could have a metadata flag to say whether a space is occupied or not
 - If matcher returns no flags, and none is set on the space already, no need
   to store any data
+
+[!] Inter-instance overlaps. An instance isn't aware of another until it becomes
+    a match. But at that point, the instance only needs to be removed if it 
+    no longer fits in the space.
+- So the instance manager must note when instances return M_OCCUPIED and store
+  a reference to them for that position. 
+- If another instance matches, any other instances that clash for its occupied
+  spaces must be removed.
+  
+occupiers = { (1,2): [instA,instF], (4,5): [instD] }
+
+- But we must also store each instance's effect on the grid's metadata:
+
+matches_meta = { instA: { (0,2): M_FOO, (1,2): M_OCCUPIED },
+					instD: { (4,5): M_OCCUPIED, (10,11): M_BAR },
+					instF: { (1,2): M_OCCUPIED, (10,11): M_BLAH } }
+

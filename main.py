@@ -1,4 +1,4 @@
-# TODO: Change pattern implementations to use new meta-flag-returning design
+# TODO: Why don't horizontal lines share corners? Bug?
 
 import xml.dom
 import xml.dom.minidom
@@ -14,17 +14,13 @@ Ellipse = namedtuple("Ellipse", "a b z stroke w fill")
 Arc = namedtuple("Arc","a b z start end stroke w fill")
 Text = namedtuple("Text","pos z text colour size")
 
-M_GENERAL = (1<<0)
+M_NONE = 0
+M_OCCUPIED = (1<<0)
 M_LINE_SQ_CORNER = (1<<1)
 M_BOX_TOP = (1<<2)
 M_BOX_BOTTOM = (1<<3)
 M_BOX_LEFT = (1<<4)
 M_BOX_RIGHT = (1<<5)
-M_LINE = (1<<6)
-M_VERTICAL = (1<<7)
-M_HORIZONTAL = (1<<8)
-M_UP_DIAGONAL = (1<<9)
-M_DOWN_DIAGONAL = (1<<10)
 
 
 class SvgOutput(object):
@@ -145,8 +141,11 @@ class Pattern(object):
 	def _reject(self):
 		raise PatternRejected()
 		
+	def _occupied(self,curr):
+		return curr.meta & M_OCCUPIED
+		
 	def _expect(self,curr,char,meta=M_OCCUPIED):
-		if curr.meta & M_OCCUPIED or curr.char != char:
+		if self._occupied(curr) or curr.char != char:
 			self._reject()
 		else:
 			return meta		
@@ -171,13 +170,13 @@ class LiteralPattern(Pattern):
 	
 	def _matcher(self):
 		curr = yield
-		if not curr.occupied and not curr.char.isspace():  
-			yield P_ACCEPTED
+		if not curr.meta & M_OCCUPIED and not curr.char.isspace():  
+			yield M_OCCUPIED
 		else:
-			yield P_ABORTED
+			self._reject()
 		self.pos = curr.col,curr.row
 		self.char = curr.char
-		yield self._finish()
+		return
 		
 	def render(self):
 		Pattern.render(self)
@@ -197,27 +196,27 @@ class DiamondPattern(Pattern):
 		curr = yield self._expect(curr,"/")
 		curr = yield self._expect(curr,"\\")
 		while True:
-			while curr.col!=lasti-1: curr = yield P_IGNORED
+			while curr.col!=lasti-1: curr = yield M_NONE
 			if curr.char != "/": break
 			rowcount += 1
 			curr = yield self._expect(curr,"/")
-			for n in range(rowcount*2): curr = yield P_IGNORED
+			for n in range(rowcount*2): curr = yield M_NONE
 			curr = yield self._expect(curr,"\\")
 			lasti -= 1
-		curr = yield P_IGNORED
+		curr = yield M_NONE
 		w = rowcount*2 + 2
 		h = (rowcount+1) * 2
 		while rowcount >= 0:
 			curr = yield self._expect(curr,"\\")
-			for n in range(rowcount*2): curr = yield P_IGNORED
+			for n in range(rowcount*2): curr = yield M_NONE
 			curr = yield self._expect(curr,"/")
 			if rowcount > 0: 
-				while curr.col!=lasti+1: curr = yield P_IGNORED
+				while curr.col!=lasti+1: curr = yield M_NONE
 			lasti += 1
 			rowcount -= 1			
 		self.tl = (starti-(w/2-1),startj)
 		self.br = (starti+(w/2),startj+(h-1))		
-		yield self._finish()
+		return
 		
 	def render(self):
 		Pattern.render(self)
@@ -233,19 +232,6 @@ class DiamondPattern(Pattern):
 			Line( (self.tl[0]+w/2.0, self.br[1]+1.0),
 				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1) ]
 				
-	def meta_at(self,row,col):
-		Pattern.meta_at(self,row,col)
-		w = self.br[0]-self.tl[0]+1
-		h = self.br[1]-self.tl[1]+1
-		if self.tl[1] <= row < self.tl[1]+h/2 and self.tl[0] <= col < self.tl[0]+w/2:
-			return M_BOX_TOP | M_BOX_LEFT | M_UP_DIAGONAL
-		elif self.tl[1] <= row < self.tl[1]+h/2 and self.tl[0]+w/2 < col <= self.br[0]:
-			return M_BOX_TOP | M_BOX_RIGHT | M_DOWN_DIAGONAL
-		elif self.tl[1]+h/2 < row <= self.br[1] and self.tl[0] <= col < self.tl[0]+w/2:
-			return M_BOX_BOTTOM | M_BOX_LEFT | M_DOWN_DIAGONAL
-		elif self.tl[1]+h/2 < row <= self.br[1] and self.tl[0]+w/2 < col <= self.br[0]:
-			return M_BOX_BOTTOM | M_BOX_RIGHT | M_UP_DIAGONAL
-			
 		
 class DbCylinderPattern(Pattern):
 
@@ -263,28 +249,26 @@ class DbCylinderPattern(Pattern):
 			curr = yield self._expect(curr,"-")
 		w = curr.col-self.tl[0]+1
 		curr = yield self._expect(curr,".")
-		while curr.col!=self.tl[0]:
-			curr = yield P_IGNORED
+		while curr.col!=self.tl[0]: curr = yield M_NONE
 		curr = yield self._expect(curr,"'")
 		for n in range(w-2):
 			curr = yield self._expect(curr,"-")
 		curr = yield self._expect(curr,"'")
-		while curr.col!=self.tl[0]:
-			curr = yield P_IGNORED
+		while curr.col!=self.tl[0]: curr = yield M_NONE
 		while True:	
 			curr = yield self._expect(curr,"|")
 			for n in range(w-2):
-				curr = yield P_IGNORED
+				curr = yield M_NONE
 			curr = yield self._expect(curr,"|")
 			while curr.col!=self.tl[0]:
-				curr = yield P_IGNORED
+				curr = yield M_NONE
 			if curr.char == "'": break
 		curr = yield self._expect(curr,"'")
 		for n in range(w-2):
 			curr = yield self._expect(curr,"-")
 		self.br = (curr.col,curr.row)
 		curr = yield self._expect(curr,"'")
-		yield self._finish()
+		return
 		
 	def render(self):
 		Pattern.render(self)
@@ -300,19 +284,6 @@ class DbCylinderPattern(Pattern):
 				(self.br[0]+0.5,self.br[1]+0.5),
 				1, 0.0, math.pi, "purple",1,None)	]
 				
-	def meta_at(self,row,col):
-		Pattern.meta_at(self,row,col)
-		if row == self.tl[1] and self.tl[0] < col < self.br[0]:
-			return M_BOX_TOP
-		elif row == self.br[1] and self.tl[0] < col < self.br[0]:
-			return M_BOX_BOTTOM
-		elif col == self.tl[0] and self.tl[1] < row < self.br[1]:
-			return M_BOX_LEFT
-		elif col == self.br[0] | self.tl[1] < row < self.br[1]:
-			return M_BOX_RIGHT
-		else:
-			return M_GENERAL
-		
 
 class BoxPattern(Pattern):
 	
@@ -330,65 +301,78 @@ class BoxPattern(Pattern):
 			curr = yield self._expect(curr,"-")
 		w = curr.col-self.tl[0]+1
 		curr = yield self._expect(curr,"+")
-		while curr.col!=self.tl[0]:
-			curr = yield P_IGNORED
+		while curr.col!=self.tl[0]: curr = yield M_NONE
 		while True:
 			curr = yield self._expect(curr,"|")
-			for n in range(w-2):
-				curr = yield P_IGNORED
+			for n in range(w-2): curr = yield M_NONE
 			curr = yield self._expect(curr,"|")
-			while curr.col!=self.tl[0]:
-				curr = yield P_IGNORED
+			while curr.col!=self.tl[0]: curr = yield M_NONE
 			if curr.char == "+": break
 		curr = yield self._expect(curr,"+")
 		for n in range(w-2):
 			curr = yield self._expect(curr,"-")
 		self.br = (curr.col,curr.row)
 		curr = yield self._expect(curr,"+")
-		yield self._finish()
+		return
 		
 	def render(self):
 		Pattern.render(self)
 		return [Rectangle((self.tl[0]+0.5,self.tl[1]+0.5),
 			(self.br[0]+0.5,self.br[1]+0.5),1,"red",1,None)]
 			
-	def meta_at(self,row,col):
-		Pattern.meta_at(self)
-		if row == self.tl[1] and self.tl[0] < col < self.br[0]:
-			return M_BOX_TOP
-		elif row == self.br[1] and self.tl[0] < col < self.br[0]:
-			return M_BOX_BOTTOM
-		elif col == self.tl[0] and self.tl[1] < row < self.br[1]:
-			return M_BOX_LEFT
-		elif col == self.br[0] | self.tl[1] < row < self.br[1]:
-			return M_BOX_RIGHT
-		else:
-			return M_GENERAL
-		
 	
 class HorizLinePattern(Pattern):
 
-	start = None
-	end = None
+	END_NORMAL = object()
+	END_CORNER = object()
+
+	startpos = None
+	starttype = None
+	endpos = None
+	endtype = None
 
 	def _matcher(self):
 		curr = yield
-		self.start = (curr.col,curr.row)
+		self.startpos = (curr.col,curr.row)
+		self.starttype = HorizLinePattern.END_NORMAL
+		if curr.char == "+":
+			self.starttype = HorizLinePattern.END_CORNER
+			if not self._occupied(curr):
+				curr = yield M_OCCUPIED | M_LINE_SQ_CORNER
+			elif curr.meta & M_LINE_SQ_CORNER:
+				curr = yield M_NONE
+			else:
+				self._reject()
 		curr = yield self._expect(curr,"-")
 		while True:
 			if curr.char != "-": break
 			curr = yield self._expect(curr,"-")
-		self.end = (curr.col-1,curr.row)
-		yield self._finish()
+		self.endtype = HorizLinePattern.END_NORMAL
+		if curr.char == "+":
+			self.endtype = HorizLinePattern.END_CORNER
+			if not self._occupied(curr):
+				curr = yield M_OCCUPIED | M_LINE_SQ_CORNER
+			elif curr.meta & M_LINE_SQ_CORNER:
+				curr = yield M_NONE
+			else:
+				self.endtype = HorizLinePattern.END_NORMAL
+		self.endpos = (curr.col-1,curr.row)
+		return
 		
 	def render(self):
 		Pattern.render(self)
-		return [Line((self.start[0],self.start[1]+0.5),
-			(self.end[0]+1.0,self.end[1]+0.5),1,"blue",1)]
-			
-	def meta_at(self,row,col):
-		Pattern.meta_at(self,row,col)
-		return M_LINE | M_HORIZONTAL
+		soffset = 0.5 if self.starttype==HorizLinePattern.END_CORNER else 0
+		eoffset = 0.5 if self.endtype==HorizLinePattern.END_CORNER else 1.0
+		return [ Line(
+					(self.startpos[0]+soffset,self.startpos[1]+0.5),
+					(self.endpos[0]+eoffset,self.endpos[1]+0.5),
+					1,"blue",1),
+				 Ellipse( (self.startpos[0]+0.25,self.startpos[1]+0.25),
+				 			(self.startpos[0]+0.75,self.startpos[1]+0.75),
+				 			1,"yellow",1,"yellow"),
+				 Ellipse( (self.endpos[0]+0.25,self.endpos[1]+0.25),
+				 			(self.endpos[0]+0.75,self.endpos[1]+0.75),
+				 			1,"yellow",1,"yellow") ]
 			
 
 class TinyCirclePattern(Pattern):
@@ -397,22 +381,18 @@ class TinyCirclePattern(Pattern):
 	
 	def _matcher(self):
 		curr = yield
-		if curr.char.isalpha(): yield P_ABORTED
-		curr = yield P_IGNORED
+		if curr.char.isalpha(): self._reject()
+		curr = yield M_NONE
 		self.pos = curr.col,curr.row
 		curr = yield self._expect(curr,"O")
-		if curr.char.isalpha(): yield P_ABORTED
-		yield self._finish()
+		if curr.char.isalpha(): self._reject()
+		return
 		
 	def render(self):
 		Pattern.render(self)
 		return [ Ellipse((self.pos[0]+0.5-0.4,self.pos[1]+0.5-0.4/CHAR_H_RATIO), 
 				(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), 1, "magenta", 1, None) ]
 				
-	def meta_at(self,row,col):
-		Pattern.meta_at(self,row,col)
-		return M_BOX_TOP|M_BOX_BOTTOM|M_BOX_LEFT|M_BOX_RIGHT
-
 				
 class SmallCirclePattern(Pattern):
 	
@@ -427,12 +407,12 @@ class SmallCirclePattern(Pattern):
 		curr = yield self._expect(curr,"(")
 		for n in range(3):
 			if curr.char == ")": break
-			curr = yield P_IGNORED
+			curr = yield M_NONE
 		else:
-			yield P_ABORTED
+			self._reject()
 		self.right = curr.col
 		curr = yield self._expect(curr,")")
-		yield self._finish()
+		return
 		
 	def render(self):
 		Pattern.render(self)
@@ -440,10 +420,6 @@ class SmallCirclePattern(Pattern):
 		return [ Ellipse((self.left+0.5,self.y+0.5-d/2.0/CHAR_H_RATIO),
 				(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), 1, "green",1,None) ]
 	
-	def meta_at(self,col,row):
-		Pattern.meta_at(self,col,row)
-		# TODO
-		
 		
 PATTERNS = [
 	DbCylinderPattern,
@@ -459,49 +435,47 @@ PATTERNS = [
 class MatchLookup(object):
 
 	_matches = None
-	_match_by_pos = None
-	_pos_by_match = None
+	_occupants = None
+	_match_meta = None
 	
 	def __init__(self):
 		self._matches = []
-		self._match_by_pos = defaultdict(list)
-		self._pos_by_match = defaultdict(list)
+		self._occupants = defaultdict(list)
+		self._match_meta = defaultdict(dict)
 
 	def get_all_matches(self):
 		return list(self._matches)
 		
-	def get_matches(self,pos):
-		return list(self._match_by_pos[pos])
+	def get_occupants_at(self,pos):
+		return list(self._occupants[pos])
 		
-	def get_positions(self,match):
-		return list(self._pos_by_match[match])
+	def get_meta_for(self,match):
+		return dict(self._match_meta[match])
 		
 	def add_match(self,match):
 		self._matches.append(match)
 		
-	def add_position(self,match,pos):
-		self._match_by_pos[pos].append(match)
-		self._pos_by_match[match].append(pos)
-		
-	def has_match_at(self,pos):
-		return len(self.get_matches(pos))>0
+	def add_meta(self,match,pos,meta):
+		if meta & M_OCCUPIED:
+			self._occupants[pos].append(match)
+		self._match_meta[match][pos] = meta
 		
 	def remove_match(self,match):
 		try: 
 			self._matches.remove(match)
 		except ValueError: pass
-		for p in self._pos_by_match[match]:
-			try:
-				self._match_by_pos[p].remove(match)
-			except ValueError: pass
-		try:
-			del(self._pos_by_match[match])
-		except KeyError: pass
+		for pos,meta in self._match_meta[match].items():
+			if meta & M_OCCUPIED:
+				try:
+					self._occupants[pos].remove(match)
+				except ValueError: pass
+		del(self._match_meta[match])
 		
-	def remove_matches_overlapping(self,match):
-		for pos in self.get_positions(match):
-			for m in self.get_matches(pos):
-				self.remove_match(m)
+	def remove_cooccupants(self,match):
+		for pos,meta in self.get_meta_for(match).items():
+			if meta & M_OCCUPIED:
+				for m in self.get_occupants_at(pos):
+					self.remove_match(m)
 		
 		
 CurrentChar = namedtuple("CurrentChar","row col char meta")
@@ -517,8 +491,8 @@ MiniOreos Oranges O O O test
 /`  |O |  +------+| +---+ | | --- |  `/+-+
     +--+   .--.   +-------+ '-----' /` | |
 () (A)     '--' /`This is a test   /  `+-+
-  (  )     |  | `/                /    `
-   (   )   '--'                   `    /
+  (  )     |  | `/  --- ---+      /    `
+   (   )   '--'    +---+---+      `    /
                                    `  /
                                     `/""".replace("`","\\")
 #	INPUT = """\
@@ -527,27 +501,29 @@ MiniOreos Oranges O O O test
 #    +--+"""
 		
 	complete_matches = []
-	complete_meta = defaultdict(int)
+	complete_meta = {}
 	for pclass in PATTERNS:
 		ongoing = MatchLookup()	
 		for j,line in enumerate((INPUT+"\x00").splitlines()):
-			for i,c in enumerate(line):	
-				meta = complete_meta[(j,i)]
+			for i,char in enumerate(line):	
+				meta = complete_meta.get((j,i),M_NONE)
 				newp = pclass()
 				ongoing.add_match(newp)
-				for p in ongoing.get_all_matches():
-					if not p in ongoing.get_all_matches():
+				for match in ongoing.get_all_matches():
+					if not match in ongoing.get_all_matches():
 						continue
 					try:
-						matchmeta = p.test(CurrentChar(j,i,c,meta))
+						matchmeta = match.test(CurrentChar(j,i,char,meta))
 					except PatternRejected:
-						ongoing.remove_match(p)
+						ongoing.remove_match(match)
 					except StopIteration:
-						complete_matches.append(p)
-						# TODO: transfer match's metadata to complete_meta
+						complete_matches.append(match)
+						for p,m in ongoing.get_meta_for(match).items():
+							complete_meta[p] = complete_meta.get(p,M_NONE) | m
+						ongoing.remove_cooccupants(match)
+						ongoing.remove_match(match)
 					else:
-						# TODO: record match's meta for position
-						pass
+						ongoing.add_meta(match,(j,i),matchmeta)
 		
 	renderitems = []				
 	for m in complete_matches:
