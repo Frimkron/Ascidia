@@ -320,6 +320,68 @@ class BoxPattern(Pattern):
 		return [Rectangle((self.tl[0]+0.5,self.tl[1]+0.5),
 			(self.br[0]+0.5,self.br[1]+0.5),1,"red",1,None)]
 			
+			
+class LineSqCornerPattern(Pattern):
+	
+	def _matcher(self):
+		curr = yield
+		if( curr.char == "+" and not curr.meta & M_OCCUPIED 
+				and curr.meta & M_LINE_SQ_CORNER):
+			yield M_OCCUPIED
+		else:
+			self._reject()
+		return 
+		
+	
+class VertLinePattern(Pattern):
+	
+	END_NORMAL = object()
+	END_CORNER = object()
+	
+	startpos = None
+	starttype = None
+	endpos = None
+	endtype = None	
+	
+	def _matcher(self):
+		curr = yield
+		self.startpos = (curr.col,curr.row)
+		self.starttype = VertLinePattern.END_NORMAL
+		if curr.char == "+":
+			self.starttype = VertLinePattern.END_CORNER
+			if not self._occupied(curr):
+				curr = yield M_LINE_SQ_CORNER
+			elif curr.meta & M_LINE_SQ_CORNER:
+				curr = yield M_NONE
+			else:
+				self._reject()
+			while curr.col != self.startpos[0]: yield M_NONE
+		curr = yield self._expect(curr,"|")
+		"""while True:
+			while curr.col != self.startpos[0]: yield M_NONE
+			if curr.char != "|": break
+			curr = yield self._expect(curr,"|")"""
+		self.endtype = VertLinePattern.END_NORMAL
+		"""if curr.char == "+":
+			self.endtype = VertLinePattern.END_CORNER
+			if not self._occupied(curr):
+				curr = yield M_LINE_SQ_CORNER
+			elif curr.meta & M_LINE_SQ_CORNER:
+				curr = yield M_NONE
+			else:
+				self.endtype = VertLinePattern.END_NORMAL"""
+		self.endpos = (curr.col-1,curr.row)
+		return 
+		
+	def render(self):
+		Pattern.render(self)
+		soffset = 0.5 if self.starttype==VertLinePattern.END_CORNER else 0
+		eoffset = 0.5 if self.endtype==VertLinePattern.END_CORNER else 1.0
+		return [ Line(
+					(self.startpos[0]+0.5,self.startpos[1]+soffset),
+					(self.endpos[0]+0.5,self.endpos[1]+eoffset),
+					1,"blue",1) ]
+	
 	
 class HorizLinePattern(Pattern):
 
@@ -338,7 +400,7 @@ class HorizLinePattern(Pattern):
 		if curr.char == "+":
 			self.starttype = HorizLinePattern.END_CORNER
 			if not self._occupied(curr):
-				curr = yield M_OCCUPIED | M_LINE_SQ_CORNER
+				curr = yield M_LINE_SQ_CORNER
 			elif curr.meta & M_LINE_SQ_CORNER:
 				curr = yield M_NONE
 			else:
@@ -351,7 +413,7 @@ class HorizLinePattern(Pattern):
 		if curr.char == "+":
 			self.endtype = HorizLinePattern.END_CORNER
 			if not self._occupied(curr):
-				curr = yield M_OCCUPIED | M_LINE_SQ_CORNER
+				curr = yield M_LINE_SQ_CORNER
 			elif curr.meta & M_LINE_SQ_CORNER:
 				curr = yield M_NONE
 			else:
@@ -366,13 +428,7 @@ class HorizLinePattern(Pattern):
 		return [ Line(
 					(self.startpos[0]+soffset,self.startpos[1]+0.5),
 					(self.endpos[0]+eoffset,self.endpos[1]+0.5),
-					1,"blue",1),
-				 Ellipse( (self.startpos[0]+0.25,self.startpos[1]+0.25),
-				 			(self.startpos[0]+0.75,self.startpos[1]+0.75),
-				 			1,"yellow",1,"yellow"),
-				 Ellipse( (self.endpos[0]+0.25,self.endpos[1]+0.25),
-				 			(self.endpos[0]+0.75,self.endpos[1]+0.75),
-				 			1,"yellow",1,"yellow") ]
+					1,"blue",1) ]
 			
 
 class TinyCirclePattern(Pattern):
@@ -428,6 +484,8 @@ PATTERNS = [
 	SmallCirclePattern,
 	TinyCirclePattern,
 	HorizLinePattern,
+	VertLinePattern,
+	LineSqCornerPattern,
 	LiteralPattern
 ]
 
@@ -490,15 +548,14 @@ MiniOreos Oranges O O O test
 +---+--+ O| ***  || |(*)| | | --- | ``//
 /`  |O |  +------+| +---+ | | --- |  `/+-+
     +--+   .--.   +-------+ '-----' /` | |
-() (A)     '--' /`This is a test   /  `+-+
-  (  )     |  | `/  --- ---+      /    `
-   (   )   '--'    +---+---+      `    /
-                                   `  /
-                                    `/""".replace("`","\\")
+() (A)     '--' /`This is a test|  /  `+-+
+  (  )     |  | `/  --- ---+    | /    `
+   (   )   '--'    +---+---+    + `    /
+                                |  `  /
+                                |   `/""".replace("`","\\")
 #	INPUT = """\
-#   O+--+r
-#    |  |
-#    +--+"""
+#---+--- 
+#######"""
 		
 	complete_matches = []
 	complete_meta = {}

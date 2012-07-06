@@ -347,3 +347,31 @@ matches_meta = { instA: { (0,2): M_FOO, (1,2): M_OCCUPIED },
 					instD: { (4,5): M_OCCUPIED, (10,11): M_BAR },
 					instF: { (1,2): M_OCCUPIED, (10,11): M_BLAH } }
 
+  cooccs 
+  cleared
+     V
+---+---\n
+01234
+ 0123
+  012 
+   01  
+    0123
+     012
+      01
+       00
+
+[!] The input "---+---". The horizontal line instances can't share the corner because
+    they both try to occupy it, and the first eliminates the second, leaving only the
+    instance that didn't include the corner.
+- If they don't try to occupy it, it's going to become a literal '+', too.
+
+[*] Bit of a hack, but could have horiz line match runs of lines as a single line 
+    instance
+- Makes arrowheads, etc harder to match and render if there are multiple per 
+  instance.
+  
+  + + +    Could line corners be done in a different pass? As a separate pattern?
+   \|/     So lines include them but leave them unoccupied, and mark their characters
+  +-+-+    as lines
+   /|\     Then another pattern matches + symbols at line intersections
+  + + +
