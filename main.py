@@ -1,4 +1,3 @@
-# TODO: Why don't horizontal lines share corners? Bug?
 
 import xml.dom
 import xml.dom.minidom
@@ -21,6 +20,8 @@ M_BOX_TOP = (1<<2)
 M_BOX_BOTTOM = (1<<3)
 M_BOX_LEFT = (1<<4)
 M_BOX_RIGHT = (1<<5)
+
+END_OF_INPUT = "\x00"
 
 
 class SvgOutput(object):
@@ -149,6 +150,10 @@ class Pattern(object):
 			self._reject()
 		else:
 			return meta		
+
+	def _awaiting_char_below(self,curr,pos):
+		return ( curr.row <= pos[1] and curr.col < pos[0]
+				and curr.char != END_OF_INPUT )
 				
 	def test(self,currentchar):
 		try:
@@ -355,21 +360,27 @@ class VertLinePattern(Pattern):
 				curr = yield M_NONE
 			else:
 				self._reject()
-			while curr.col != self.startpos[0]: yield M_NONE
+			while self._awaiting_char_below(curr,startpos):
+				curr = yield M_NONE
+			if curr.col != startpos[0]: self._reject()
 		curr = yield self._expect(curr,"|")
-		"""while True:
-			while curr.col != self.startpos[0]: yield M_NONE
+		pos = curr.col,curr.row
+		while True:
+			while self._awaiting_char_below(curr,pos):
+				curr = yield M_NONE
+			if curr.col != pos[0]: self._reject()
 			if curr.char != "|": break
-			curr = yield self._expect(curr,"|")"""
+			# TODO: logic here for failed - wait-for-char-below
+			curr = yield self._expect(curr,"|")
 		self.endtype = VertLinePattern.END_NORMAL
-		"""if curr.char == "+":
+		if curr.char == "+":
 			self.endtype = VertLinePattern.END_CORNER
 			if not self._occupied(curr):
 				curr = yield M_LINE_SQ_CORNER
 			elif curr.meta & M_LINE_SQ_CORNER:
 				curr = yield M_NONE
 			else:
-				self.endtype = VertLinePattern.END_NORMAL"""
+				self.endtype = VertLinePattern.END_NORMAL
 		self.endpos = (curr.col-1,curr.row)
 		return 
 		
@@ -561,7 +572,7 @@ MiniOreos Oranges O O O test
 	complete_meta = {}
 	for pclass in PATTERNS:
 		ongoing = MatchLookup()	
-		for j,line in enumerate((INPUT+"\x00").splitlines()):
+		for j,line in enumerate((INPUT+END_OF_INPUT).splitlines()):
 			for i,char in enumerate(line):	
 				meta = complete_meta.get((j,i),M_NONE)
 				newp = pclass()
