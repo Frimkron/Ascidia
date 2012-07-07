@@ -375,3 +375,12 @@ matches_meta = { instA: { (0,2): M_FOO, (1,2): M_OCCUPIED },
   +-+-+    as lines
    /|\     Then another pattern matches + symbols at line intersections
   + + +
+
+Pattern matching thing seems to work pretty well. 
+
+[?] Is there a more elegant way to express these patterns? 
+[?] Are s-expressions the way to go?
+- Its going to be some kind of DSL, which is either evaluated at runtime or converted
+  to python code.
+- S-expressions are a lazy, parenthesis-laden way of implementing this. Not necessarily
+  a bad thing.

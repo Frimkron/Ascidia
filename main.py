@@ -152,7 +152,7 @@ class Pattern(object):
 			return meta		
 
 	def _awaiting_char_below(self,curr,pos):
-		return ( curr.row <= pos[1] and curr.col < pos[0]
+		return (( curr.row <= pos[1] or curr.col < pos[0] )
 				and curr.char != END_OF_INPUT )
 				
 	def test(self,currentchar):
@@ -336,7 +336,57 @@ class LineSqCornerPattern(Pattern):
 		else:
 			self._reject()
 		return 
+	
+class DownDiagLinePattern(Pattern):
+	
+	END_NORMAL = object()
+	END_CORNER = object()
+	
+	startpos = None
+	starttype = None
+	endpos = None
+	endtype = None
 		
+	def _matcher(self):
+		curr = yield
+		self.startpos = (curr.col,curr.row)
+		self.starttype = DownDiagLinePattern.END_NORMAL
+		if curr.char == "+":
+			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
+				self.starttype = DownDiagLinePattern.END_CORNER
+				curr = yield M_LINE_SQ_CORNER
+				while self._awaiting_char_below(curr,(self.startpos[0]+1,self.startpos[1])):
+					curr = yield M_NONE
+				if curr.col != self.startpos[0]+1:
+					self._reject()
+			else:
+				self._reject()
+		pos = curr.col,curr.row
+		curr = yield self._expect(curr,"\\")
+		while True:
+			while self._awaiting_char_below(curr,(pos[0]+1,pos[1])):
+				curr = yield M_NONE
+			if curr.col != pos[0]+1 or curr.char != "\\": break
+			pos = curr.col,curr.row
+			curr = yield self._expect(curr,"\\")
+		self.endtype = DownDiagLinePattern.END_NORMAL
+		self.endpos = pos
+		if curr.char == "+" and curr.col == pos[0]+1:
+			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
+				self.endtype = DownDiagLinePattern.END_CORNER
+				self.endpos = (curr.col,curr.row)
+				curr = yield M_LINE_SQ_CORNER			
+		return 
+		
+	def render(self):
+		Pattern.render(self)
+		soffset = 0.5 if self.starttype==DownDiagLinePattern.END_CORNER else 0
+		eoffset = 0.5 if self.endtype==DownDiagLinePattern.END_CORNER else 1.0
+		return [ Line(
+					(self.startpos[0]+soffset,self.startpos[1]+soffset),
+					(self.endpos[0]+eoffset,self.endpos[1]+eoffset),
+					1,"blue",1) ]
+	
 	
 class VertLinePattern(Pattern):
 	
@@ -353,35 +403,30 @@ class VertLinePattern(Pattern):
 		self.startpos = (curr.col,curr.row)
 		self.starttype = VertLinePattern.END_NORMAL
 		if curr.char == "+":
-			self.starttype = VertLinePattern.END_CORNER
-			if not self._occupied(curr):
+			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
+				self.starttype = VertLinePattern.END_CORNER
 				curr = yield M_LINE_SQ_CORNER
-			elif curr.meta & M_LINE_SQ_CORNER:
-				curr = yield M_NONE
+				while self._awaiting_char_below(curr,self.startpos):
+					curr = yield M_NONE
+				if curr.col != self.startpos[0]: 
+					self._reject()
 			else:
 				self._reject()
-			while self._awaiting_char_below(curr,startpos):
-				curr = yield M_NONE
-			if curr.col != startpos[0]: self._reject()
-		curr = yield self._expect(curr,"|")
 		pos = curr.col,curr.row
+		curr = yield self._expect(curr,"|")
 		while True:
 			while self._awaiting_char_below(curr,pos):
 				curr = yield M_NONE
-			if curr.col != pos[0]: self._reject()
-			if curr.char != "|": break
-			# TODO: logic here for failed - wait-for-char-below
+			if curr.col != self.startpos[0] or curr.char != "|": break
+			pos = curr.col,curr.row
 			curr = yield self._expect(curr,"|")
 		self.endtype = VertLinePattern.END_NORMAL
-		if curr.char == "+":
-			self.endtype = VertLinePattern.END_CORNER
-			if not self._occupied(curr):
-				curr = yield M_LINE_SQ_CORNER
-			elif curr.meta & M_LINE_SQ_CORNER:
-				curr = yield M_NONE
-			else:
-				self.endtype = VertLinePattern.END_NORMAL
-		self.endpos = (curr.col-1,curr.row)
+		self.endpos = pos
+		if curr.char == "+" and curr.col == self.startpos[0]:
+			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
+				self.endtype = VertLinePattern.END_CORNER
+				self.endpos = (curr.col,curr.row)
+				curr = yield M_LINE_SQ_CORNER			
 		return 
 		
 	def render(self):
@@ -496,6 +541,7 @@ PATTERNS = [
 	TinyCirclePattern,
 	HorizLinePattern,
 	VertLinePattern,
+	DownDiagLinePattern,
 	LineSqCornerPattern,
 	LiteralPattern
 ]
@@ -556,17 +602,23 @@ if __name__ == "__main__":
 MiniOreos Oranges O O O test
 +---+  +-<>  ---+ +-------+ .-----.  /`
 | O |  |  +------+| +---+ | '-----' //``
-+---+--+ O| ***  || |(*)| | | --- | ``//
++---+--+ O| ***  || |(*)| |-| --- | ``//
 /`  |O |  +------+| +---+ | | --- |  `/+-+
     +--+   .--.   +-------+ '-----' /` | |
-() (A)     '--' /`This is a test|  /  `+-+
-  (  )     |  | `/  --- ---+    | /    `
-   (   )   '--'    +---+---+    + `    /
-                                |  `  /
-                                |   `/""".replace("`","\\")
+() (A)  `  '--' /`This is a test|  /  `+-+
+  (  )   ` |  | `/  --- ---+    | /    `
+   (   )  +'--'    +---+ --+--+-+ `    /
+          |        ||-`-`     | |  `  /
+                   +-----+      |   `/""".replace("`","\\")
 #	INPUT = """\
-#---+--- 
-#######"""
+# + 1
+# | 2      
+# | 3    
+# + 4  
+# | 5     
+# | 6     
+# + 7"""
+ 
 		
 	complete_matches = []
 	complete_meta = {}
