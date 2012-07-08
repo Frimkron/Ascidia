@@ -336,6 +336,58 @@ class LineSqCornerPattern(Pattern):
 		else:
 			self._reject()
 		return 
+
+
+class UpDiagLinePattern(Pattern):
+	
+	END_NORMAL = object()
+	END_CORNER = object()
+	
+	startpos = None
+	starttype = None
+	endpos = None
+	endtype = None
+	
+	def _matcher(self):
+		curr = yield
+		self.startpos = (curr.col,curr.row)
+		self.starttype = UpDiagLinePattern.END_NORMAL
+		if curr.char == "+":
+			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
+				self.starttype = UpDiagLinePattern.END_CORNER
+				curr = yield M_LINE_SQ_CORNER
+				while self._awaiting_char_below(curr,(self.startpos[0]-1,self.startpos[1])):
+					curr = yield M_NONE
+				if curr.col != self.startpos[0]-1:
+					self._reject()
+			else:
+				self._reject()
+		pos = curr.col,curr.row
+		curr = yield self._expect(curr,"/")
+		while True:
+			while self._awaiting_char_below(curr,(pos[0]-1,pos[1])):
+				curr = yield M_NONE
+			if curr.col != pos[0]-1 or curr.char != "/": break
+			pos = curr.col,curr.row
+			curr = yield self._expect(curr,"/")
+		self.endtype = UpDiagLinePattern.END_NORMAL
+		self.endpos = pos
+		if curr.char == "+" and curr.col == pos[0]-1:
+			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
+				self.endtype = UpDiagLinePattern.END_CORNER
+				self.endpos = (curr.col,curr.row)
+				curr = yield M_LINE_SQ_CORNER
+		return
+		
+	def render(self):
+		Pattern.render(self)
+		soffset = (0.5,0.5) if self.starttype==UpDiagLinePattern.END_CORNER else (1.0,0.0)
+		eoffset = (0.5,0.5) if self.endtype==UpDiagLinePattern.END_CORNER else (0.0,1.0)
+		return [ Line(
+					(self.startpos[0]+soffset[0],self.startpos[1]+soffset[1]),
+					(self.endpos[0]+eoffset[0],self.endpos[1]+eoffset[1]),
+					1,"blue",1) ]
+						
 	
 class DownDiagLinePattern(Pattern):
 	
@@ -541,6 +593,7 @@ PATTERNS = [
 	TinyCirclePattern,
 	HorizLinePattern,
 	VertLinePattern,
+	UpDiagLinePattern,
 	DownDiagLinePattern,
 	LineSqCornerPattern,
 	LiteralPattern
@@ -601,14 +654,14 @@ if __name__ == "__main__":
 	INPUT = """\
 MiniOreos Oranges O O O test
 +---+  +-<>  ---+ +-------+ .-----.  /`
-| O |  |  +------+| +---+ | '-----' //``
-+---+--+ O| ***  || |(*)| |-| --- | ``//
-/`  |O |  +------+| +---+ | | --- |  `/+-+
-    +--+   .--.   +-------+ '-----' /` | |
-() (A)  `  '--' /`This is a test|  /  `+-+
-  (  )   ` |  | `/  --- ---+    | /    `
-   (   )  +'--'    +---+ --+--+-+ `    /
-          |        ||-`-`     | |  `  /
+| O |  |  +------+| +---+ | '-----' //``     + + +- 
++---+--+ O| ***  || |(*)| |-| --- | ``//    /|/| |
+/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +- 
+    +--+   .--.   +-------+ '-----' /` | |  + +  |
+() (A)  `  '--' /`This is a test|  /+ `+-+  |`|`
+  (  )   ` |  | `/  --- ---+    | // ` `      +
+   (   )  +'--'    +---+ --+--+-+ `   +/
+          |        ||-`-`     | |  ` //
                    +-----+      |   `/""".replace("`","\\")
 #	INPUT = """\
 # + 1

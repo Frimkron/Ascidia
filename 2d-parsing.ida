@@ -384,3 +384,63 @@ Pattern matching thing seems to work pretty well.
   to python code.
 - S-expressions are a lazy, parenthesis-laden way of implementing this. Not necessarily
   a bad thing.
+- DSL would have to describe not only the pattern to match, but the metadata for each
+  character and where to draw shapes for the output.
+  
+[!] Patterns have nothing in the way of backtracking - a character is either accepted
+    or rejected and the decision to occupy must be immediate
+[?] Could a pattern like the following even be matched?
+
+string of triangles:
+
+/_\/_\/_\/_\
+
+(/_\)+
+
+Best we can do is end if the next character after a triangle is not a forward slash.
+But this means that if there's an incomplete triangle on the end, the whole match will
+fail instead of accepting the complete triangles.
+       __
+/_\/_\/_/|
+      |_|/
+  ^
+triangle match fails
+
+Ok, but the matching is pretty flexible anyway. The DSL would just have to restrict
+operations to single characters at a time - i.e. no (#? / _ \)
+
+(p box 
+	($ start (@))
+	(1 + line-square-corner)
+	($ midw (w (1+ -)))
+	(1 + line-square-corner)
+	(1+
+		(1 |)
+		(n ($ midw) spc)
+		(1 |))
+	(1 + line-square-corner)
+	(n ($midw) -)
+	($ end (@))
+	(1 + line-square-corner)
+
+Or (1+ (1 :) (1: rb)) is allowed, but user just has to bear in mind the problem above.
+
+[?] How to do curved lines?
+
+----.          . is like + but only allows down lines
+    |         
+    '-----     ' is like + but only allows up lines
+    
+----.----  Allow this? Why not. So this would look like an M:  .--.--.
+    |                                                          |  |  |
+                                   \    \    \    \
+What to use for lines like this?    +    '    .    :  Require the colon?
+                                    |    |    |    |
+  .---.
+ /     \     .----.  /-----\   I should have a pattern for 
+:       :    |    |  |     |   diagonal-cornered boxes, as this is a 
+|       |    |    |  |     |   common convention.
+:       :    '----'  \-----/
+ \     /
+  '---'
+
