@@ -1,3 +1,6 @@
+# TODO Convert patterns to use modified Pattern class
+# TODO Refactor line patterns to use line base class
+# TODO Add curved corner logic to line base class
 
 import xml.dom
 import xml.dom.minidom
@@ -125,45 +128,54 @@ SvgOutput.INST = SvgOutput()
 
 class PatternRejected(Exception): pass
 class PatternStateError(Exception): pass
+class NoSuchPosition(Exception): pass
 
 class Pattern(object):
 	
-	_gen = None
-	_is_finished = False
+	gen = None
+	is_finished = False
+	curr = None
 	
 	def __init__(self):
-		self._gen = self._matcher()
-		self._gen.next()
+		self.curr = None
+		self.gen = self.matcher()
+		self.gen.next()
 		
-	def _matcher(self):
+	def matcher(self):
 		yield
-		self._reject()
+		self.reject()
 		
-	def _reject(self):
+	def reject(self):
 		raise PatternRejected()
 		
-	def _occupied(self,curr):
-		return curr.meta & M_OCCUPIED
+	def occupied(self):
+		return self.curr.meta & M_OCCUPIED
 		
-	def _expect(self,curr,char,meta=M_OCCUPIED):
-		if self._occupied(curr) or curr.char != char:
-			self._reject()
+	def expect(self,char,meta=M_OCCUPIED):
+		if self.occupied() or self.curr.char != char:
+			self.reject()
 		else:
 			return meta		
 
-	def _awaiting_char_below(self,curr,pos):
-		return (( curr.row <= pos[1] or curr.col < pos[0] )
-				and curr.char != END_OF_INPUT )
-				
+	def await_pos(self,offsetx,offsety):
+		pos = self.curr.col+offsetx,self.curr.row+offsety
+		while self.curr.col,self.curr.row != pos:
+			if( (self.curr.col > pos[0] and self.curr.row >= pos[1])
+					or self.curr.char == END_OF_INPUT ):
+				raise NoSuchPosition(pos)
+			yield M_NONE
+			
 	def test(self,currentchar):
 		try:
-			return self._gen.send(currentchar)
+			return self.gen.send(currentchar)
 		except StopIteration:
-			self._is_finished = True
+			self.is_finished = True
 			raise
+		except NoSuchPosition as e:
+			raise PatternRejected(e)
 		
 	def render(self):
-		if not self._is_finished: 
+		if not self.is_finished: 
 			raise PatternStateError("Pattern not matched")
 		return []
 		
@@ -173,14 +185,14 @@ class LiteralPattern(Pattern):
 	pos = None
 	char = None
 	
-	def _matcher(self):
-		curr = yield
-		if not curr.meta & M_OCCUPIED and not curr.char.isspace():  
+	def matcher(self):
+		self.curr = yield
+		self.pos = self.curr.col,self.curr.row
+		self.char = self.curr.char
+		if not self.occupied() and not self.curr.char.isspace():  
 			yield M_OCCUPIED
 		else:
-			self._reject()
-		self.pos = curr.col,curr.row
-		self.char = curr.char
+			self.reject()
 		return
 		
 	def render(self):
@@ -193,31 +205,31 @@ class DiamondPattern(Pattern):
 	tl = None
 	br = None
 	
-	def _matcher(self):
-		curr = yield
-		startj,starti = curr.row,curr.col
-		lasti = curr.col
+	def matcher(self):
+		self.curr = yield
+		startj,starti = self.curr.row,self.curr.col
 		rowcount = 0
-		curr = yield self._expect(curr,"/")
-		curr = yield self._expect(curr,"\\")
+		self.curr = yield self.expect("/")
+		self.curr = yield self.expect("\\")
 		while True:
-			while curr.col!=lasti-1: curr = yield M_NONE
-			if curr.char != "/": break
+			for meta in self.await_pos(-1,1):
+				self.curr = yield meta
+			if self.curr.char != "/": break
 			rowcount += 1
-			curr = yield self._expect(curr,"/")
-			for n in range(rowcount*2): curr = yield M_NONE
-			curr = yield self._expect(curr,"\\")
-			lasti -= 1
-		curr = yield M_NONE
+			self.curr = yield self.expect("/")
+			for meta in self.await_pos(rowcount*2,0):
+				self.curr = yield meta
+			self.curr = yield self.expect("\\")
+		self.curr = yield M_NONE
 		w = rowcount*2 + 2
 		h = (rowcount+1) * 2
 		while rowcount >= 0:
-			curr = yield self._expect(curr,"\\")
-			for n in range(rowcount*2): curr = yield M_NONE
-			curr = yield self._expect(curr,"/")
-			if rowcount > 0: 
-				while curr.col!=lasti+1: curr = yield M_NONE
-			lasti += 1
+			self.curr = yield self.expect("\\")
+			for meta in self.await_pos(rowcount*2,0):
+				self.curr = yield meta
+			self.curr = yield self.expect("/")			
+			for meta in self.await_pos(0,1):
+				self.curr = yield meta
 			rowcount -= 1			
 		self.tl = (starti-(w/2-1),startj)
 		self.br = (starti+(w/2),startj+(h-1))		
@@ -243,36 +255,37 @@ class DbCylinderPattern(Pattern):
 	tl = None
 	br = None
 	
-	def _matcher(self):
+	def matcher(self):
 		w,h = 0,0
-		curr = yield
-		self.tl = (curr.col,curr.row)
-		curr = yield self._expect(curr,".")
-		curr = yield self._expect(curr,"-")
-		while True:
-			if curr.char == ".": break
-			curr = yield self._expect(curr,"-")
-		w = curr.col-self.tl[0]+1
-		curr = yield self._expect(curr,".")
-		while curr.col!=self.tl[0]: curr = yield M_NONE
-		curr = yield self._expect(curr,"'")
+		self.curr = yield
+		self.tl = (self.curr.col,self.curr.row)
+		self.curr = yield self.expect(".")
+		self.curr = yield self.expect("-")
+		while self.curr.char != ".":
+			self.curr = yield self.expect("-")
+		w = self.curr.col-self.tl[0]+1
+		self.curr = yield self.expect(".")
+		for meta in self.await_pos(0,1):
+			self.curr = yield meta
+		self.curr = yield self.expect("'")
 		for n in range(w-2):
-			curr = yield self._expect(curr,"-")
-		curr = yield self._expect(curr,"'")
-		while curr.col!=self.tl[0]: curr = yield M_NONE
+			self.curr = yield self.expect("-")
+		self.curr = yield self.expect("'")
+		for meta in self.await_pos(0,1):
+			self.curr = yield meta
 		while True:	
-			curr = yield self._expect(curr,"|")
-			for n in range(w-2):
-				curr = yield M_NONE
-			curr = yield self._expect(curr,"|")
-			while curr.col!=self.tl[0]:
-				curr = yield M_NONE
-			if curr.char == "'": break
-		curr = yield self._expect(curr,"'")
+			self.curr = yield self.expect("|")
+			for meta in self.await_pos(w-2,0):
+				self.curr = yield meta
+			self.curr = yield self.expect("|")
+			for meta in self.await_pos(0,1):
+				self.curr = yield meta
+			if self.curr.char == "'": break
+		self.curr = yield self.expect("'")
 		for n in range(w-2):
-			curr = yield self._expect(curr,"-")
-		self.br = (curr.col,curr.row)
-		curr = yield self._expect(curr,"'")
+			self.curr = yield self.expect("-")
+		self.br = (self.curr.col,self.curr.row)
+		self.curr = yield self.expect("'")
 		return
 		
 	def render(self):
@@ -295,29 +308,31 @@ class BoxPattern(Pattern):
 	tl = None
 	br = None
 	
-	def _matcher(self):
+	def matcher(self):
 		w,h = 0,0
 		curr = yield
-		self.tl = (curr.col,curr.row)
-		curr = yield self._expect(curr,"+")
-		curr = yield self._expect(curr,"-")
+		self.tl = (self.curr.col,self.curr.row)
+		self.curr = yield self.expect("+")
+		self.curr = yield self.expect("-")
+		while self.curr.char != "+":
+			self.curr = yield self.expect("-")
+		w = self.curr.col-self.tl[0]+1
+		self.curr = yield self.expect("+")
+		for meta in self.await_pos(0,1):
+			self.curr = yield meta
 		while True:
-			if curr.char == "+": break
-			curr = yield self._expect(curr,"-")
-		w = curr.col-self.tl[0]+1
-		curr = yield self._expect(curr,"+")
-		while curr.col!=self.tl[0]: curr = yield M_NONE
-		while True:
-			curr = yield self._expect(curr,"|")
-			for n in range(w-2): curr = yield M_NONE
-			curr = yield self._expect(curr,"|")
-			while curr.col!=self.tl[0]: curr = yield M_NONE
-			if curr.char == "+": break
-		curr = yield self._expect(curr,"+")
+			self.curr = yield self.expect("|")
+			for meta in self.await_pos(w-2,0):
+				self.curr  yield meta
+			self.curr = yield self.expect("|")
+			for meta in self.await_pos(0,1):
+				self.curr = yield meta
+			if self.curr.char == "+": break
+		self.curr = yield self.expect("+")
 		for n in range(w-2):
-			curr = yield self._expect(curr,"-")
-		self.br = (curr.col,curr.row)
-		curr = yield self._expect(curr,"+")
+			self.curr = yield self.expect("-")
+		self.br = (self.curr.col,self.curr.row)
+		self.curr = yield self.expect(self.curr,"+")
 		return
 		
 	def render(self):
@@ -328,56 +343,67 @@ class BoxPattern(Pattern):
 			
 class LineSqCornerPattern(Pattern):
 	
-	def _matcher(self):
-		curr = yield
-		if( curr.char == "+" and not curr.meta & M_OCCUPIED 
-				and curr.meta & M_LINE_SQ_CORNER):
+	def matcher(self):
+		self.curr = yield
+		if( self.curr.char == "+" and not self.occupied()
+				and self.curr.meta & M_LINE_SQ_CORNER):
 			yield M_OCCUPIED
 		else:
 			self._reject()
 		return 
 
 
-class UpDiagLinePattern(Pattern):
-	
+class LinePattern(Pattern):
+
 	END_NORMAL = object()
-	END_CORNER = object()
-	
+	END_CENTRE = object()
+	END_ARROW = object()
+
+	xdir = 0	
+	ydir = 0
+	linechar = None
 	startpos = None
 	starttype = None
 	endpos = None
 	endtype = None
+
 	
-	def _matcher(self):
-		curr = yield
-		self.startpos = (curr.col,curr.row)
-		self.starttype = UpDiagLinePattern.END_NORMAL
-		if curr.char == "+":
-			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
-				self.starttype = UpDiagLinePattern.END_CORNER
-				curr = yield M_LINE_SQ_CORNER
-				while self._awaiting_char_below(curr,(self.startpos[0]-1,self.startpos[1])):
-					curr = yield M_NONE
-				if curr.col != self.startpos[0]-1:
-					self._reject()
+	def matcher(self):
+		self.curr = yield
+		self.startpos = (self.curr.col,self.curr.row)
+		self.starttype = LinePattern.END_NORMAL
+		if self.curr.char == "+":
+			if not self.occupied() or self.curr.meta & M_LINE_SQ_CORNER:
+				self.starttype = LinePattern.END_CENTRE
+				self.curr = yield M_LINE_SQ_CORNER
+				for meta in self.await_pos(self.xdir,self.ydir):
+					self.curr = yield meta	
 			else:
 				self._reject()
-		pos = curr.col,curr.row
-		curr = yield self._expect(curr,"/")
+		pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect(linechar)
 		while True:
-			while self._awaiting_char_below(curr,(pos[0]-1,pos[1])):
-				curr = yield M_NONE
-			if curr.col != pos[0]-1 or curr.char != "/": break
-			pos = curr.col,curr.row
-			curr = yield self._expect(curr,"/")
-		self.endtype = UpDiagLinePattern.END_NORMAL
+			try:
+				for meta in self.await_pos(self.xdir,self.ydir):
+					self.curr = yield meta
+				if self.curr.char != "/": break
+			except NoSuchPosition: break
+			pos = self.curr.col,self.curr.row
+			self.curr = yield self.expect(self.linechar)
+		self.endtype = LinePattern.END_NORMAL
 		self.endpos = pos
-		if curr.char == "+" and curr.col == pos[0]-1:
-			if not self._occupied(curr) or curr.meta & M_LINE_SQ_CORNER:
-				self.endtype = UpDiagLinePattern.END_CORNER
-				self.endpos = (curr.col,curr.row)
+		if self.curr.char == "+" and self.curr.col == pos[0]-1:
+			if not self.occupied() or curr.meta & M_LINE_SQ_CORNER:
+				self.endtype = LinePattern.END_CORNER
+				self.endpos = (self.curr.col,self.curr.row)
 				curr = yield M_LINE_SQ_CORNER
 		return
+
+
+class UpDiagLinePattern(Pattern):
+	
+	
+	
 		
 	def render(self):
 		Pattern.render(self)
@@ -678,7 +704,7 @@ MiniOreos Oranges O O O test
 	for pclass in PATTERNS:
 		ongoing = MatchLookup()	
 		for j,line in enumerate((INPUT+END_OF_INPUT).splitlines()):
-			for i,char in enumerate(line):	
+			for i,char in enumerate(line+"\n"):	
 				meta = complete_meta.get((j,i),M_NONE)
 				newp = pclass()
 				ongoing.add_match(newp)

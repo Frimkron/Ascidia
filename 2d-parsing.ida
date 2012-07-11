@@ -444,3 +444,27 @@ What to use for lines like this?    +    '    .    :  Require the colon?
  \     /
   '---'
 
+g.send(input) -> output
+
+g = gen()
+g.next()
+while True:
+	curr = yield g.send(curr)
+
+class Foo(object):
+	getter = None
+	gen = None
+	def __init__(self,gen,getter):
+		self.gen = gen
+		self.getter = getter
+		self.gen.next()
+	def next(self):
+		return self.gen.send(self.getter())
+
+def await(pos):
+	curr = None
+	while curr != pos:
+		curr = yield M_NONE
+
+for meta in Foo(await(pos),getcurr):
+	yield meta
