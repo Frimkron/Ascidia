@@ -468,3 +468,32 @@ def await(pos):
 
 for meta in Foo(await(pos),getcurr):
 	yield meta
+
+'X   'X   'X
+ \   |   /   '--'
+  \  |  /
+   ' ' '  
+.    .    .
+ \   |   /   .--.
+  \  |  /
+   .X.X.X
+
+:    :    :
+ \   |   /   :--:
+  \  |  /
+   : : :
+
+  1 2 3
+   \|/
+  8-:-4 How to draw this rounded corner?
+   /|\  Enumerate all posibilities?
+  7 6 5
+  
+   1 w 2 3 4 5 6 7 8
+   2 w 3 4 5 6 7 8
+   3 w 4 5 6 7 8
+   4 w 5 6 7 8
+   5 w 6 7 8
+   6 w 7 8
+   7 w 8
+       = 28 curves
