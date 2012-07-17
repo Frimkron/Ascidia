@@ -13,6 +13,7 @@ Rectangle = namedtuple("Rectangle","a b z stroke w fill")
 Ellipse = namedtuple("Ellipse", "a b z stroke w fill")
 Arc = namedtuple("Arc","a b z start end stroke w fill")
 Text = namedtuple("Text","pos z text colour size")
+QuadCurve = namedtuple("QuadCurve","a b c z stroke w")
 
 M_NONE = 0
 M_OCCUPIED = (1<<0)
@@ -23,7 +24,14 @@ M_BOX_LEFT = (1<<4)
 M_BOX_RIGHT = (1<<5)
 M_LINE_RD_CORNER_UP = (1<<6)
 M_LINE_RD_CORNER_DN = (1<<7)
-M_LINE = (1<<8)
+M_LINE_N = (1<<8)
+M_LINE_NE = (1<<9)
+M_LINE_E = (1<<10)
+M_LINE_SE = (1<<11)
+M_LINE_S = (1<<12)
+M_LINE_SW = (1<<13)
+M_LINE_W = (1<<14)
+M_LINE_NW = (1<<15)
 
 END_OF_INPUT = "\x00"
 
@@ -111,6 +119,15 @@ class SvgOutput(object):
 			self._x(sx),self._y(sy), self._x(rx),self._y(ry), 
 			1, self._x(ex),self._y(ey)))
 		self._style_attrs(arc,el)
+		parent.appendChild(el)
+		
+	def _do_QuadCurve(self,curve,doc,parent):
+		el = doc.createElement("path")
+		el.setAttribute("d","M %s,%s Q %s,%s %s,%s" % (
+			self._x(curve.a[0]),self._y(curve.a[1]), self._x(curve.c[0]),self._y(curve.c[1]),
+			self._x(curve.b[0]),self._y(curve.b[1]) ))
+		self._style_attrs(curve,el)
+		el.setAttribute("fill","none")
 		parent.appendChild(el)
 		
 	def _do_Text(self,text,doc,parent):
@@ -364,10 +381,12 @@ class LineSqCornerPattern(Pattern):
 class LineRdCornerPattern(Pattern):
 	
 	pos = None
+	ends = None
 	
 	def matcher(self):
 		self.curr = yield
 		self.pos = self.curr.col,self.curr.row
+		meta = self.curr.meta
 		if( self.curr.char == "." and not self.occupied()
 				and self.curr.meta & M_LINE_RD_CORNER_DN):
 			yield M_OCCUPIED
@@ -380,11 +399,30 @@ class LineRdCornerPattern(Pattern):
 			yield M_OCCUPIED
 		else:
 			self.reject()
-		return
+			
+		self.ends = []
+		for m,x,y in [ (M_LINE_N,0,-1), (M_LINE_NE,1,-1),
+						(M_LINE_E,1,0), (M_LINE_SE,1,1),
+						(M_LINE_S,0,1), (M_LINE_SW,-1,1),
+				 		(M_LINE_W,-1,0),(M_LINE_NW,-1,-1) ]:
+			if y < 0 and not meta & M_LINE_RD_CORNER_UP: continue
+			if y > 0 and not meta & M_LINE_RD_CORNER_DN: continue
+			if meta & m: self.ends.append((x,y))
+			
+		return 
 		
 	def render(self):
-		return [ Ellipse((self.pos[0]+0.5-0.4,self.pos[1]+0.5-0.4/CHAR_H_RATIO), 
-				(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), 1, "lime", 1, None) ]
+		centre = self.pos[0]+0.5,self.pos[1]+0.5
+		retval = []
+		rest = self.ends[:]
+		while len(rest)>0:
+			end = rest[0]
+			rest = rest[1:]
+			for oth in rest:
+				a = centre[0]+end[0], centre[1]+end[1]
+				b = centre[0]+oth[0], centre[1]+oth[1]
+				retval.append( QuadCurve(a,b,centre,1,"blue",1) )				
+		return retval
 
 
 class LinePattern(Pattern):
@@ -400,7 +438,8 @@ class LinePattern(Pattern):
 	starttype = None
 	endpos = None
 	endtype = None
-
+	startmeta = None
+	endmeta = None
 	
 	def matcher(self):
 		self.curr = yield
@@ -410,21 +449,21 @@ class LinePattern(Pattern):
 			if not self.occupied() or self.curr.meta & M_LINE_SQ_CORNER:
 				self.starttype = LinePattern.END_CENTRE
 				self.startpos = (self.curr.col,self.curr.row)
-				self.curr = yield M_LINE_SQ_CORNER
+				self.curr = yield M_LINE_SQ_CORNER | self.startmeta
 				for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 					self.curr = yield meta	
 			else: self.reject()
 		elif self.curr.char == "'" and self.ydir == 0:
 			if not self.occupied() or self.curr.meta & M_LINE_RD_CORNER_UP:
 				self.starttype = LinePattern.END_CENTRE
-				self.curr = yield M_LINE_RD_CORNER_UP
+				self.curr = yield M_LINE_RD_CORNER_UP | self.startmeta
 				for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 					self.curr = yield meta
 			else: self.reject()
 		elif self.curr.char == ".":
 			if not self.occupied() or self.curr.meta & M_LINE_RD_CORNER_DN:
 				self.starttype = LinePattern.END_CENTRE
-				self.curr = yield M_LINE_RD_CORNER_DN
+				self.curr = yield M_LINE_RD_CORNER_DN | self.startmeta
 				for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 					self.curr = yield meta
 			else: self.reject()
@@ -432,40 +471,40 @@ class LinePattern(Pattern):
 			if not self.occupied() or (self.curr.meta & M_LINE_RD_CORNER_UP
 					and self.curr.meta & M_LINE_RD_CORNER_DN):
 				self.starttype = LinePattern.END_CENTRE
-				self.curr = yield M_LINE_RD_CORNER_UP | M_LINE_RD_CORNER_DN
+				self.curr = yield M_LINE_RD_CORNER_UP | M_LINE_RD_CORNER_DN | self.startmeta
 				for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 					self.curr = yield meta
 			else: self.reject()
 		pos = self.curr.col,self.curr.row
 		if self.startpos is None: self.startpos = pos
-		self.curr = yield self.expect(self.linechar,meta=M_OCCUPIED|M_LINE)
+		self.curr = yield self.expect(self.linechar,meta=M_OCCUPIED|self.startmeta|self.endmeta)
 		try:
 			while True:
 				for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 					self.curr = yield meta
 				if self.curr.char != self.linechar: break
 				pos = self.curr.col,self.curr.row
-				self.curr = yield self.expect(self.linechar,meta=M_OCCUPIED|M_LINE)
+				self.curr = yield self.expect(self.linechar,meta=M_OCCUPIED|self.startmeta|self.endmeta)
 			self.endtype = LinePattern.END_NORMAL
 			self.endpos = pos
 			if self.curr.char == "+":
 				if not self.occupied() or curr.meta & M_LINE_SQ_CORNER:
 					self.endtype = LinePattern.END_CENTRE
 					self.endpos = (self.curr.col,self.curr.row)
-					self.curr = yield M_LINE_SQ_CORNER
+					self.curr = yield M_LINE_SQ_CORNER | self.endmeta
 			elif self.curr.char == "'":
 				if not self.occupied() or curr.meta & M_LINE_RD_CORNER_UP:
 					self.endtype = LinePattern.END_CENTRE
-					self.curr = yield M_LINE_RD_CORNER_UP
+					self.curr = yield M_LINE_RD_CORNER_UP | self.endmeta
 			elif self.curr.char == "." and self.ydir == 0:
 				if not self.occupied() or curr.meta & M_LINE_RD_CORNER_DN:
 					self.endtype = LinePattern.END_CENTRE
-					self.curr = yield M_LINE_RD_CORNER_DN
+					self.curr = yield M_LINE_RD_CORNER_DN | self.endmeta
 			elif self.curr.char == ":":
 				if not self.occupied() or (curr.meta & M_LINE_RD_CORNER_UP
 						and curr.meta & M_LINE_RD_CORNER_DN):
 					self.endtype = LinePattern.END_CENTRE
-					self.curr = yield M_LINE_RD_CORNER_UP | M_LINE_RD_CORNER_DN
+					self.curr = yield M_LINE_RD_CORNER_UP | M_LINE_RD_CORNER_DN | self.endmeta
 		except NoSuchPosition:
 			self.endtype = LinePattern.END_NORMAL
 			self.endpos = pos
@@ -489,6 +528,8 @@ class UpDiagLinePattern(LinePattern):
 	xdir = -1
 	ydir = 1
 	linechar = "/"
+	startmeta = M_LINE_SW
+	endmeta = M_LINE_NE
 	
 		
 class DownDiagLinePattern(LinePattern):
@@ -496,6 +537,8 @@ class DownDiagLinePattern(LinePattern):
 	xdir = 1
 	ydir = 1
 	linechar = "\\"	
+	startmeta = M_LINE_SE
+	endmeta = M_LINE_NW
 		
 	
 class VertLinePattern(LinePattern):
@@ -503,6 +546,8 @@ class VertLinePattern(LinePattern):
 	xdir = 0
 	ydir = 1
 	linechar = "|"
+	startmeta = M_LINE_S
+	endmeta = M_LINE_N
 	
 	
 class HorizLinePattern(LinePattern):
@@ -510,6 +555,8 @@ class HorizLinePattern(LinePattern):
 	xdir = 1
 	ydir = 0
 	linechar = "-"
+	startmeta = M_LINE_E
+	endmeta = M_LINE_W
 
 
 class TinyCirclePattern(Pattern):
@@ -627,17 +674,17 @@ if __name__ == "__main__":
 
 	INPUT = """\
 MiniOreos Oranges O O O test
-+---+  +-<>  ---+ +-------+ .-----.  /`
-| O |  |  +------+| +---+ | '-----' //``     + + +- 
-+---+--+ O| ***  || |(*)| |-| --- | ``//    /|/| |
-/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +- 
-    +--+   .--.   +-------+ '-----' /` | |  + +  |
-() (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '  
-  (  )   ` |  | `/  --- ---+    | // ` `      +    `
-   (   )  +'--'    +---+ --+--+-+ `   +/ +---.      :
-          |        ||-`-`     | |  ` //   `   `    /
-                   +-----+      |   `/     .   '--'
-                                           |""".replace("`","\\")
++---+  +-<>  ---+ +-------+ .-----.  /`                  .     .
+| O |  |  +------+| +---+ | '-----' //``     + + +--.   /|    /|
++---+--+ O| ***  || |(*)| |-| --- | ``//    /|/| |   `|/ '---' |
+/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :
+    +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /
+() (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'
+  (  )   ` |  | `/  --- ---+    | // ` `      +    `   \ /
+   (   )  +'--'    +---+ --+--+-+ `   +/ +---.      :   :
+          |        ||-`-`     | |  ` //   `   `    /    |
+       .--'        +-----+      |   `/     .   '--'
+      /                                    |""".replace("`","\\")
 	
 #	INPUT = """\
 # +
