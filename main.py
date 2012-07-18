@@ -1,5 +1,3 @@
-# TODO: create curved corner pattern
-
 import xml.dom
 import xml.dom.minidom
 import math
@@ -169,8 +167,8 @@ class Pattern(object):
 	def occupied(self):
 		return self.curr.meta & M_OCCUPIED
 		
-	def expect(self,char,meta=M_OCCUPIED):
-		if self.occupied() or self.curr.char != char:
+	def expect(self,chars,meta=M_OCCUPIED):
+		if self.occupied() or not self.curr.char in chars:
 			self.reject()
 		else:
 			return meta		
@@ -337,27 +335,27 @@ class BoxPattern(Pattern):
 		w,h = 0,0
 		self.curr = yield
 		self.tl = (self.curr.col,self.curr.row)
-		self.curr = yield self.expect("+")
-		self.curr = yield self.expect("-")
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_TOP|M_BOX_LEFT)
+		self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_TOP)
 		while self.curr.char != "+":
-			self.curr = yield self.expect("-")
+			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_TOP)
 		w = self.curr.col-self.tl[0]+1
-		self.curr = yield self.expect("+")
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_TOP|M_BOX_RIGHT)
 		for meta in self.await_pos(self.offset(-w,1)): 
 			self.curr = yield meta
 		while True:
-			self.curr = yield self.expect("|")
+			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_LEFT)
 			for meta in self.await_pos(self.offset(w-2,0)):
 				self.curr = yield meta
-			self.curr = yield self.expect("|")
+			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_RIGHT)
 			for meta in self.await_pos(self.offset(-w,1)):
 				self.curr = yield meta
 			if self.curr.char == "+": break
-		self.curr = yield self.expect("+")
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_LEFT|M_BOX_BOTTOM)
 		for n in range(w-2):
-			self.curr = yield self.expect("-")
+			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_BOTTOM)
 		self.br = (self.curr.col,self.curr.row)
-		self.curr = yield self.expect("+")
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_BOTTOM|M_BOX_RIGHT)
 		return
 		
 	def render(self):
@@ -425,11 +423,130 @@ class LineRdCornerPattern(Pattern):
 		return retval
 
 
+class LArrowheadPattern(Pattern):
+
+	pos = None
+	tobox = False
+	
+	def matcher(self):
+		self.curr = yield
+		if self.curr.meta & M_BOX_RIGHT:
+			self.tobox = True
+			self.curr = yield M_NONE
+		self.pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect("<")
+		if not self.curr.meta & M_LINE_E:
+			self.reject()
+		return
+
+	def render(self):
+		xoff = -0.5 if self.tobox else 0
+		return [
+			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1),
+			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1),
+			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),1,"darkred",1) ]
+	
+	
+class RArrowheadPattern(Pattern):
+	
+	pos = None
+	tobox = False
+	
+	def matcher(self):
+		self.curr = yield
+		if not self.curr.meta & M_LINE_W:
+			self.reject()
+		self.curr = yield M_NONE
+		self.pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect(">")
+		if self.curr.meta & M_BOX_LEFT:
+			self.tobox = True
+		return 
+		
+	def render(self):
+		xoff = 0.5 if self.tobox else 0
+		return [
+			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1),
+			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1),
+			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0+xoff,self.pos[1]+0.5),1,"darkred",1) ]
+
+
+class DArrowheadPattern(Pattern):
+
+	pos = None
+	tobox = False
+	
+	def matcher(self):
+		self.curr = yield
+		startpos = self.curr.col,self.curr.row
+		if not self.curr.meta & M_LINE_S:
+			self.reject()
+		try:
+			for meta in self.await_pos(self.offset(-1,1,startpos)):
+				self.curr = yield meta
+			if self.curr.char.isalpha(): self.reject()
+			self.curr = yield M_NONE
+		except NoSuchPosition: pass
+		for meta in self.await_pos(self.offset(0,1,startpos)):
+			self.curr = yield meta
+		self.pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect("vV")
+		try:
+			for meta in self.await_pos(self.offset(1,1,startpos)):
+				self.curr = yield meta
+			if self.curr.char.isalpha(): self.reject()		
+			self.curr = yield M_NONE
+		except NoSuchPosition: pass
+		try:
+			for meta in self.await_pos(self.offset(0,2,startpos)):
+				self.curr = yield meta
+			if self.curr.meta & M_BOX_TOP:
+				self.tobox = True
+		except NoSuchPosition: pass
+		return 
+		
+	def render(self):
+		yoff = 0.5 if self.tobox else 0
+		return [
+			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0],self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
+			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0]+1.0,self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
+			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0+yoff),1,"darkred",1) ]
+
+
+class UArrowheadPattern(Pattern):
+	
+	pos = None
+	tobox = False
+	
+	def matcher(self):
+		self.curr = yield
+		if self.curr.meta & M_BOX_BOTTOM:
+			startpos = self.curr.col,self.curr.row
+			self.tobox = True
+			for meta in self.await_pos(self.offset(0,1,startpos)):
+				self.curr = yield meta
+		else:
+			startpos = self.curr.col,self.curr.row-1
+		self.pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect("^")
+		for meta in self.await_pos(self.offset(0,2,startpos)):
+			self.curr = yield meta
+		if not self.curr.meta & M_LINE_S:
+			self.reject()
+		return
+		
+	def render(self):
+		yoff = -0.5 if self.tobox else 0
+		return [
+			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
+			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
+			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1) ]
+
+
 class LinePattern(Pattern):
 
 	END_NORMAL = object()
 	END_CENTRE = object()
-	END_ARROW = object()
 
 	xdir = 0	
 	ydir = 0
@@ -617,6 +734,10 @@ PATTERNS = [
 	DownDiagLinePattern,
 	LineSqCornerPattern,
 	LineRdCornerPattern,
+	LArrowheadPattern,
+	RArrowheadPattern,
+	DArrowheadPattern,
+	UArrowheadPattern,
 	LiteralPattern
 ]
 
@@ -673,18 +794,18 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 if __name__ == "__main__":
 
 	INPUT = """\
-MiniOreos Oranges O O O test
-+---+  +-<>  ---+ +-------+ .-----.  /`                  .     .
-| O |  |  +------+| +---+ | '-----' //``     + + +--.   /|    /|
-+---+--+ O| ***  || |(*)| |-| --- | ``//    /|/| |   `|/ '---' |
+MiniOreos Oranges O O O test  --> -->--><-       | .-            ^/
++---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-'
+| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /|
++---+--+ O| ***  || |(*)| |-| --- | ``//v   /|/| |   `|/ '---' |
 /`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :
     +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /
 () (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'
-  (  )   ` |  | `/  --- ---+    | // ` `      +    `   \ /
-   (   )  +'--'    +---+ --+--+-+ `   +/ +---.      :   :
-          |        ||-`-`     | |  ` //   `   `    /    |
-       .--'        +-----+      |   `/     .   '--'
-      /                                    |""".replace("`","\\")
+  (  )   ` |  | `/  --- ---+    | // ` ` -<-  +    `   ` / +--+
+ v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<--
+   |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+
+ love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^
+      /       |            aV   Vote       |    ^   | |     | """.replace("`","\\")
 	
 #	INPUT = """\
 # +
