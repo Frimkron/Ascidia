@@ -501,3 +501,60 @@ for meta in Foo(await(pos),getcurr):
 \ | /
 -   -
 / | \
+
+Line meta flags are used to describe where adjoining lines are for corner spaces.
+So they can't be used to decide where arrowheads are valid, because they are only
+set where fullblown lines have been established.
+
+Square corners are placed on +'s with the square corner flag set. They don't need 
+line meta flags to be set. 4-way line meta flags could be set to allow arrowheads.
+Round corners are placed on ' . or : where the round corner flag is set. They rely
+on line meta flags to decide what curves to draw. Could set line metadata for 
+unattached curves, allowing arrowheads.
+
+[!]               .--   .-
+So what about:  --'    .'  
+.                     -'
+And what about: <-.OK <-.OK <.OK <.FAIL
+                  |     v    |    v
+                  v          v
+                  
+Currently corners are defined by lines encountering corner characters.
+But we'd like to be able to attach arrowheads to corners as if they were line 
+endings in their own right.
+
+[?] Under what circumstances do we consider . ' or : to be a corner? Must it be 
+attached to a line?
+
+   ..    Can't have corners defined in terms of other corners because this
+  .''.   would be a recursive definition. Lines have to be the hint. But
+ .'/\'.  are they the only hint?
+ '.\/.'
+  '..'   Should arrows be part of the line pattern? -->--
+   ''    This would make sure arrows were definitely lines, allowing them to
+         attach to corners.
+         
+  >-->-->. 
+         |
+        <'>
+ 
+[*] It would greatly simply things if corners and line endings both required
+  honest-to-goodness line segments to be present.
+- should probably disallow corners that only connect to a single line.
+
+[*] Line segments could drop a hint via a meta flag to indicate the space after
+  their end.
+- Square corners would use this to draw themselves - only match where more than one line end
+- Round corners would use this to draw themselves - only match where more than one line end
+- Arrowheads would use this to decide where they're valid
+
+Lines behave in a simpler way now, I suppose. But I liked the curvyness of curved
+corners curving from the centre of adjacent lines.
+Previously lines knew when a corner was coming up and ended in the centre of the space
+in preparation.
+
++---+---+  +---+---+  Oh well.
+|   |_.-|  |  .----|
++---+---+  +-:-+---+
+| .'|  vs  | | |
++-|-+      +-|-+
