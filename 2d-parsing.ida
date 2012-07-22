@@ -572,3 +572,35 @@ in preparation.
 +---+---+  +-:-+---+
 | .'|  vs  | | |
 +-|-+      +-|-+
+
+Down arrows require that if there is a character to the left or right, it is non-alphbetic, 
+to avoid arrow insertion in the middle of words.
+
+[!] Down arrow pattern makes left context optional. But requiring a left character means 
+  arrow can't exist of left edge
+- as luck would have it, down arrow can't exist without a line before it. So we can demand 
+  the presence of a prior character, whether this is a linebreak or whatever
+
+Diagonal dotted lines?
+    +
+   , `
+  ,   `            +'''''''''+    +- - - - - -+   +- +  +- - - -+
+ ,     `           :         :    '           '  ,   '  |       |
++       +.....>    :         :    '           ' ,    '        
+:                  :         :    '           ',     '  |       |
+:                  +.........+    +- - - - - -+      v  +- - - -+
+v
+
+Bugger. Apostraphes as vertical dashed lines *and* rounded corners make things way too
+ambiguous. Use periods instead? Same problem!
+                                                                         '      
+.--.  ' .  How could dashed lines have rounded corners then, anyway?     '
+|  |  ' .                                                                '- - - 
+'--'  ' .  
+
+Use colons instead? They're still rounded corners!
+
+- - -.
+     :
+     :---
+     :

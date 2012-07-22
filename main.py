@@ -1,4 +1,3 @@
-# TODO: re-work arrowheads, reenable
 
 import xml.dom
 import xml.dom.minidom
@@ -445,7 +444,7 @@ class LineRdCornerPattern(Pattern):
 				retval.append( QuadCurve(a,b,centre,1,"pink",1) )				
 		return retval
 
-"""	
+
 class LArrowheadPattern(Pattern):
 
 	pos = None
@@ -457,8 +456,10 @@ class LArrowheadPattern(Pattern):
 			self.tobox = True
 			self.curr = yield M_NONE
 		self.pos = self.curr.col,self.curr.row
-		self.curr = yield self.expect("<")
-		if not self.curr.meta & M_LINE_E:
+		if( not self.occupied() and self.curr.char == "<" 
+				and self.curr.meta & M_LINE_END_E ):
+			yield M_OCCUPIED
+		else:
 			self.reject()
 		return
 
@@ -469,7 +470,7 @@ class LArrowheadPattern(Pattern):
 			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1),
 			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),1,"darkred",1) ]
 	
-	
+		
 class RArrowheadPattern(Pattern):
 	
 	pos = None
@@ -477,13 +478,15 @@ class RArrowheadPattern(Pattern):
 	
 	def matcher(self):
 		self.curr = yield
-		if not self.curr.meta & M_LINE_W:
-			self.reject()
-		self.curr = yield M_NONE
 		self.pos = self.curr.col,self.curr.row
-		self.curr = yield self.expect(">")
+		if( not self.occupied() and self.curr.char == ">" 
+				and self.curr.meta & M_LINE_END_W ):
+			self.curr = yield M_OCCUPIED
+		else:
+			self.reject()
+			
 		if self.curr.meta & M_BOX_LEFT:
-			self.tobox = True
+			self.tobox = True		
 		return 
 		
 	def render(self):
@@ -501,32 +504,33 @@ class DArrowheadPattern(Pattern):
 	
 	def matcher(self):
 		self.curr = yield
-		startpos = self.curr.col,self.curr.row
-		if not self.curr.meta & M_LINE_S:
+		# left context
+		# expect presence of prior character. This still works on left edge
+		# because it'll use the previous linebreak, and down arrows must have
+		# a previous line to have a line to connect to
+		if self.curr.char.isalpha(): self.reject()
+		self.curr = yield M_NONE
+		# main
+		if( not self.occupied() and self.curr.char in ("vV")
+				and self.curr.meta & M_LINE_END_N ):
+			self.pos = self.curr.col,self.curr.row
+			self.curr = yield M_OCCUPIED
+		else:
 			self.reject()
+		# right context
 		try:
-			for meta in self.await_pos(self.offset(-1,1,startpos)):
+			for meta in self.await_pos(self.offset(1,0,self.pos)):
 				self.curr = yield meta
 			if self.curr.char.isalpha(): self.reject()
-			self.curr = yield M_NONE
 		except NoSuchPosition: pass
-		for meta in self.await_pos(self.offset(0,1,startpos)):
-			self.curr = yield meta
-		self.pos = self.curr.col,self.curr.row
-		self.curr = yield self.expect("vV")
+		# under context
 		try:
-			for meta in self.await_pos(self.offset(1,1,startpos)):
-				self.curr = yield meta
-			if self.curr.char.isalpha(): self.reject()		
-			self.curr = yield M_NONE
-		except NoSuchPosition: pass
-		try:
-			for meta in self.await_pos(self.offset(0,2,startpos)):
+			for meta in self.await_pos(self.offset(0,1,self.pos)):
 				self.curr = yield meta
 			if self.curr.meta & M_BOX_TOP:
 				self.tobox = True
 		except NoSuchPosition: pass
-		return 
+		return
 		
 	def render(self):
 		yoff = 0.5 if self.tobox else 0
@@ -551,10 +555,10 @@ class UArrowheadPattern(Pattern):
 		else:
 			startpos = self.curr.col,self.curr.row-1
 		self.pos = self.curr.col,self.curr.row
-		self.curr = yield self.expect("^")
-		for meta in self.await_pos(self.offset(0,2,startpos)):
-			self.curr = yield meta
-		if not self.curr.meta & M_LINE_S:
+		if( not self.occupied() and self.curr.char == "^"
+				and self.curr.meta & M_LINE_END_S ):
+			yield M_OCCUPIED
+		else:
 			self.reject()
 		return
 		
@@ -564,7 +568,7 @@ class UArrowheadPattern(Pattern):
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1) ]
-"""
+
 
 class LinePattern(Pattern):
 
@@ -613,6 +617,14 @@ class UpDiagLinePattern(LinePattern):
 	linechar = "/"
 	startmeta = M_LINE_END_SW
 	endmeta = M_LINE_END_NE
+
+class UpDiagDashedLinePattern(LinePattern):
+	
+	xdir = -1
+	ydir = 1
+	linechar = ","
+	startmeta = M_LINE_END_SW
+	endmeta = M_LINE_END_NE
 	
 		
 class DownDiagLinePattern(LinePattern):
@@ -623,12 +635,30 @@ class DownDiagLinePattern(LinePattern):
 	startmeta = M_LINE_END_SE
 	endmeta = M_LINE_END_NW
 		
+		
+class DownDiagDashedLinePattern(LinePattern):
 	
+	xdir = 1
+	ydir = 1
+	linechar = "`"
+	startmeta = M_LINE_END_SE
+	endmeta = M_LINE_END_NW
+	
+		
 class VertLinePattern(LinePattern):
 
 	xdir = 0
 	ydir = 1
 	linechar = "|"
+	startmeta = M_LINE_END_S
+	endmeta = M_LINE_END_N
+	
+	
+class VertDashedLinePattern(LinePattern):
+
+	xdir = 0
+	ydir = 1
+	linechar = "'"
 	startmeta = M_LINE_END_S
 	endmeta = M_LINE_END_N
 	
@@ -696,14 +726,17 @@ PATTERNS = [
 	TinyCirclePattern,
 	HorizLinePattern,
 	VertLinePattern,
+	VertDashedLinePattern,
 	UpDiagLinePattern,
+	UpDiagDashedLinePattern,
 	DownDiagLinePattern,
+	DownDiagDashedLinePattern,
 	LineSqCornerPattern,
 	LineRdCornerPattern,
-	#LArrowheadPattern,
-	#RArrowheadPattern,
-	#DArrowheadPattern,
-	#UArrowheadPattern,
+	LArrowheadPattern,
+	RArrowheadPattern,
+	DArrowheadPattern,
+	UArrowheadPattern,
 	LiteralPattern
 ]
 
@@ -760,10 +793,10 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 if __name__ == "__main__":
 
 	INPUT = """\
-MiniOreos Oranges O O O test  --> -->--><-       | .-            ^
-+---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-'
-| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /|
-+---+--+ O| ***  || |(*)| |-| --- | ``//v   /|/| |   `|/ '---' |
+MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,
++---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',
+| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,
++---+--+ O| ***  || |(*)| |-| --- | ``//v   /|/| |   `|/ '---' |,
 /`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :
     +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /  ^
 () (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'---+>
@@ -782,6 +815,7 @@ MiniOreos Oranges O O O test  --> -->--><-       | .-            ^
 	complete_matches = []
 	complete_meta = {}
 	for pclass in PATTERNS:
+		print pclass.__name__
 		ongoing = MatchLookup()	
 		for j,line in enumerate((INPUT+END_OF_INPUT).splitlines()):
 			for i,char in enumerate(line+"\n"):	
