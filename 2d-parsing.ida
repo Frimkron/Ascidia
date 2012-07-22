@@ -444,6 +444,20 @@ What to use for lines like this?    +    '    .    :  Require the colon?
  \     /
   '---'
 
+Curve of corner line is dependent on the surrounding lines. Would have to draw them in
+separately in the corner pass.
+
+
+[H] . [H]   becomes  .._   _..
+   [V]                  '.'
+
+      [D]                  .'
+[H] '       becomes   ...-'
+
+   [V]                    .'.
+[H] : [H]   becomes   --=:   :=-
+   [V]                    '.'
+
 g.send(input) -> output
 
 g = gen()
