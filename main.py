@@ -4,15 +4,19 @@ import xml.dom.minidom
 import math
 from collections import defaultdict
 from collections import namedtuple
+import random
 
 CHAR_H_RATIO = 2.0
 
-Line = namedtuple("Line","a b z stroke w")
-Rectangle = namedtuple("Rectangle","a b z stroke w fill")
-Ellipse = namedtuple("Ellipse", "a b z stroke w fill")
-Arc = namedtuple("Arc","a b z start end stroke w fill")
+Line = namedtuple("Line","a b z stroke w stype")
+Rectangle = namedtuple("Rectangle","a b z stroke w stype fill")
+Ellipse = namedtuple("Ellipse", "a b z stroke w stype fill")
+Arc = namedtuple("Arc","a b z start end stroke w stype fill")
 Text = namedtuple("Text","pos z text colour size")
-QuadCurve = namedtuple("QuadCurve","a b c z stroke w")
+QuadCurve = namedtuple("QuadCurve","a b c z stroke w stype")
+
+STROKE_SOLID = object()
+STROKE_DASHED = object()
 
 M_NONE = 0
 M_OCCUPIED = (1<<0)
@@ -38,6 +42,8 @@ class SvgOutput(object):
 	CHAR_H = CHAR_W * CHAR_H_RATIO
 	STROKE_W = 2.5
 	FONT_SIZE = 16.0
+	#DASH_PATTERN = 10,10
+	DASH_PATTERN = 2,2
 
 	@staticmethod
 	def output(items,stream):
@@ -70,6 +76,10 @@ class SvgOutput(object):
 			el.setAttribute("stroke",self._colour(item.stroke))
 		if hasattr(item,"w"):
 			el.setAttribute("stroke-width",self._w(item.w))
+		if hasattr(item,"stype"):
+			if item.stype == STROKE_DASHED:
+				el.setAttribute("stroke-dasharray",",".join(
+						map(str,SvgOutput.DASH_PATTERN)))
 		if hasattr(item,"fill"):
 			el.setAttribute("fill",self._colour(item.fill))
 			
@@ -157,7 +167,7 @@ class Pattern(object):
 		
 	def matcher(self):
 		yield
-		self.reject()
+ 		self.reject()
 		
 	def reject(self):
 		raise PatternRejected()
@@ -262,13 +272,13 @@ class DiamondPattern(Pattern):
 		h = self.br[1]-self.tl[1]+1
 		return [		
 			Line( (self.tl[0]+w/2.0, self.tl[1]),
-				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1),
+				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID),
 			Line( (self.tl[0]+w/2.0, self.tl[1]),
-				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1),
+				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID),
 			Line( (self.tl[0]+w/2.0, self.br[1]+1.0),
-				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1),
+				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID),
 			Line( (self.tl[0]+w/2.0, self.br[1]+1.0),
-				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1) ]
+				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID) ]
 				
 		
 class DbCylinderPattern(Pattern):
@@ -314,14 +324,14 @@ class DbCylinderPattern(Pattern):
 		return [
 			Ellipse((self.tl[0]+0.5,self.tl[1]+0.5),
 				(self.br[0]+0.5,self.tl[1]+1.0+0.5),
-				1,"purple",1,None),
+				1,"purple",1,STROKE_SOLID,None),
 			Line((self.tl[0]+0.5,self.tl[1]+1.0),
-				(self.tl[0]+0.5,self.br[1]), 1,"purple",1),
+				(self.tl[0]+0.5,self.br[1]), 1,"purple",1,STROKE_SOLID),
 			Line((self.br[0]+0.5,self.tl[1]+1.0),
-				(self.br[0]+0.5,self.br[1]), 1,"purple",1),
+				(self.br[0]+0.5,self.br[1]), 1,"purple",1,STROKE_SOLID),
 			Arc((self.tl[0]+0.5,self.br[1]-1.0+0.5),
 				(self.br[0]+0.5,self.br[1]+0.5),
-				1, 0.0, math.pi, "purple",1,None)	]
+				1, 0.0, math.pi, "purple",1,STROKE_SOLID,None)	]
 				
 
 class BoxPattern(Pattern):
@@ -359,7 +369,7 @@ class BoxPattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [Rectangle((self.tl[0]+0.5,self.tl[1]+0.5),
-			(self.br[0]+0.5,self.br[1]+0.5),1,"red",1,None)]
+			(self.br[0]+0.5,self.br[1]+0.5),1,"red",1,STROKE_SOLID,None)]
 			
 			
 class LineSqCornerPattern(Pattern):
@@ -390,7 +400,8 @@ class LineSqCornerPattern(Pattern):
 		centre = self.pos[0]+0.5,self.pos[1]+0.5
 		retval = []
 		for x,y in self.ends:
-			retval.append( Line(centre,(centre[0]+x*0.5,centre[1]+y*0.5),1,"pink",1) )
+			retval.append( Line(centre,(centre[0]+x*0.5,centre[1]+y*0.5),
+					1,"pink",1,STROKE_SOLID) )
 		return retval
 
 
@@ -441,7 +452,7 @@ class LineRdCornerPattern(Pattern):
 			for oth in rest:
 				a = centre[0]+end[0]*0.5, centre[1]+end[1]*0.5
 				b = centre[0]+oth[0]*0.5, centre[1]+oth[1]*0.5
-				retval.append( QuadCurve(a,b,centre,1,"pink",1) )				
+				retval.append( QuadCurve(a,b,centre,1,"pink",1,STROKE_SOLID) )		
 		return retval
 
 
@@ -466,9 +477,9 @@ class LArrowheadPattern(Pattern):
 	def render(self):
 		xoff = -0.5 if self.tobox else 0
 		return [
-			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1),
-			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1),
-			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),1,"darkred",1) ]
+			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),1,"darkred",1,STROKE_SOLID) ]
 	
 		
 class RArrowheadPattern(Pattern):
@@ -492,9 +503,9 @@ class RArrowheadPattern(Pattern):
 	def render(self):
 		xoff = 0.5 if self.tobox else 0
 		return [
-			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1),
-			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1),
-			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0+xoff,self.pos[1]+0.5),1,"darkred",1) ]
+			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0+xoff,self.pos[1]+0.5),1,"darkred",1,STROKE_SOLID) ]
 
 
 class DArrowheadPattern(Pattern):
@@ -535,9 +546,9 @@ class DArrowheadPattern(Pattern):
 	def render(self):
 		yoff = 0.5 if self.tobox else 0
 		return [
-			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0],self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
-			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0]+1.0,self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
-			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0+yoff),1,"darkred",1) ]
+			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0],self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0]+1.0,self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0+yoff),1,"darkred",1,STROKE_SOLID) ]
 
 
 class UArrowheadPattern(Pattern):
@@ -565,48 +576,65 @@ class UArrowheadPattern(Pattern):
 	def render(self):
 		yoff = -0.5 if self.tobox else 0
 		return [
-			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
-			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1),
-			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1) ]
+			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
+			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1,STROKE_SOLID) ]
 
 
 class LinePattern(Pattern):
 
 	xdir = 0	
 	ydir = 0
-	linechar = None
+	startchars = None
+	midchars = None
 	startpos = None
 	endpos = None
 	startmeta = None
 	endmeta = None
+	stroketype = None
 	
 	def matcher(self):
 		self.curr = yield
 		self.startpos = None
-		if self.curr.char != self.linechar:
+		if self.curr.char != self.startchars[0]:
 			self.curr = yield self.startmeta
 			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 				self.curr = yield meta
 		pos = self.curr.col,self.curr.row
 		self.startpos = pos
-		self.curr = yield self.expect(self.linechar,meta=M_OCCUPIED)
+		r = random.random()
+		for startchar in self.startchars:
+			print r,"expect",startchar
+			self.curr = yield self.expect(startchar,meta=M_OCCUPIED)
+			print r,"got"
 		try:
-			while True:
-				for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-					self.curr = yield meta
-				if self.curr.char != self.linechar: break
-				pos = self.curr.col,self.curr.row
-				self.curr = yield self.expect(self.linechar,meta=M_OCCUPIED)
+			breaknow = False
+			while not breaknow:
+				for i,midchar in enumerate(self.midchars):
+					for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
+						self.curr = yield meta
+					if self.curr.char != midchar: 
+						if i==0: 
+							print r,"graceful end"
+							breaknow = True
+							break
+						else:
+							self.reject()
+					pos = self.curr.col,self.curr.row
+					print r,"expect",midchar
+					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
+					print r,"got"
 			self.endpos = pos
 			yield self.endmeta
 		except NoSuchPosition:
 			self.endpos = pos
+		print r,"matched"
 		return
 		
 	def render(self):
 		Pattern.render(self)
 		return [ Line((self.startpos[0]+0.5+self.xdir*-0.5,self.startpos[1]+0.5+self.ydir*-0.5),
-				(self.endpos[0]+0.5+self.xdir*0.5,self.endpos[1]+0.5+self.ydir*0.5),1,"blue",1) ]
+				(self.endpos[0]+0.5+self.xdir*0.5,self.endpos[1]+0.5+self.ydir*0.5),1,"blue",1,self.stroketype) ]
 		
 
 
@@ -614,62 +642,88 @@ class UpDiagLinePattern(LinePattern):
 	
 	xdir = -1
 	ydir = 1
-	linechar = "/"
+	startchars = ["/"]
+	midchars = startchars
 	startmeta = M_LINE_END_SW
 	endmeta = M_LINE_END_NE
+	stroketype = STROKE_SOLID
+
 
 class UpDiagDashedLinePattern(LinePattern):
 	
 	xdir = -1
 	ydir = 1
-	linechar = ","
+	startchars = [","]
+	midchars = startchars
 	startmeta = M_LINE_END_SW
 	endmeta = M_LINE_END_NE
+	stroketype = STROKE_DASHED
 	
 		
 class DownDiagLinePattern(LinePattern):
 
 	xdir = 1
 	ydir = 1
-	linechar = "\\"	
+	startchars = ["\\"]
+	midchars = startchars
 	startmeta = M_LINE_END_SE
 	endmeta = M_LINE_END_NW
-		
+	stroketype = STROKE_SOLID
+	
 		
 class DownDiagDashedLinePattern(LinePattern):
 	
 	xdir = 1
 	ydir = 1
-	linechar = "`"
+	startchars = ["`"]
+	midchars = startchars
 	startmeta = M_LINE_END_SE
 	endmeta = M_LINE_END_NW
+	stroketype = STROKE_DASHED
 	
 		
 class VertLinePattern(LinePattern):
 
 	xdir = 0
 	ydir = 1
-	linechar = "|"
+	startchars = ["|"]
+	midchars = startchars
 	startmeta = M_LINE_END_S
 	endmeta = M_LINE_END_N
+	stroketype = STROKE_SOLID
 	
 	
 class VertDashedLinePattern(LinePattern):
 
 	xdir = 0
 	ydir = 1
-	linechar = "'"
+	startchars = [";"]
+	midchars = startchars
 	startmeta = M_LINE_END_S
 	endmeta = M_LINE_END_N
+	stroketype = STROKE_DASHED
 	
 	
 class HorizLinePattern(LinePattern):
 
 	xdir = 1
 	ydir = 0
-	linechar = "-"
+	startchars = ["-"]
+	midchars = startchars
 	startmeta = M_LINE_END_E
 	endmeta = M_LINE_END_W
+	stroketype = STROKE_SOLID
+
+
+class HorizDashedLinePattern(LinePattern):
+	
+	xdir = 1
+	ydir = 0
+	startchars = ["@"," ","@"]
+	midchars = [" ","@"]
+	startmeta = M_LINE_END_E
+	endmeta = M_LINE_END_W
+	stroketype = STROKE_DASHED
 
 
 class TinyCirclePattern(Pattern):
@@ -688,7 +742,8 @@ class TinyCirclePattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [ Ellipse((self.pos[0]+0.5-0.4,self.pos[1]+0.5-0.4/CHAR_H_RATIO), 
-				(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), 1, "magenta", 1, None) ]
+				(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), 1, 
+				"magenta", 1, STROKE_SOLID, None) ]
 				
 				
 class SmallCirclePattern(Pattern):
@@ -715,7 +770,8 @@ class SmallCirclePattern(Pattern):
 		Pattern.render(self)
 		d = self.right-self.left
 		return [ Ellipse((self.left+0.5,self.y+0.5-d/2.0/CHAR_H_RATIO),
-				(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), 1, "green",1,None) ]
+				(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), 1, "green",
+				1,STROKE_SOLID,None) ]
 	
 		
 PATTERNS = [
@@ -724,6 +780,7 @@ PATTERNS = [
 	BoxPattern,
 	SmallCirclePattern,
 	TinyCirclePattern,
+	HorizDashedLinePattern,
 	HorizLinePattern,
 	VertLinePattern,
 	VertDashedLinePattern,
@@ -793,23 +850,21 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 if __name__ == "__main__":
 
 	INPUT = """\
-MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,
-+---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',
-| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,
-+---+--+ O| ***  || |(*)| |-| --- | ``//v   /|/| |   `|/ '---' |,
-/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :
-    +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /  ^
-() (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'---+>
-  (  )   ` |  | `/  --- ---+    | // ` ` -<-  +    `   ` / +--+  v'.--.
- v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |
-   |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'
- love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^
+MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,      `
++---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',        :
+| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,         ;
++---+--+ O| ***  || |(*)| |-| --- | ``//v   /|/| |   `|/ '---' |,    .- - -:
+/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :     ;     ;
+    +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /  ^   ;     ;
+() (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'---+>  '- - -:
+  (  )   ` |  | `/  --- ---+    | // ` ` -<-  +    `   ` / +--+  v'.--.   ,    
+ v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |  :
+   |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'  ;
+ love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^            V
       /       |            aV   Vote       |    ^   | |     | """.replace("`","\\")
 	
-#	INPUT = """\
-# +
-# |
-# +""".replace("`","\\")
+	INPUT = """\
+   @ @ @ @   """.replace("`","\\")
  
 		
 	complete_matches = []

@@ -604,3 +604,48 @@ Use colons instead? They're still rounded corners!
      :
      :---
      :
+
+[*] Could have ('.)+ for vertical dashes:
+
+.- - - - -.   Not really intuitive. And messes with   .------.  
+'         '   Closely-stacked, aligned boxes:         '------'  But that's not a 
+.         .                                           .------.  valid box anyway
+'         '                                           '------'
+.         .   
+'- - - - -'
+
+[*] Could double-dash the horizontals to match the verticals:
+-                                                                                ."".
+.--  --  --. Would be much more useful to have single characters                ,   ;
+|          | for horizontal and vertical dashed lines                          ,    ;
+                                                                              ,     :
+|          | .".       +====+                                           .""""'       `
+             = =       "    "        `                 .---.   .""""".  :             `
+|          | '"'       "    "         `                |    \  ;     ;  '""">       .""'
+'--  --  --'           +====+          `               :     : ;     ;              ;
+                                   +    `               \    | '"""""'              v
+.- - -. .--. @@@@@ ,---, \      / , `    '- - - - -      '---'
+;     ; i  i @wow@ |   |  `    , +   +                 .- -.   .- -. .- - - -. .-------.
+'- - -' '--' @@@@@ '---'   `  ,   ` ,      /    |      :    `  '   ' ;       ; |       |
+                            \/     +     -;     ;      ;     ; ;   ; ;       ; |       |
+        .- - -.                            \     \      `    : '- -' ;       ; |       |
+       ,       `                                         '- -'       '- - - -' '-------'
+      ,         `
+     :           : 
+     ;           ;
+     :           :
+      `         ,
+       `       ,
+        '- - -'
+
+Damn. Dashed horizontal lines suffer from the lack-of-abandonment problem.
+"- -( -)*" won't match "  - - -  " properly because it will consume a space
+after the last dash and reject.
+                          |
+.""". +....+ .- - --|  +'''''+'''>
+;   ; : yo : ;      | -:     :
+'"""' +....+ '- - - |  +.....+...>
+                          |
++- +----     --- ---
+ \/ \_/\/    \/\_/\/
+ d   s d      s d  s
