@@ -481,6 +481,7 @@ class LArrowheadPattern(Pattern):
 
 	pos = None
 	tobox = False
+	dashed = False
 	
 	def matcher(self):
 		self.curr = yield
@@ -490,6 +491,7 @@ class LArrowheadPattern(Pattern):
 		self.pos = self.curr.col,self.curr.row
 		if( not self.occupied() and self.curr.char == "<" 
 				and self.curr.meta & M_LINE_END_E ):
+			if self.curr.meta & M_LINE_DASHED_E: self.dashed = True
 			yield M_OCCUPIED
 		else:
 			self.reject()
@@ -500,19 +502,21 @@ class LArrowheadPattern(Pattern):
 		return [
 			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
 			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),1,"darkred",1,STROKE_SOLID) ]
+			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 	
 		
 class RArrowheadPattern(Pattern):
 	
 	pos = None
 	tobox = False
+	dashed = False
 	
 	def matcher(self):
 		self.curr = yield
 		self.pos = self.curr.col,self.curr.row
 		if( not self.occupied() and self.curr.char == ">" 
 				and self.curr.meta & M_LINE_END_W ):
+			if self.curr.meta & M_LINE_DASHED_W: self.dashed = True
 			self.curr = yield M_OCCUPIED
 		else:
 			self.reject()
@@ -526,13 +530,14 @@ class RArrowheadPattern(Pattern):
 		return [
 			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
 			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0+xoff,self.pos[1]+0.5),1,"darkred",1,STROKE_SOLID) ]
+			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0+xoff,self.pos[1]+0.5),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 
 class DArrowheadPattern(Pattern):
 
 	pos = None
 	tobox = False
+	dashed = False
 	
 	def matcher(self):
 		self.curr = yield
@@ -545,6 +550,7 @@ class DArrowheadPattern(Pattern):
 		# main
 		if( not self.occupied() and self.curr.char in ("vV")
 				and self.curr.meta & M_LINE_END_N ):
+			if self.curr.meta & M_LINE_DASHED_N: self.dashed = True
 			self.pos = self.curr.col,self.curr.row
 			self.curr = yield M_OCCUPIED
 		else:
@@ -569,13 +575,14 @@ class DArrowheadPattern(Pattern):
 		return [
 			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0],self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
 			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0]+1.0,self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0+yoff),1,"darkred",1,STROKE_SOLID) ]
+			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0+yoff),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 
 class UArrowheadPattern(Pattern):
 	
 	pos = None
 	tobox = False
+	dashed = False
 	
 	def matcher(self):
 		self.curr = yield
@@ -589,6 +596,7 @@ class UArrowheadPattern(Pattern):
 		self.pos = self.curr.col,self.curr.row
 		if( not self.occupied() and self.curr.char == "^"
 				and self.curr.meta & M_LINE_END_S ):
+			if self.curr.meta & M_LINE_DASHED_S: self.dashed = True
 			yield M_OCCUPIED
 		else:
 			self.reject()
@@ -599,7 +607,7 @@ class UArrowheadPattern(Pattern):
 		return [
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1,STROKE_SOLID) ]
+			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 
 class LinePattern(Pattern):
@@ -867,7 +875,7 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 if __name__ == "__main__":
 
 	INPUT = """\
-MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,       `
+MiniOreos Oranges O O O test- - > -->--><- -     | .-            ^ ,       `
 +---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',         :
 | O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,          ;
 +---+--+ O| ***  || |(*)| |-| --- | ``//v   /|,; |   `|/ '---' |,    .- - - :
@@ -878,7 +886,7 @@ MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,       `
  v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |   :
    |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'   ;
  love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^             V
-      /       |            aV   Vote       |    ^   | |     | """.replace("`","\\")
+      /       |            aV   Vote       |    ^   ; |     | """.replace("`","\\")
 	
 #	INPUT = """\
 #""".replace("*","\\")
