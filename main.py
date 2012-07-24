@@ -42,8 +42,7 @@ class SvgOutput(object):
 	CHAR_H = CHAR_W * CHAR_H_RATIO
 	STROKE_W = 2.5
 	FONT_SIZE = 16.0
-	#DASH_PATTERN = 10,10
-	DASH_PATTERN = 2,2
+	DASH_PATTERN = 8,8
 
 	@staticmethod
 	def output(items,stream):
@@ -596,7 +595,7 @@ class LinePattern(Pattern):
 	def matcher(self):
 		self.curr = yield
 		self.startpos = None
-		if self.curr.char != self.startchars[0]:
+		if self.curr.char != self.startchars[0] or self.occupied():
 			self.curr = yield self.startmeta
 			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 				self.curr = yield meta
@@ -604,31 +603,27 @@ class LinePattern(Pattern):
 		self.startpos = pos
 		r = random.random()
 		for startchar in self.startchars:
-			print r,"expect",startchar
+			pos = self.curr.col,self.curr.row
 			self.curr = yield self.expect(startchar,meta=M_OCCUPIED)
-			print r,"got"
 		try:
 			breaknow = False
 			while not breaknow:
 				for i,midchar in enumerate(self.midchars):
 					for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 						self.curr = yield meta
-					if self.curr.char != midchar: 
+					if( self.curr.char != midchar or self.occupied() 
+							or self.curr.char == END_OF_INPUT ): 
 						if i==0: 
-							print r,"graceful end"
 							breaknow = True
 							break
 						else:
 							self.reject()
 					pos = self.curr.col,self.curr.row
-					print r,"expect",midchar
 					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
-					print r,"got"
 			self.endpos = pos
 			yield self.endmeta
 		except NoSuchPosition:
 			self.endpos = pos
-		print r,"matched"
 		return
 		
 	def render(self):
@@ -719,8 +714,8 @@ class HorizDashedLinePattern(LinePattern):
 	
 	xdir = 1
 	ydir = 0
-	startchars = ["@"," ","@"]
-	midchars = [" ","@"]
+	startchars = ["-"," ","-"," "]
+	midchars = ["-"," "]
 	startmeta = M_LINE_END_E
 	endmeta = M_LINE_END_W
 	stroketype = STROKE_DASHED
@@ -850,22 +845,24 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 if __name__ == "__main__":
 
 	INPUT = """\
-MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,      `
-+---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',        :
-| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,         ;
-+---+--+ O| ***  || |(*)| |-| --- | ``//v   /|/| |   `|/ '---' |,    .- - -:
-/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :     ;     ;
-    +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /  ^   ;     ;
-() (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'---+>  '- - -:
-  (  )   ` |  | `/  --- ---+    | // ` ` -<-  +    `   ` / +--+  v'.--.   ,    
- v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |  :
-   |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'  ;
- love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^            V
+MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,       `
++---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',         :
+| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,          ;
++---+--+ O| ***  || |(*)| |-| --- | ``//v   /|,; |   `|/ '---' |,    .- - - :
+/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :     ;      ;
+    +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /  ^   ;      ;
+() (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'---+>  '- - - :
+  (  )   ` |  | `/  --- ---+    | // ` ` -<-  +    `   ` / +--+  v'.--.    ,    
+ v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |   :
+   |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'   ;
+ love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^             V
       /       |            aV   Vote       |    ^   | |     | """.replace("`","\\")
 	
-	INPUT = """\
-   @ @ @ @   """.replace("`","\\")
- 
+#	INPUT = """\
+# +- - + 
+# ;    ;
+# +----+""".replace("*","\\")
+
 		
 	complete_matches = []
 	complete_meta = {}
