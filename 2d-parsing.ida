@@ -665,3 +665,5 @@ M_LINE_DASH_E  <-- but I might have more line styles.
 - Probably not. There isn't much more that can be done with simple attributes.
   Further corner styling would mean having custom code to render them, and I 
   probably won't go to that level.
+
+- Crow's feet next

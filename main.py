@@ -109,13 +109,14 @@ class SvgOutput(object):
 		parent.appendChild(el)
 		
 	def _do_Ellipse(self,ellipse,doc,parent):
+		print ellipse
 		w = ellipse.b[0]-ellipse.a[0]
 		h = ellipse.b[1]-ellipse.a[1]
 		el = doc.createElement("ellipse")
-		el.setAttribute("cx",self._x(ellipse.a[0]+w/2))
-		el.setAttribute("cy",self._y(ellipse.a[1]+h/2))
-		el.setAttribute("rx",self._x(w/2))
-		el.setAttribute("ry",self._y(h/2))
+		el.setAttribute("cx",self._x(ellipse.a[0]+w/2.0))
+		el.setAttribute("cy",self._y(ellipse.a[1]+h/2.0))
+		el.setAttribute("rx",self._x(w/2.0))
+		el.setAttribute("ry",self._y(h/2.0))
 		self._style_attrs(ellipse,el)
 		parent.appendChild(el)
 		
@@ -610,6 +611,40 @@ class UArrowheadPattern(Pattern):
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 
+class CrowsFeetPattern(Pattern):
+
+	pos = None
+	xdir = 0
+	ydir = 0
+	char = None
+	startmeta = None
+	endmeta = None
+
+	def matcher(self):
+		self.curr = yield
+		if not self.curr.meta & self.startmeta: self.reject()
+		for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
+			self.curr = yield meta
+		self.pos = self.curr.col,self.curr.row
+		if( self.occupied() or self.curr.char!=self.char 
+				or not self.curr.meta & self.endmeta ):
+			self.reject()
+		yield M_OCCUPIED
+		return
+		
+	def render(self):
+		return [ Ellipse(self.pos,self.offset(1,1,self.pos),1,"indigo",1,STROKE_SOLID,None) ]
+
+
+class LCrowsFeetPattern(CrowsFeetPattern):
+
+	xdir = 1
+	ydir = 0
+	char = ">"
+	startmeta = M_BOX_RIGHT
+	endmeta = M_LINE_END_E
+
+
 class LinePattern(Pattern):
 
 	xdir = 0	
@@ -819,6 +854,7 @@ PATTERNS = [
 	RArrowheadPattern,
 	DArrowheadPattern,
 	UArrowheadPattern,
+	LCrowsFeetPattern,
 	LiteralPattern
 ]
 
@@ -885,11 +921,16 @@ MiniOreos Oranges O O O test- - > -->--><- -     | .-            ^ ,       `
   (  )   ` |  | `/  --- ---+    | // ` ` -<-  +    `   ` / +--+  v'.--.    ,    
  v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |   :
    |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'   ;
- love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^             V
-      /       |            aV   Vote       |    ^   ; |     | """.replace("`","\\")
+ love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^   +--+  +--+V
+      /       |            aV   Vote       |    ^   ; |     |   |  |>-|  |
+                                                                +--+  +--+  """.replace("`","\\")
 	
-#	INPUT = """\
-#""".replace("*","\\")
+	INPUT = """\
++-+
+| |>--
+| |>
+| | >--
++-+""".replace("*","\\")
 
 		
 	complete_matches = []
