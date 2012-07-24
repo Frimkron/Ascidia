@@ -649,3 +649,19 @@ after the last dash and reject.
 +- +----     --- ---
  \/ \_/\/    \/\_/\/
  d   s d      s d  s
+
+[*] Use "- - (- )*" as pattern
+- Allows " - - " and " ------- "
+- Dies for " -- - - -- ", but user can put a "+" in to delimit
+
+[?] Ok, how should dashed corners work?
+- Corners need metadata to tell them the types of lines surrounding the corner.
+- Corner can then draw using one of the 2 types (solid should probably take precedence)
+
+M_LINE_END_E
+M_LINE_DASH_E  <-- but I might have more line styles.
+
+[?] Are any other styles going to involve restyling the corners, though?
+- Probably not. There isn't much more that can be done with simple attributes.
+  Further corner styling would mean having custom code to render them, and I 
+  probably won't go to that level.

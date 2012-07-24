@@ -32,6 +32,14 @@ M_LINE_END_S = (1<<9)
 M_LINE_END_SW = (1<<10)
 M_LINE_END_W = (1<<11)
 M_LINE_END_NW = (1<<12)
+M_LINE_DASHED_N = (1<<13)
+M_LINE_DASHED_NE = (1<<14)
+M_LINE_DASHED_E = (1<<15)
+M_LINE_DASHED_SE = (1<<16)
+M_LINE_DASHED_S = (1<<17)
+M_LINE_DASHED_SW = (1<<18)
+M_LINE_DASHED_W = (1<<19)
+M_LINE_DASHED_NW = (1<<20)
 
 END_OF_INPUT = "\x00"
 
@@ -381,11 +389,17 @@ class LineSqCornerPattern(Pattern):
 		if self.occupied(): self.reject()
 		self.pos = self.curr.col,self.curr.row
 		self.ends = []
-		for m,x,y in [
-				(M_LINE_END_NW,-1,-1),(M_LINE_END_N,0,-1),(M_LINE_END_NE,1,-1),
-				(M_LINE_END_W,-1,0),(M_LINE_END_E,1,0),
-				(M_LINE_END_SW,-1,1),(M_LINE_END_S,0,1),(M_LINE_END_SE,1,1), ]:
-			if self.curr.meta & m: self.ends.append((x,y))
+		for m,dm,x,y in [
+				(M_LINE_END_NW, M_LINE_DASHED_NW, -1,-1),
+				(M_LINE_END_N, M_LINE_DASHED_N, 0,-1),
+				(M_LINE_END_NE, M_LINE_DASHED_NE, 1,-1),
+				(M_LINE_END_W, M_LINE_DASHED_W, -1,0),
+				(M_LINE_END_E, M_LINE_DASHED_E, 1,0),
+				(M_LINE_END_SW, M_LINE_DASHED_SW, -1,1),
+				(M_LINE_END_S, M_LINE_DASHED_S, 0,1),
+				(M_LINE_END_SE, M_LINE_DASHED_SE, 1,1), ]:
+			if self.curr.meta & m: 
+				self.ends.append((x,y,bool(self.curr.meta & dm)))
 			
 		if self.curr.char == "+" and len(self.ends) > 1:
 			yield M_OCCUPIED
@@ -398,9 +412,9 @@ class LineSqCornerPattern(Pattern):
 		Pattern.render(self)
 		centre = self.pos[0]+0.5,self.pos[1]+0.5
 		retval = []
-		for x,y in self.ends:
+		for x,y,dsh in self.ends:
 			retval.append( Line(centre,(centre[0]+x*0.5,centre[1]+y*0.5),
-					1,"pink",1,STROKE_SOLID) )
+					1,"pink",1,STROKE_DASHED if dsh else STROKE_SOLID) )
 		return retval
 
 
@@ -426,12 +440,19 @@ class LineRdCornerPattern(Pattern):
 		else: self.reject()
 		
 		self.ends = []
-		for m,x,y in [ (M_LINE_END_NW,-1,-1), (M_LINE_END_N,0,-1),(M_LINE_END_NE,1,-1),
-						(M_LINE_END_W,-1,0), (M_LINE_END_E,1,0),
-				 		(M_LINE_END_SW,-1,1),(M_LINE_END_S,0,1),(M_LINE_END_SE,1,1) ]:
+		for m,dm,x,y in [ 
+				(M_LINE_END_NW, M_LINE_DASHED_NW, -1,-1), 
+				(M_LINE_END_N, M_LINE_DASHED_N, 0,-1),
+				(M_LINE_END_NE, M_LINE_DASHED_NE, 1,-1),
+				(M_LINE_END_W, M_LINE_DASHED_W, -1,0), 
+				(M_LINE_END_E, M_LINE_DASHED_E, 1,0),
+				(M_LINE_END_SW, M_LINE_DASHED_SW, -1,1),
+				(M_LINE_END_S, M_LINE_DASHED_S, 0,1),
+				(M_LINE_END_SE, M_LINE_DASHED_SE, 1,1) ]:
 			if y < 0 and not up: continue
 			if y > 0 and not down: continue
-			if meta & m: self.ends.append((x,y))
+			if meta & m: 
+				self.ends.append((x,y,meta & dm))
 		
 		if len(self.ends) > 1: 
 			yield M_OCCUPIED
@@ -451,7 +472,8 @@ class LineRdCornerPattern(Pattern):
 			for oth in rest:
 				a = centre[0]+end[0]*0.5, centre[1]+end[1]*0.5
 				b = centre[0]+oth[0]*0.5, centre[1]+oth[1]*0.5
-				retval.append( QuadCurve(a,b,centre,1,"pink",1,STROKE_SOLID) )		
+				retval.append( QuadCurve(a,b,centre,1,"pink",1,
+					STROKE_DASHED if end[2] and oth[2] else STROKE_SOLID) )		
 		return retval
 
 
@@ -650,8 +672,8 @@ class UpDiagDashedLinePattern(LinePattern):
 	ydir = 1
 	startchars = [","]
 	midchars = startchars
-	startmeta = M_LINE_END_SW
-	endmeta = M_LINE_END_NE
+	startmeta = M_LINE_END_SW | M_LINE_DASHED_SW
+	endmeta = M_LINE_END_NE | M_LINE_DASHED_NE
 	stroketype = STROKE_DASHED
 	
 		
@@ -672,8 +694,8 @@ class DownDiagDashedLinePattern(LinePattern):
 	ydir = 1
 	startchars = ["`"]
 	midchars = startchars
-	startmeta = M_LINE_END_SE
-	endmeta = M_LINE_END_NW
+	startmeta = M_LINE_END_SE | M_LINE_DASHED_SE
+	endmeta = M_LINE_END_NW | M_LINE_DASHED_NW
 	stroketype = STROKE_DASHED
 	
 		
@@ -694,8 +716,8 @@ class VertDashedLinePattern(LinePattern):
 	ydir = 1
 	startchars = [";"]
 	midchars = startchars
-	startmeta = M_LINE_END_S
-	endmeta = M_LINE_END_N
+	startmeta = M_LINE_END_S | M_LINE_DASHED_S
+	endmeta = M_LINE_END_N | M_LINE_DASHED_N
 	stroketype = STROKE_DASHED
 	
 	
@@ -716,8 +738,8 @@ class HorizDashedLinePattern(LinePattern):
 	ydir = 0
 	startchars = ["-"," ","-"," "]
 	midchars = ["-"," "]
-	startmeta = M_LINE_END_E
-	endmeta = M_LINE_END_W
+	startmeta = M_LINE_END_E | M_LINE_DASHED_E
+	endmeta = M_LINE_END_W | M_LINE_DASHED_W
 	stroketype = STROKE_DASHED
 
 
@@ -859,9 +881,7 @@ MiniOreos Oranges O O O test  --> -->--><-       | .-            ^ ,       `
       /       |            aV   Vote       |    ^   | |     | """.replace("`","\\")
 	
 #	INPUT = """\
-# +- - + 
-# ;    ;
-# +----+""".replace("*","\\")
+#""".replace("*","\\")
 
 		
 	complete_matches = []
