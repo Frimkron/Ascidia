@@ -109,7 +109,6 @@ class SvgOutput(object):
 		parent.appendChild(el)
 		
 	def _do_Ellipse(self,ellipse,doc,parent):
-		print ellipse
 		w = ellipse.b[0]-ellipse.a[0]
 		h = ellipse.b[1]-ellipse.a[1]
 		el = doc.createElement("ellipse")
@@ -616,34 +615,94 @@ class CrowsFeetPattern(Pattern):
 	pos = None
 	xdir = 0
 	ydir = 0
-	char = None
+	chars = None
 	startmeta = None
 	endmeta = None
+	flipped = True
+	dashed = False
 
 	def matcher(self):
+		m = [self.startmeta,self.endmeta]
 		self.curr = yield
-		if not self.curr.meta & self.startmeta: self.reject()
-		for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
-			self.curr = yield meta
+		if self.flipped:
+			if not self.curr.meta & m[0]: self.reject()
+			for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
+				self.curr = yield meta
+			m.pop(0)
 		self.pos = self.curr.col,self.curr.row
-		if( self.occupied() or self.curr.char!=self.char 
-				or not self.curr.meta & self.endmeta ):
+		if( self.occupied() or not self.curr.char in self.chars
+				or not self.curr.meta & m[0] ):
 			self.reject()
-		yield M_OCCUPIED
+		if self.curr.meta & self.dashmeta: self.dashed = True
+		self.curr = yield M_OCCUPIED
+		m.pop(0)
+		if not self.flipped:
+			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
+				self.curr = yield meta
+			if not self.curr.meta & m[0]: self.reject()
 		return
 		
 	def render(self):
-		return [ Ellipse(self.pos,self.offset(1,1,self.pos),1,"indigo",1,STROKE_SOLID,None) ]
+		
+		flip = -1 if self.flipped else 1
+		centre = ( self.pos[0]+0.5, self.pos[1]+0.5 )
+		spos = ( centre[0]-self.xdir*0.5*flip, centre[1]-self.ydir*0.5*flip )
+		fpos1 = ( centre[0]+self.xdir*1.0*flip - 0.6*(not self.xdir),
+					centre[1]+self.ydir*1.0*flip - 0.6*(not self.ydir)/CHAR_H_RATIO )
+		fpos2 = ( centre[0]+self.xdir*1.0*flip, centre[1]+self.ydir*1.0*flip )
+		fpos3 = ( centre[0]+self.xdir*1.0*flip + 0.6*(not self.xdir), 
+					centre[1]+self.ydir*1.0*flip + 0.6*(not self.ydir)/CHAR_H_RATIO )
+		fpos0 = ( fpos2[0]-self.xdir*1.0*flip, fpos2[1]-self.ydir*1.0*flip/CHAR_H_RATIO )
+		return [ 
+			Line(fpos0,fpos1,1,"gray",1,STROKE_SOLID),
+			Line(fpos0,fpos2,1,"gray",1,STROKE_SOLID),
+			Line(fpos0,fpos3,1,"gray",1,STROKE_SOLID),
+			Line(spos,fpos0,1,"gray",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 
 class LCrowsFeetPattern(CrowsFeetPattern):
 
 	xdir = 1
 	ydir = 0
-	char = ">"
+	chars = ">"
+	flipped = True
 	startmeta = M_BOX_RIGHT
 	endmeta = M_LINE_END_E
+	dashmeta = M_LINE_DASHED_E
 
+
+class RCrowsFeetPattern(CrowsFeetPattern):
+	
+	xdir = 1
+	ydir = 0
+	chars = "<"
+	flipped = False
+	startmeta = M_LINE_END_W
+	endmeta = M_BOX_LEFT
+	dashmeta = M_LINE_DASHED_W
+	
+	
+class UCrowsFeetPattern(CrowsFeetPattern):
+
+	xdir = 0
+	ydir = 1
+	chars = "Vv"
+	flipped = True
+	startmeta = M_BOX_BOTTOM
+	endmeta = M_LINE_END_S
+	dashmeta = M_LINE_DASHED_S
+	
+	
+class DCrowsFeetPattern(CrowsFeetPattern):
+
+	xdir = 0
+	ydir = 1
+	chars = "^"
+	flipped = False
+	startmeta = M_LINE_END_N
+	endmeta = M_BOX_TOP
+	dashmeta = M_LINE_DASHED_N
+	
 
 class LinePattern(Pattern):
 
@@ -832,6 +891,90 @@ class SmallCirclePattern(Pattern):
 		return [ Ellipse((self.left+0.5,self.y+0.5-d/2.0/CHAR_H_RATIO),
 				(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), 1, "green",
 				1,STROKE_SOLID,None) ]
+
+
+class LJumpPattern(Pattern):
+
+	pos = None
+	hdash = False
+	vdash = False
+
+	def matcher(self):
+		self.curr = yield
+		m = M_LINE_END_W | M_LINE_END_E | M_LINE_END_N | M_LINE_END_S
+		if( self.curr.char != "(" or self.occupied() 
+				or self.curr.meta & m != m ):
+			self.reject()
+		if self.curr.meta & M_LINE_DASHED_N and self.curr.meta & M_LINE_DASHED_S:
+			self.vdash = True
+		if self.curr.meta & M_LINE_DASHED_W and self.curr.meta & M_LINE_DASHED_E:
+			self.hdash = True
+		self.pos = self.curr.col,self.curr.row
+		yield M_OCCUPIED
+		return
+		
+	def render(self):
+		return [ 
+			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
+				1,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
+			Arc((self.pos[0]+0.5-0.6,self.pos[1]),(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
+				1,math.pi*0.5,math.pi*1.5,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID, None), ]
+	
+	
+class RJumpPattern(Pattern):
+
+	pos = None
+	hdash = False
+	vdash = False
+	
+	def matcher(self):
+		self.curr = yield
+		m = M_LINE_END_W | M_LINE_END_E | M_LINE_END_N | M_LINE_END_S
+		if( self.curr.char != ")" or self.occupied()
+				or self.curr.meta & m != m ):
+			self.reject()
+		if self.curr.meta & M_LINE_DASHED_N and self.curr.meta & M_LINE_DASHED_S:
+			self.vdash = True
+		if self.curr.meta & M_LINE_DASHED_W and self.curr.meta & M_LINE_DASHED_E:
+			self.hdash = True
+		self.pos = self.curr.col,self.curr.row
+		yield M_OCCUPIED
+		return
+		
+	def render(self):
+		return [
+			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
+				1,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
+			Arc((self.pos[0]+0.5-0.6,self.pos[1]),(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
+				1,math.pi*-0.5,math.pi*0.5,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID,None), ]
+	
+	
+class UJumpPattern(Pattern):
+
+	pos = None
+	hdash = False
+	vdash = False
+	
+	def matcher(self):
+		self.curr = yield
+		m = M_LINE_END_W | M_LINE_END_E | M_LINE_END_N | M_LINE_END_S
+		if( self.curr.char != "^" or self.occupied()
+				or self.curr.meta & m != m ):
+			self.reject()
+		if self.curr.meta & M_LINE_DASHED_N and self.curr.meta & M_LINE_DASHED_S:
+			self.vdash = True
+		if self.curr.meta & M_LINE_DASHED_W and self.curr.meta & M_LINE_DASHED_E:
+			self.hdash = True
+		self.pos = self.curr.col,self.curr.row
+		yield M_OCCUPIED
+		return
+
+	def render(self):
+		return [
+			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0),
+				1,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID),
+			Arc((self.pos[0],self.pos[1]+0.5-0.4),(self.pos[0]+1.0,self.pos[1]+0.5+0.4),
+				1,math.pi,math.pi*2,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID,None), ]
 	
 		
 PATTERNS = [
@@ -850,11 +993,17 @@ PATTERNS = [
 	DownDiagDashedLinePattern,
 	LineSqCornerPattern,
 	LineRdCornerPattern,
+	LJumpPattern,
+	RJumpPattern,
+	UJumpPattern,
 	LArrowheadPattern,
 	RArrowheadPattern,
 	DArrowheadPattern,
 	UArrowheadPattern,
 	LCrowsFeetPattern,
+	RCrowsFeetPattern,
+	UCrowsFeetPattern,
+	DCrowsFeetPattern,
 	LiteralPattern
 ]
 
@@ -926,11 +1075,9 @@ MiniOreos Oranges O O O test- - > -->--><- -     | .-            ^ ,       `
                                                                 +--+  +--+  """.replace("`","\\")
 	
 	INPUT = """\
-+-+
-| |>--
-| |>
-| | >--
-+-+""".replace("*","\\")
+      |   |   |       ;      ;      |      |
+     -^- -^ -( )- - - ^- - --^--- - ^- - +-^- - 
+      |   |   |       ;      ;      |      ;  """.replace("*","\\")
 
 		
 	complete_matches = []

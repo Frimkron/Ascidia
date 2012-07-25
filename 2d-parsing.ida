@@ -667,3 +667,14 @@ M_LINE_DASH_E  <-- but I might have more line styles.
   probably won't go to that level.
 
 - Crow's feet next
+
+[!] Lines are slow
+- Suspect this is because instances are accumulated from each space and all iterated
+  through on each subsequent space until the space below is arrived at and the match
+  can be rejected.
+[*] Option 1: have patterns put to sleep while they're waiting for the space below. The 
+  main program would have to have a map of positions to sleeping patterns which are to
+  be woken up. Patterns waiting on non-existant spaces would have to be cleaned up after
+  each line
+[*] Option 2: Have lines put meta *in* first space at start, and *after* last place at 
+  end. This would allow for early rejection of both lines and corners.

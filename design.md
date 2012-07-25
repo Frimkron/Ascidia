@@ -330,8 +330,8 @@ lookaheads because we can access whatever cells we need as and when.
 	        +----+          '--'       v                   pre-processed?         +------+
 	                                                             v
 	                                                             |
-	      <#>-- ^           /\       +---.    +-----+            v
-	            #         /    \     |  |_\   |file |            |
+	      <#>-- ^           /\       +----.   +-----+            v
+	            #         /    \     |   |_\  |file |            |
                 v         \    /     |     |  |     |         .-----.
 	            |           \/       '._.-.|  '._.-.|        ( stop  )
 	                                                          '-----'
