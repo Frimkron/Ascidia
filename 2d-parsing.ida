@@ -678,3 +678,26 @@ M_LINE_DASH_E  <-- but I might have more line styles.
   each line
 [*] Option 2: Have lines put meta *in* first space at start, and *after* last place at 
   end. This would allow for early rejection of both lines and corners.
+
+- I should make this change next.
+
+      term         More like:   M_LINE_START_S
+    for this?    start  after   M_LINE_AFTER_S
+       v           v      v     M_LINE_START_E
+-------            -------      M_LINE_AFTER_E
+      ^                         M_LINE_START_SE
+     term                       M_LINE_AFTER_SE
+   for this?                    M_LINE_START_SW
+                                M_LINE_AFTER_SW
+  _        _                                   * 
+ (''  o   '')    O    O                *\o    o|  *\o/*
+ -|-  +  -/_\-  -|-  -|-   <)->   <-(>   |-*  /\    |
+ / \  ^   | |   | |  / \                / >  * /<  / \
+
+ vv v v    not flipped: meta/char, meta
+-<| |>-        flipped: meta, char, meta.
+
+ lb l b
+ vv v v    not flipped: meta/char, meta
+->| |<-        flipped: meta, char, meta
+

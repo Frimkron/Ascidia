@@ -24,22 +24,22 @@ M_BOX_TOP = (1<<1)
 M_BOX_BOTTOM = (1<<2)
 M_BOX_LEFT = (1<<3)
 M_BOX_RIGHT = (1<<4)
-M_LINE_END_N = (1<<5)
-M_LINE_END_NE = (1<<6)
-M_LINE_END_E = (1<<7)
-M_LINE_END_SE = (1<<8)
-M_LINE_END_S = (1<<9)
-M_LINE_END_SW = (1<<10)
-M_LINE_END_W = (1<<11)
-M_LINE_END_NW = (1<<12)
-M_LINE_DASHED_N = (1<<13)
-M_LINE_DASHED_NE = (1<<14)
-M_LINE_DASHED_E = (1<<15)
-M_LINE_DASHED_SE = (1<<16)
-M_LINE_DASHED_S = (1<<17)
-M_LINE_DASHED_SW = (1<<18)
-M_LINE_DASHED_W = (1<<19)
-M_LINE_DASHED_NW = (1<<20)
+M_LINE_START_E = (1<<5)
+M_DASH_START_E = (1<<6)
+M_LINE_AFTER_E = (1<<7)
+M_DASH_AFTER_E = (1<<8)
+M_LINE_START_S = (1<<9)
+M_DASH_START_S = (1<<10)
+M_LINE_AFTER_S = (1<<11)
+M_DASH_AFTER_S = (1<<12)
+M_LINE_START_SE = (1<<13)
+M_DASH_START_SE = (1<<14)
+M_LINE_AFTER_SE = (1<<15)
+M_DASH_AFTER_SE = (1<<16)
+M_LINE_START_SW = (1<<17)
+M_DASH_START_SW = (1<<18)
+M_LINE_AFTER_SW = (1<<19)
+M_DASH_AFTER_SW = (1<<20)
 
 END_OF_INPUT = "\x00"
 
@@ -390,22 +390,25 @@ class LineSqCornerPattern(Pattern):
 		self.pos = self.curr.col,self.curr.row
 		self.ends = []
 		for m,dm,x,y in [
-				(M_LINE_END_NW, M_LINE_DASHED_NW, -1,-1),
-				(M_LINE_END_N, M_LINE_DASHED_N, 0,-1),
-				(M_LINE_END_NE, M_LINE_DASHED_NE, 1,-1),
-				(M_LINE_END_W, M_LINE_DASHED_W, -1,0),
-				(M_LINE_END_E, M_LINE_DASHED_E, 1,0),
-				(M_LINE_END_SW, M_LINE_DASHED_SW, -1,1),
-				(M_LINE_END_S, M_LINE_DASHED_S, 0,1),
-				(M_LINE_END_SE, M_LINE_DASHED_SE, 1,1), ]:
+				(M_LINE_AFTER_E, M_DASH_AFTER_E, -1,0),
+				(M_LINE_AFTER_S, M_DASH_AFTER_S, 0,-1),
+				(M_LINE_AFTER_SE,M_DASH_AFTER_SE,-1,-1),
+				(M_LINE_AFTER_SW,M_DASH_AFTER_SW,1,-1) ]:
 			if self.curr.meta & m: 
-				self.ends.append((x,y,bool(self.curr.meta & dm)))
-			
-		if self.curr.char == "+" and len(self.ends) > 1:
-			yield M_OCCUPIED
-		else:
-			self.reject()
-			
+				self.ends.append((x,y,bool(self.curr.meta & dm)))			
+		self.curr = yield self.expect("+")
+		for m,dm,x,y in [
+				(M_LINE_START_E, M_DASH_START_E, 1,0),
+				(M_LINE_START_SW,M_DASH_START_SW,-1,1),
+				(M_LINE_START_S, M_DASH_START_S, 0,1),
+				(M_LINE_START_SE,M_DASH_START_SE,1,1) ]:
+			try:
+				for meta in self.await_pos(self.offset(x,y,self.pos)):
+					self.curr = yield meta
+				if self.curr.meta & m:
+					self.ends.append((x,y,bool(self.curr.meta & dm)))	
+			except NoSuchPosition: pass
+		if len(self.ends) < 2: self.reject()			
 		return 
 		
 	def render(self):
@@ -441,24 +444,28 @@ class LineRdCornerPattern(Pattern):
 		
 		self.ends = []
 		for m,dm,x,y in [ 
-				(M_LINE_END_NW, M_LINE_DASHED_NW, -1,-1), 
-				(M_LINE_END_N, M_LINE_DASHED_N, 0,-1),
-				(M_LINE_END_NE, M_LINE_DASHED_NE, 1,-1),
-				(M_LINE_END_W, M_LINE_DASHED_W, -1,0), 
-				(M_LINE_END_E, M_LINE_DASHED_E, 1,0),
-				(M_LINE_END_SW, M_LINE_DASHED_SW, -1,1),
-				(M_LINE_END_S, M_LINE_DASHED_S, 0,1),
-				(M_LINE_END_SE, M_LINE_DASHED_SE, 1,1) ]:
+				(M_LINE_AFTER_E, M_DASH_AFTER_E, -1, 0),
+				(M_LINE_AFTER_SW,M_DASH_AFTER_SW, 1,-1),
+				(M_LINE_AFTER_S, M_DASH_AFTER_S,  0,-1),
+				(M_LINE_AFTER_SE,M_DASH_AFTER_SE,-1,-1) ]:		
 			if y < 0 and not up: continue
-			if y > 0 and not down: continue
-			if meta & m: 
-				self.ends.append((x,y,meta & dm))
+			if self.curr.meta & m: self.ends.append((x,y,self.curr.meta & dm))
+			
+		self.curr = yield M_OCCUPIED
 		
-		if len(self.ends) > 1: 
-			yield M_OCCUPIED
-		else:
-			self.reject()
+		for m,dm,x,y in [
+				(M_LINE_START_E, M_DASH_START_E,  1, 0),
+				(M_LINE_START_SW,M_DASH_START_SW,-1, 1),
+				(M_LINE_START_S, M_DASH_START_S,  0, 1),
+				(M_LINE_START_SE,M_DASH_START_SE, 1, 1), ]:
+			try:
+				if y > 0 and not down: continue
+				for meta in self.await_pos(self.offset(x,y,self.pos)):
+					self.curr = yield meta
+				if self.curr.meta & m: self.ends.append((x,y,self.curr.meta & dm))
+			except NoSuchPosition: pass
 		
+		if len(self.ends) < 2: self.reject()
 		return 
 		
 	def render(self):
@@ -477,6 +484,46 @@ class LineRdCornerPattern(Pattern):
 		return retval
 
 
+class ArrowheadPattern(Pattern):
+
+	pos = None
+	tobox = False
+	dashed = False
+	chars = None
+	linemeta = None
+	boxmeta = None
+	dashmeta = None
+	flipped = False
+	xdir = None
+	ydir = None
+	
+	def matcher(self):
+		self.curr = yield
+		if self.flipped:
+			if self.occupied() or not self.curr.char in self.chars:
+				if self.curr.meta & self.boxmeta: self.tobox = True
+				for meta in self.await_pos(xdir,ydir):
+					self.curr = yield meta
+		self.pos = self.curr.col,self.curr.row
+		if self.occupied() or not self.curr.char in self.chars(): self.reject()
+		if not self.flipped and not self.curr.meta & self.linemeta: self.reject()
+		self.curr = yield M_OCCUPIED
+		try:
+			for meta in self.await_pos(xdir-1,ydir):
+				self.curr = yield meta
+			if self.flipped:
+				if not self.curr.meta & self.linemeta: self.reject()
+			else:
+				if self.curr.meta & self.boxmeta: self.tobox = True	
+		except NoSuchPosition:
+			if self.flipped: raise
+		return
+		
+	# TODO: test above
+	# TODO: abstract render method
+			
+
+"""	
 class LArrowheadPattern(Pattern):
 
 	pos = None
@@ -608,8 +655,8 @@ class UArrowheadPattern(Pattern):
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
 			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
-
-
+"""
+	
 class CrowsFeetPattern(Pattern):
 
 	pos = None
@@ -622,24 +669,22 @@ class CrowsFeetPattern(Pattern):
 	dashed = False
 
 	def matcher(self):
-		m = [self.startmeta,self.endmeta]
 		self.curr = yield
 		if self.flipped:
-			if not self.curr.meta & m[0]: self.reject()
+			if not self.curr.meta & self.startmeta: self.reject()
 			for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
 				self.curr = yield meta
-			m.pop(0)
 		self.pos = self.curr.col,self.curr.row
-		if( self.occupied() or not self.curr.char in self.chars
-				or not self.curr.meta & m[0] ):
-			self.reject()
-		if self.curr.meta & self.dashmeta: self.dashed = True
-		self.curr = yield M_OCCUPIED
-		m.pop(0)
+		if self.occupied() or not self.curr.char in self.chars: self.reject()
 		if not self.flipped:
-			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-				self.curr = yield meta
-			if not self.curr.meta & m[0]: self.reject()
+			if not self.curr.meta & self.startmeta: self.reject()
+			if self.curr.meta & self.dashmeta: self.dashed = True
+		self.curr = yield M_OCCUPIED
+		for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
+			self.curr = yield meta
+		if not self.curr.meta & self.endmeta: self.reject()
+		if self.flipped:
+			if self.curr.meta & self.dashmeta: self.dashed = True
 		return
 		
 	def render(self):
@@ -667,8 +712,8 @@ class LCrowsFeetPattern(CrowsFeetPattern):
 	chars = ">"
 	flipped = True
 	startmeta = M_BOX_RIGHT
-	endmeta = M_LINE_END_E
-	dashmeta = M_LINE_DASHED_E
+	endmeta = M_LINE_START_E
+	dashmeta = M_DASH_START_E
 
 
 class RCrowsFeetPattern(CrowsFeetPattern):
@@ -677,9 +722,9 @@ class RCrowsFeetPattern(CrowsFeetPattern):
 	ydir = 0
 	chars = "<"
 	flipped = False
-	startmeta = M_LINE_END_W
+	startmeta = M_LINE_AFTER_E
 	endmeta = M_BOX_LEFT
-	dashmeta = M_LINE_DASHED_W
+	dashmeta = M_DASH_AFTER_E
 	
 	
 class UCrowsFeetPattern(CrowsFeetPattern):
@@ -689,8 +734,8 @@ class UCrowsFeetPattern(CrowsFeetPattern):
 	chars = "Vv"
 	flipped = True
 	startmeta = M_BOX_BOTTOM
-	endmeta = M_LINE_END_S
-	dashmeta = M_LINE_DASHED_S
+	endmeta = M_LINE_START_S
+	dashmeta = M_DASH_START_S
 	
 	
 class DCrowsFeetPattern(CrowsFeetPattern):
@@ -699,10 +744,10 @@ class DCrowsFeetPattern(CrowsFeetPattern):
 	ydir = 1
 	chars = "^"
 	flipped = False
-	startmeta = M_LINE_END_N
+	startmeta = M_LINE_AFTER_S
 	endmeta = M_BOX_TOP
-	dashmeta = M_LINE_DASHED_N
-	
+	dashmeta = M_DASH_AFTER_S
+
 
 class LinePattern(Pattern):
 
@@ -718,17 +763,12 @@ class LinePattern(Pattern):
 	
 	def matcher(self):
 		self.curr = yield
-		self.startpos = None
-		if self.curr.char != self.startchars[0] or self.occupied():
-			self.curr = yield self.startmeta
-			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-				self.curr = yield meta
 		pos = self.curr.col,self.curr.row
 		self.startpos = pos
-		r = random.random()
-		for startchar in self.startchars:
+		for i,startchar in enumerate(self.startchars):
 			pos = self.curr.col,self.curr.row
-			self.curr = yield self.expect(startchar,meta=M_OCCUPIED)
+			self.curr = yield self.expect(startchar,
+				meta=M_OCCUPIED|(self.startmeta if i==0 else 0))
 		try:
 			breaknow = False
 			while not breaknow:
@@ -763,8 +803,8 @@ class UpDiagLinePattern(LinePattern):
 	ydir = 1
 	startchars = ["/"]
 	midchars = startchars
-	startmeta = M_LINE_END_SW
-	endmeta = M_LINE_END_NE
+	startmeta = M_LINE_START_SW
+	endmeta = M_LINE_AFTER_SW
 	stroketype = STROKE_SOLID
 
 
@@ -774,8 +814,8 @@ class UpDiagDashedLinePattern(LinePattern):
 	ydir = 1
 	startchars = [","]
 	midchars = startchars
-	startmeta = M_LINE_END_SW | M_LINE_DASHED_SW
-	endmeta = M_LINE_END_NE | M_LINE_DASHED_NE
+	startmeta = M_LINE_START_SW | M_DASH_START_SW
+	endmeta = M_LINE_AFTER_SW | M_DASH_AFTER_SW
 	stroketype = STROKE_DASHED
 	
 		
@@ -785,8 +825,8 @@ class DownDiagLinePattern(LinePattern):
 	ydir = 1
 	startchars = ["\\"]
 	midchars = startchars
-	startmeta = M_LINE_END_SE
-	endmeta = M_LINE_END_NW
+	startmeta = M_LINE_START_SE
+	endmeta = M_LINE_AFTER_SE
 	stroketype = STROKE_SOLID
 	
 		
@@ -796,8 +836,8 @@ class DownDiagDashedLinePattern(LinePattern):
 	ydir = 1
 	startchars = ["`"]
 	midchars = startchars
-	startmeta = M_LINE_END_SE | M_LINE_DASHED_SE
-	endmeta = M_LINE_END_NW | M_LINE_DASHED_NW
+	startmeta = M_LINE_START_SE | M_DASH_START_SE
+	endmeta = M_LINE_AFTER_SE | M_DASH_AFTER_SE
 	stroketype = STROKE_DASHED
 	
 		
@@ -807,8 +847,8 @@ class VertLinePattern(LinePattern):
 	ydir = 1
 	startchars = ["|"]
 	midchars = startchars
-	startmeta = M_LINE_END_S
-	endmeta = M_LINE_END_N
+	startmeta = M_LINE_START_S
+	endmeta = M_LINE_AFTER_S
 	stroketype = STROKE_SOLID
 	
 	
@@ -818,8 +858,8 @@ class VertDashedLinePattern(LinePattern):
 	ydir = 1
 	startchars = [";"]
 	midchars = startchars
-	startmeta = M_LINE_END_S | M_LINE_DASHED_S
-	endmeta = M_LINE_END_N | M_LINE_DASHED_N
+	startmeta = M_LINE_START_S | M_DASH_START_S
+	endmeta = M_LINE_AFTER_S | M_DASH_AFTER_S
 	stroketype = STROKE_DASHED
 	
 	
@@ -829,8 +869,8 @@ class HorizLinePattern(LinePattern):
 	ydir = 0
 	startchars = ["-"]
 	midchars = startchars
-	startmeta = M_LINE_END_E
-	endmeta = M_LINE_END_W
+	startmeta = M_LINE_START_E
+	endmeta = M_LINE_AFTER_E
 	stroketype = STROKE_SOLID
 
 
@@ -840,8 +880,8 @@ class HorizDashedLinePattern(LinePattern):
 	ydir = 0
 	startchars = ["-"," ","-"," "]
 	midchars = ["-"," "]
-	startmeta = M_LINE_END_E | M_LINE_DASHED_E
-	endmeta = M_LINE_END_W | M_LINE_DASHED_W
+	startmeta = M_LINE_START_E | M_DASH_START_E
+	endmeta = M_LINE_AFTER_E | M_DASH_AFTER_E
 	stroketype = STROKE_DASHED
 
 
@@ -893,25 +933,40 @@ class SmallCirclePattern(Pattern):
 				1,STROKE_SOLID,None) ]
 
 
-class LJumpPattern(Pattern):
+class JumpPattern(Pattern):
 
 	pos = None
 	hdash = False
 	vdash = False
+	char = None
 
 	def matcher(self):
 		self.curr = yield
-		m = M_LINE_END_W | M_LINE_END_E | M_LINE_END_N | M_LINE_END_S
-		if( self.curr.char != "(" or self.occupied() 
-				or self.curr.meta & m != m ):
+		ndash,edash,sdash,wdash = [False]*4
+		if( self.curr.char != self.char or self.occupied() 
+				or not self.curr.meta & M_LINE_AFTER_E 
+				or not self.curr.meta & M_LINE_AFTER_S ):
 			self.reject()
-		if self.curr.meta & M_LINE_DASHED_N and self.curr.meta & M_LINE_DASHED_S:
-			self.vdash = True
-		if self.curr.meta & M_LINE_DASHED_W and self.curr.meta & M_LINE_DASHED_E:
-			self.hdash = True
+		if self.curr.meta & M_DASH_AFTER_E: wdash = True
+		if self.curr.meta & M_DASH_AFTER_S: ndash = True
 		self.pos = self.curr.col,self.curr.row
-		yield M_OCCUPIED
+		self.curr = yield M_OCCUPIED
+		for meta in self.await_pos(self.offset(1,0,self.pos)):
+			self.curr = yield meta
+		if not self.curr.meta & M_LINE_START_E: self.reject()
+		if self.curr.meta & M_DASH_START_E: edash = True
+		for meta in self.await_pos(self.offset(0,1,self.pos)):
+			self.curr = yield meta
+		if not self.curr.meta & M_LINE_START_S: self.reject()
+		if self.curr.meta & M_DASH_START_S: sdash = True
+		self.hdash = edash and wdash
+		self.vdash = ndash and sdash 
 		return
+		
+		
+class LJumpPattern(JumpPattern):
+
+	char = "("
 		
 	def render(self):
 		return [ 
@@ -921,26 +976,10 @@ class LJumpPattern(Pattern):
 				1,math.pi*0.5,math.pi*1.5,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID, None), ]
 	
 	
-class RJumpPattern(Pattern):
+class RJumpPattern(JumpPattern):
 
-	pos = None
-	hdash = False
-	vdash = False
+	char = ")"
 	
-	def matcher(self):
-		self.curr = yield
-		m = M_LINE_END_W | M_LINE_END_E | M_LINE_END_N | M_LINE_END_S
-		if( self.curr.char != ")" or self.occupied()
-				or self.curr.meta & m != m ):
-			self.reject()
-		if self.curr.meta & M_LINE_DASHED_N and self.curr.meta & M_LINE_DASHED_S:
-			self.vdash = True
-		if self.curr.meta & M_LINE_DASHED_W and self.curr.meta & M_LINE_DASHED_E:
-			self.hdash = True
-		self.pos = self.curr.col,self.curr.row
-		yield M_OCCUPIED
-		return
-		
 	def render(self):
 		return [
 			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
@@ -949,33 +988,17 @@ class RJumpPattern(Pattern):
 				1,math.pi*-0.5,math.pi*0.5,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID,None), ]
 	
 	
-class UJumpPattern(Pattern):
+class UJumpPattern(JumpPattern):
 
-	pos = None
-	hdash = False
-	vdash = False
+	char = "^"
 	
-	def matcher(self):
-		self.curr = yield
-		m = M_LINE_END_W | M_LINE_END_E | M_LINE_END_N | M_LINE_END_S
-		if( self.curr.char != "^" or self.occupied()
-				or self.curr.meta & m != m ):
-			self.reject()
-		if self.curr.meta & M_LINE_DASHED_N and self.curr.meta & M_LINE_DASHED_S:
-			self.vdash = True
-		if self.curr.meta & M_LINE_DASHED_W and self.curr.meta & M_LINE_DASHED_E:
-			self.hdash = True
-		self.pos = self.curr.col,self.curr.row
-		yield M_OCCUPIED
-		return
-
 	def render(self):
 		return [
 			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0),
 				1,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID),
 			Arc((self.pos[0],self.pos[1]+0.5-0.4),(self.pos[0]+1.0,self.pos[1]+0.5+0.4),
 				1,math.pi,math.pi*2,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID,None), ]
-	
+
 		
 PATTERNS = [
 	DbCylinderPattern,
@@ -996,10 +1019,10 @@ PATTERNS = [
 	LJumpPattern,
 	RJumpPattern,
 	UJumpPattern,
-	LArrowheadPattern,
-	RArrowheadPattern,
-	DArrowheadPattern,
-	UArrowheadPattern,
+	#LArrowheadPattern,
+	#RArrowheadPattern,
+	#DArrowheadPattern,
+	#UArrowheadPattern,
 	LCrowsFeetPattern,
 	RCrowsFeetPattern,
 	UCrowsFeetPattern,
@@ -1060,24 +1083,27 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 if __name__ == "__main__":
 
 	INPUT = """\
-MiniOreos Oranges O O O test- - > -->--><- -     | .-            ^ ,       `
-+---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',         :
-| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,          ;
-+---+--+ O| ***  || |(*)| |-| --- | ``//v   /|,; |   `|/ '---' |,    .- - - :
-/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :     ;      ;
+MiniOreos Oranges O O O test- - > -->--><- -     | .-            ^ ,       `    
++---+  +-<>  ---+ +-------+ .-----.  /`          '-'     .     .-',         :   | | |
+| O |  |  +------+| +---+ | '-----' //``|    + + +--.   /|    /| ,          ; --)-(-^--
++---+--+ O| ***  || |(*)| |-| --- | ``//v   /|,; |   `|/ '---' |,           ;   | | |
+/`  |O |  +------+| +---+ | | --- |  `/+-+   +   +----:----.   :     .- - - :   
     +--+   .--.   +-------+ '-----' /` | |  + +  |   /|`    ` /  ^   ;      ;
 () (A)  `  '--' /`This is a test|  /+ `+-+  |`|`  '   :   .--'---+>  '- - - :
   (  )   ` |  | `/  --- ---+    | // ` ` -<-  +    `   ` / +--+  v'.--.    ,    
  v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |   :
    |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'   ;
  love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^   +--+  +--+V
-      /       |            aV   Vote       |    ^   ; |     |   |  |>-|  |
-                                                                +--+  +--+  """.replace("`","\\")
+   |  / +--+  |            aV   Vote       |    ^   ; |     |   |  |>-|  |
+   ^    |  |                                                    +--+  +--+
+  +--+  +--+                                                   
+-<|  |   V                                                          
+  +--+   |                                                  """.replace("`","\\")
 	
-	INPUT = """\
-      |   |   |       ;      ;      |      |
-     -^- -^ -( )- - - ^- - --^--- - ^- - +-^- - 
-      |   |   |       ;      ;      |      ;  """.replace("*","\\")
+#	INPUT = """\
+#      |   |   |       ;      ;      |      |
+#     -^- -^ -( )- - - ^- - --^--- - ^- - +-^- - 
+#      |   |   |       ;      ;      |      ;  """.replace("*","\\")
 
 		
 	complete_matches = []
@@ -1115,3 +1141,4 @@ MiniOreos Oranges O O O test- - > -->--><- -     | .-            ^ ,       `
 	
 	
 	
+
