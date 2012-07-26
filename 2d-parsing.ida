@@ -690,9 +690,9 @@ M_LINE_DASH_E  <-- but I might have more line styles.
    for this?                    M_LINE_START_SW
                                 M_LINE_AFTER_SW
   _        _                                   * 
- (''  o   '')    O    O                *\o    o|  *\o/*
- -|-  +  -/_\-  -|-  -|-   <)->   <-(>   |-*  /\    |
- / \  ^   | |   | |  / \                / >  * /<  / \
+ (''  o   '')    O    O                *\o    o|  *\o/*  O   O  
+ -|-  +  -/_\-  -|-  -|-   <)->   <-(>   |-*  /\    |   -|- -|-  =^u^=
+ / \  ^   | |   | |  / \                / >  * /<  / \   V  / \
 
  vv v v    not flipped: meta/char, meta
 -<| |>-        flipped: meta, char, meta.
@@ -700,4 +700,8 @@ M_LINE_DASH_E  <-- but I might have more line styles.
  lb l b
  vv v v    not flipped: meta/char, meta
 ->| |<-        flipped: meta, char, meta
+
+I should make the same metadata change to boxes too, to facilitate
+upward arrow patterns.
+
 

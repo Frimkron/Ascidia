@@ -502,14 +502,14 @@ class ArrowheadPattern(Pattern):
 		if self.flipped:
 			if self.occupied() or not self.curr.char in self.chars:
 				if self.curr.meta & self.boxmeta: self.tobox = True
-				for meta in self.await_pos(xdir,ydir):
+				for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
 					self.curr = yield meta
 		self.pos = self.curr.col,self.curr.row
-		if self.occupied() or not self.curr.char in self.chars(): self.reject()
+		if self.occupied() or not self.curr.char in self.chars: self.reject()
 		if not self.flipped and not self.curr.meta & self.linemeta: self.reject()
 		self.curr = yield M_OCCUPIED
 		try:
-			for meta in self.await_pos(xdir-1,ydir):
+			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 				self.curr = yield meta
 			if self.flipped:
 				if not self.curr.meta & self.linemeta: self.reject()
@@ -519,143 +519,63 @@ class ArrowheadPattern(Pattern):
 			if self.flipped: raise
 		return
 		
-	# TODO: test above
-	# TODO: abstract render method
-			
-
-"""	
-class LArrowheadPattern(Pattern):
-
-	pos = None
-	tobox = False
-	dashed = False
-	
-	def matcher(self):
-		self.curr = yield
-		if self.curr.meta & M_BOX_RIGHT:
-			self.tobox = True
-			self.curr = yield M_NONE
-		self.pos = self.curr.col,self.curr.row
-		if( not self.occupied() and self.curr.char == "<" 
-				and self.curr.meta & M_LINE_END_E ):
-			if self.curr.meta & M_LINE_DASHED_E: self.dashed = True
-			yield M_OCCUPIED
-		else:
-			self.reject()
-		return
-
 	def render(self):
-		xoff = -0.5 if self.tobox else 0
+		flip = -1 if self.flipped else 1
+		centre = (self.pos[0]+0.5,self.pos[1]+0.5)
+		spos = (centre[0]-0.5*self.xdir*flip,centre[1]-0.5*self.ydir*flip)
+		apos2 = (centre[0]+(0.5+0.5*self.tobox)*self.xdir*flip,centre[1]+(0.5+0.5*self.tobox)*self.ydir*flip)
+		apos1 = (apos2[0]-0.8*self.xdir*flip-0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO-0.5*self.xdir*flip/CHAR_H_RATIO)
+		apos3 = (apos2[0]-0.8*self.xdir*flip+0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO+0.5*self.xdir*flip/CHAR_H_RATIO)
 		return [
-			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+0.8+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+xoff,self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+			Line(apos1,apos2,1,"darkred",1,STROKE_SOLID),
+			Line(apos3,apos2,1,"darkred",1,STROKE_SOLID),
+			Line(spos,apos2,1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+		
+
+class LArrowheadPattern(ArrowheadPattern):
+
+	chars = "<"
+	linemeta = M_LINE_START_E
+	boxmeta = M_BOX_RIGHT
+	dashmeta = M_DASH_START_E
+	xdir = 1
+	ydir = 0
+	flipped = True
 	
 		
-class RArrowheadPattern(Pattern):
+class RArrowheadPattern(ArrowheadPattern):
 	
-	pos = None
-	tobox = False
-	dashed = False
+	chars = ">"
+	linemeta = M_LINE_AFTER_E
+	boxmeta = M_BOX_LEFT
+	dashmeta = M_DASH_AFTER_E
+	xdir = 1
+	ydir = 0
+	flipped = False
 	
-	def matcher(self):
-		self.curr = yield
-		self.pos = self.curr.col,self.curr.row
-		if( not self.occupied() and self.curr.char == ">" 
-				and self.curr.meta & M_LINE_END_W ):
-			if self.curr.meta & M_LINE_DASHED_W: self.dashed = True
-			self.curr = yield M_OCCUPIED
-		else:
-			self.reject()
-			
-		if self.curr.meta & M_BOX_LEFT:
-			self.tobox = True		
-		return 
-		
-	def render(self):
-		xoff = 0.5 if self.tobox else 0
-		return [
-			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5-0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+1.0+xoff,self.pos[1]+0.5),(self.pos[0]+0.2+xoff,self.pos[1]+0.5+0.5/CHAR_H_RATIO),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0+xoff,self.pos[1]+0.5),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+
+class DArrowheadPattern(ArrowheadPattern):
+
+	chars = "Vv"
+	linemeta = M_LINE_AFTER_S
+	boxmeta = M_BOX_TOP
+	dashmeta = M_DASH_AFTER_S
+	xdir = 0
+	ydir = 1
+	flipped = False
+	# TODO: disallow word context
 
 
-class DArrowheadPattern(Pattern):
-
-	pos = None
-	tobox = False
-	dashed = False
+class UArrowheadPattern(ArrowheadPattern):
 	
-	def matcher(self):
-		self.curr = yield
-		# left context
-		# expect presence of prior character. This still works on left edge
-		# because it'll use the previous linebreak, and down arrows must have
-		# a previous line to have a line to connect to
-		if self.curr.char.isalpha(): self.reject()
-		self.curr = yield M_NONE
-		# main
-		if( not self.occupied() and self.curr.char in ("vV")
-				and self.curr.meta & M_LINE_END_N ):
-			if self.curr.meta & M_LINE_DASHED_N: self.dashed = True
-			self.pos = self.curr.col,self.curr.row
-			self.curr = yield M_OCCUPIED
-		else:
-			self.reject()
-		# right context
-		try:
-			for meta in self.await_pos(self.offset(1,0,self.pos)):
-				self.curr = yield meta
-			if self.curr.char.isalpha(): self.reject()
-		except NoSuchPosition: pass
-		# under context
-		try:
-			for meta in self.await_pos(self.offset(0,1,self.pos)):
-				self.curr = yield meta
-			if self.curr.meta & M_BOX_TOP:
-				self.tobox = True
-		except NoSuchPosition: pass
-		return
-		
-	def render(self):
-		yoff = 0.5 if self.tobox else 0
-		return [
-			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0],self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+0.5,self.pos[1]+1.0+yoff),(self.pos[0]+1.0,self.pos[1]+1.0-0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0+yoff),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+	chars = "^"
+	linemeta = M_LINE_START_S
+	boxmeta = M_BOX_BOTTOM
+	dashmeta = M_DASH_START_S
+	xdir = 0
+	ydir = 1
+	flipped = True
 
-
-class UArrowheadPattern(Pattern):
-	
-	pos = None
-	tobox = False
-	dashed = False
-	
-	def matcher(self):
-		self.curr = yield
-		if self.curr.meta & M_BOX_BOTTOM:
-			startpos = self.curr.col,self.curr.row
-			self.tobox = True
-			for meta in self.await_pos(self.offset(0,1,startpos)):
-				self.curr = yield meta
-		else:
-			startpos = self.curr.col,self.curr.row-1
-		self.pos = self.curr.col,self.curr.row
-		if( not self.occupied() and self.curr.char == "^"
-				and self.curr.meta & M_LINE_END_S ):
-			if self.curr.meta & M_LINE_DASHED_S: self.dashed = True
-			yield M_OCCUPIED
-		else:
-			self.reject()
-		return
-		
-	def render(self):
-		yoff = -0.5 if self.tobox else 0
-		return [
-			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO+yoff),1,"darkred",1,STROKE_SOLID),
-			Line((self.pos[0]+0.5,self.pos[1]+yoff),(self.pos[0]+0.5,self.pos[1]+1.0),1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
-"""
 	
 class CrowsFeetPattern(Pattern):
 
@@ -1019,10 +939,10 @@ PATTERNS = [
 	LJumpPattern,
 	RJumpPattern,
 	UJumpPattern,
-	#LArrowheadPattern,
-	#RArrowheadPattern,
-	#DArrowheadPattern,
-	#UArrowheadPattern,
+	LArrowheadPattern,
+	RArrowheadPattern,
+	DArrowheadPattern,
+	UArrowheadPattern,
 	LCrowsFeetPattern,
 	RCrowsFeetPattern,
 	UCrowsFeetPattern,
