@@ -704,4 +704,8 @@ M_LINE_DASH_E  <-- but I might have more line styles.
 I should make the same metadata change to boxes too, to facilitate
 upward arrow patterns.
 
+ vv   vv   NF meta/char, meta
+-<|  |>-    F meta/char, meta
 
+ vv   vv   NF meta/char, meta
+->|  |<-    F meta/char, meta

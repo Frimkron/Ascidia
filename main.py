@@ -20,10 +20,10 @@ STROKE_DASHED = object()
 
 M_NONE = 0
 M_OCCUPIED = (1<<0)
-M_BOX_TOP = (1<<1)
-M_BOX_BOTTOM = (1<<2)
-M_BOX_LEFT = (1<<3)
-M_BOX_RIGHT = (1<<4)
+M_BOX_START_S = (1<<1)
+M_BOX_AFTER_S = (1<<2)
+M_BOX_START_E = (1<<3)
+M_BOX_AFTER_E = (1<<4)
 M_LINE_START_E = (1<<5)
 M_DASH_START_E = (1<<6)
 M_LINE_AFTER_E = (1<<7)
@@ -350,27 +350,41 @@ class BoxPattern(Pattern):
 		w,h = 0,0
 		self.curr = yield
 		self.tl = (self.curr.col,self.curr.row)
-		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_TOP|M_BOX_LEFT)
-		self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_TOP)
+		rowstart = self.curr.col,self.curr.row
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
+		self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
 		while self.curr.char != "+":
-			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_TOP)
+			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
 		w = self.curr.col-self.tl[0]+1
-		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_TOP|M_BOX_RIGHT)
-		for meta in self.await_pos(self.offset(-w,1)): 
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S)
+		self.curr = yield M_BOX_AFTER_E
+		for meta in self.await_pos(self.offset(0,1,rowstart)): 
 			self.curr = yield meta
 		while True:
-			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_LEFT)
+			rowstart = self.curr.col,self.curr.row
+			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
 			for meta in self.await_pos(self.offset(w-2,0)):
 				self.curr = yield meta
-			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_RIGHT)
-			for meta in self.await_pos(self.offset(-w,1)):
+			self.curr = yield self.expect("|",meta=M_OCCUPIED)
+			self.curr = yield M_BOX_AFTER_E
+			for meta in self.await_pos(self.offset(0,1,rowstart)):
 				self.curr = yield meta
 			if self.curr.char == "+": break
-		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_LEFT|M_BOX_BOTTOM)
+		rowstart = self.curr.col,self.curr.row
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_E)
 		for n in range(w-2):
-			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_BOTTOM)
+			self.curr = yield self.expect("-",meta=M_OCCUPIED)
 		self.br = (self.curr.col,self.curr.row)
-		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_BOTTOM|M_BOX_RIGHT)
+		self.curr = yield self.expect("+",meta=M_OCCUPIED)
+		self.curr = yield M_BOX_AFTER_E
+		try:
+			for meta in self.await_pos(self.offset(0,1,rowstart)):
+				self.curr = yield meta
+			rowstart = self.curr.col,self.curr.row
+			for n in range(w):
+				if self.curr.char=="\n": break
+				self.curr = yield M_BOX_AFTER_S
+		except NoSuchPosition: pass
 		return
 		
 	def render(self):
@@ -499,14 +513,12 @@ class ArrowheadPattern(Pattern):
 	
 	def matcher(self):
 		self.curr = yield
-		if self.flipped:
-			if self.occupied() or not self.curr.char in self.chars:
-				if self.curr.meta & self.boxmeta: self.tobox = True
-				for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
-					self.curr = yield meta
 		self.pos = self.curr.col,self.curr.row
 		if self.occupied() or not self.curr.char in self.chars: self.reject()
-		if not self.flipped and not self.curr.meta & self.linemeta: self.reject()
+		if self.flipped:
+			if self.curr.meta & self.boxmeta: self.tobox = True
+		else:
+			if not self.curr.meta & self.linemeta: self.reject()
 		self.curr = yield M_OCCUPIED
 		try:
 			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
@@ -536,7 +548,7 @@ class LArrowheadPattern(ArrowheadPattern):
 
 	chars = "<"
 	linemeta = M_LINE_START_E
-	boxmeta = M_BOX_RIGHT
+	boxmeta = M_BOX_AFTER_E
 	dashmeta = M_DASH_START_E
 	xdir = 1
 	ydir = 0
@@ -547,7 +559,7 @@ class RArrowheadPattern(ArrowheadPattern):
 	
 	chars = ">"
 	linemeta = M_LINE_AFTER_E
-	boxmeta = M_BOX_LEFT
+	boxmeta = M_BOX_START_E
 	dashmeta = M_DASH_AFTER_E
 	xdir = 1
 	ydir = 0
@@ -558,7 +570,7 @@ class DArrowheadPattern(ArrowheadPattern):
 
 	chars = "Vv"
 	linemeta = M_LINE_AFTER_S
-	boxmeta = M_BOX_TOP
+	boxmeta = M_BOX_START_S
 	dashmeta = M_DASH_AFTER_S
 	xdir = 0
 	ydir = 1
@@ -570,7 +582,7 @@ class UArrowheadPattern(ArrowheadPattern):
 	
 	chars = "^"
 	linemeta = M_LINE_START_S
-	boxmeta = M_BOX_BOTTOM
+	boxmeta = M_BOX_AFTER_S
 	dashmeta = M_DASH_START_S
 	xdir = 0
 	ydir = 1
@@ -590,21 +602,18 @@ class CrowsFeetPattern(Pattern):
 
 	def matcher(self):
 		self.curr = yield
-		if self.flipped:
-			if not self.curr.meta & self.startmeta: self.reject()
-			for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
-				self.curr = yield meta
 		self.pos = self.curr.col,self.curr.row
-		if self.occupied() or not self.curr.char in self.chars: self.reject()
-		if not self.flipped:
-			if not self.curr.meta & self.startmeta: self.reject()
-			if self.curr.meta & self.dashmeta: self.dashed = True
+		if( self.occupied() or not self.curr.char in self.chars
+				or not self.curr.meta & self.startmeta ): 
+			self.reject()
+		if not self.flipped and self.curr.meta & self.dashmeta: 
+			self.dashed = True
 		self.curr = yield M_OCCUPIED
 		for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 			self.curr = yield meta
 		if not self.curr.meta & self.endmeta: self.reject()
-		if self.flipped:
-			if self.curr.meta & self.dashmeta: self.dashed = True
+		if self.flipped and self.curr.meta & self.dashmeta:
+			self.dashed = True
 		return
 		
 	def render(self):
@@ -624,14 +633,14 @@ class CrowsFeetPattern(Pattern):
 			Line(fpos0,fpos3,1,"gray",1,STROKE_SOLID),
 			Line(spos,fpos0,1,"gray",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
-
+	
 class LCrowsFeetPattern(CrowsFeetPattern):
 
 	xdir = 1
 	ydir = 0
 	chars = ">"
 	flipped = True
-	startmeta = M_BOX_RIGHT
+	startmeta = M_BOX_AFTER_E
 	endmeta = M_LINE_START_E
 	dashmeta = M_DASH_START_E
 
@@ -643,7 +652,7 @@ class RCrowsFeetPattern(CrowsFeetPattern):
 	chars = "<"
 	flipped = False
 	startmeta = M_LINE_AFTER_E
-	endmeta = M_BOX_LEFT
+	endmeta = M_BOX_START_E
 	dashmeta = M_DASH_AFTER_E
 	
 	
@@ -653,7 +662,7 @@ class UCrowsFeetPattern(CrowsFeetPattern):
 	ydir = 1
 	chars = "Vv"
 	flipped = True
-	startmeta = M_BOX_BOTTOM
+	startmeta = M_BOX_AFTER_S
 	endmeta = M_LINE_START_S
 	dashmeta = M_DASH_START_S
 	
@@ -665,7 +674,7 @@ class DCrowsFeetPattern(CrowsFeetPattern):
 	chars = "^"
 	flipped = False
 	startmeta = M_LINE_AFTER_S
-	endmeta = M_BOX_TOP
+	endmeta = M_BOX_START_S
 	dashmeta = M_DASH_AFTER_S
 
 
