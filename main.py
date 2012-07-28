@@ -928,8 +928,38 @@ class UJumpPattern(JumpPattern):
 			Arc((self.pos[0],self.pos[1]+0.5-0.4),(self.pos[0]+1.0,self.pos[1]+0.5+0.4),
 				1,math.pi,math.pi*2,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID,None), ]
 
+
+class StickManPattern(Pattern):
+
+	pos = None
+	
+	def matcher(self):
+		self.curr = yield
+		self.pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect("oO0")
+		for meta in self.await_pos(self.offset(-2,1)):
+			self.curr = yield meta
+		self.curr = yield self.expect("-")
+		self.curr = yield self.expect("|")
+		self.curr = yield self.expect("-")
+		for meta in self.await_pos(self.offset(-3,1)):
+			self.curr = yield meta
+		self.curr = yield self.expect("/")
+		self.curr = yield self.expect(" ")
+		self.curr = yield self.expect("\\")
+		return
+		
+	def render(self):
+		return [
+			Ellipse(self.offset(0,1-1.0/CHAR_H_RATIO,self.pos),self.offset(1,1,self.pos),1,"yellow",1,STROKE_SOLID,None),
+			Line(self.offset(0.5,1,self.pos),self.offset(0.5,1.8,self.pos),1,"yellow",1,STROKE_SOLID),
+			Line(self.offset(-1,1.25,self.pos),self.offset(2,1.25,self.pos),1,"yellow",1,STROKE_SOLID),
+			Line(self.offset(0.5,1.8,self.pos),self.offset(-0.5,2.8,self.pos),1,"yellow",1,STROKE_SOLID),
+			Line(self.offset(0.5,1.8,self.pos),self.offset(1.5,2.8,self.pos),1,"yellow",1,STROKE_SOLID), ]
+
 		
 PATTERNS = [
+	StickManPattern,
 	DbCylinderPattern,
 	DiamondPattern,
 	BoxPattern,
@@ -1023,9 +1053,9 @@ MiniOreos Oranges O O O test- - > -->--><- -     | .-            ^ ,       `
  v (   )  +'--'    +---+ --+--+-+ `   +/ +<--.      :   :->|  |<---|  |   :
    |      |   | |  ||-`-`     | |  ` //   `   `    /  | |  +--+    '--'   ;
  love  .--'   v v  +-----+  |   |   `/  <  .   '--' ^ ^     ^   +--+  +--+V
-   |  / +--+  |            aV   Vote       |    ^   ; |     |   |  |>-|  |
-   ^    |  |                                                    +--+  +--+
-  +--+  +--+                                                   
+   |  / +--+  |     0      aV   Vote       |    ^   ; |     |   |  |>-|  |
+   ^    |  |       -|-                                          +--+  +--+
+  +--+  +--+       / \                                            
 -<|  |   V                                                          
   +--+   |                                                  """.replace("`","\\")
 	

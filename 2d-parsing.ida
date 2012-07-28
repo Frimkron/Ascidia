@@ -690,8 +690,8 @@ M_LINE_DASH_E  <-- but I might have more line styles.
    for this?                    M_LINE_START_SW
                                 M_LINE_AFTER_SW
   _        _                                   * 
- (''  o   '')    O    O                *\o    o|  *\o/*  O   O  
- -|-  +  -/_\-  -|-  -|-   <)->   <-(>   |-*  /\    |   -|- -|-  =^u^=
+ (''  o   '')    O    O                *\o    o|  *\o/*  O   O     
+ -|-  +  -/_\-  -|-  -|-   <)->   <-(>   |-*  /\    |   -|- -|-  =(^w^)=
  / \  ^   | |   | |  / \                / >  * /<  / \   V  / \
 
  vv v v    not flipped: meta/char, meta
@@ -709,3 +709,90 @@ upward arrow patterns.
 
  vv   vv   NF meta/char, meta
 ->|  |<-    F meta/char, meta
+
+- For general-purpose boxes such as tables and things, connected boxes should
+  be properly recognised. Or rather, the box pattern should reject connected lines
+
++---+  +----+    +-------------+    /---\     .---.    .-----.
+|yep|  |nope|    |             |    |spc|    ( spc )  /       \
++---+  +----+--  +-------------+    \---/     '---'  (         )
+                 |yep          |                      \       /   .
+  +=====+        |(specialised)|   .----.    /    \    '-----'  .' '.
+  "     "        +-------------+  / spc  \  / what \     n    .'feed '.    y
+  "     "        |             |  \      /  \ next?/  ---<---:   the   :--->---
+  +=====+        +-------------+   '----'    \    /           '. cat?.'       
+       || "                                                     '. .'
+       || "                                                       '
+=====  || "                                                               
+                                                                  
+[?] Should all enclosed lines be recognised as boxes?
+- This would be difficult to acheive because metadata must be output as
+  pattern is being matched
+
+
+Diagram types:
+
+# Entity Relationship
+	- Attributes (circled)
+	- Entities (boxed)
+	- Relationships (diamonds)
+	- Primary keys (underlined)
+	- Chen                   .
+	               +---+N  .' '.  1+---+
+	               |   |--:     :--|   |
+	               +---+   '. .'   +---+
+                             '
+    - IDEF1X       +---+           +---+
+                   |---|*- - - - <>|---|
+                   +---+           +---+
+                   
+    - Bachman      +---+          +---+
+                   |   |*<|------O|   |
+                   +---+          +---+
+                   
+    - Martin / IE / Crow's foot           >O--  0 or more
+                   +---+          +---+   >|--  1 or more
+                   |   |>O-----||-|   |   -||-  1 and only 1
+                   +---+          +---+   |O--  0 or 1
+# Class diagram
+    - Classes (boxed, 3 sections)    +----.
+    - Relationships (lines, arrows)  |wot|_\
+    - Notes (folded corner box)      | up  |
+    - Inheritence (empty tri arrow)  +-----+   ----- |      ----- |
+    - Composition (empty/filled diamond)        /_\  |<|--    ^   |<>---
+                                 +---+           |   |        v   |                .----.
+# Server deployment             /   /|    __    _____         |                    '----'
+	- Nodes (3d boxes)         +---+ +   /_/|  /____/|  _________________    _     |    |
+	                           |   |/    |_|/  |    || /________________/|  |_|[ ] '----'
+	                           +---+           |____|/ | +--+ +--+ +--+ ||    __  ______
+# Data flow diagram                                    | |  | |  | |  | ||   (__)(______)
+	- start/end (circle/box/rounded)                   | +--+ +--+ +--+ ||   |  ||      |
+    - arrows                   +---------------+       |________________|/   '--''------'
+    - processing (box)        / read username /      .
+    - I/O (parrallelogram)   +---------------+|    .' '.  y
+    - conditional (diamond)                   +-->: ok? :---->
+                                                   '. .'
+# Sequence diagram                                   '                    
+    - Boxes                   ;
+    - Dashed lines            ;-----> 
+    - Arrows             O    ;
+    - Stick figures     -|-   ;<-----                                         .-------.
+                        / \   ;                     .-----.    .---------.   /         \
+# State machine diagram                 .-------.  / fooo  \  /foo bar foo\ |           |
+    - Circle boxes             ( foo ) ( fooobar ) \  baaa / | bar foo bar ||           |
+    - Filled circle                     '-------'   '-----'   \foo bar foo/ |           |
+    - Circled filled circle     (#)-->((#))                    '---------'   \         /
+                                 |      ^                                     '-------'
+                                 |      |
+                                 '------'  
+Box connectors:
+  |-----  --------------------
+  |<----  | ^/_\| * V V V ^ ^
+  |<|---  | | | =/_\| - 0 V #
+  |-||--  | | | | | | | | | V
+  |*<|--  | | | | | | | | | | 
+  |>----
+  |>|---
+  |>O---
+  |<>---
+  |<#>--
