@@ -49,7 +49,7 @@ class SvgOutput(object):
 		if hasattr(item,"w"):
 			el.setAttribute("stroke-width",self._w(item.w))
 		if hasattr(item,"stype"):
-			if item.stype == STROKE_DASHED:
+			if item.stype == core.STROKE_DASHED:
 				el.setAttribute("stroke-dasharray",",".join(
 						map(str,SvgOutput.DASH_PATTERN)))
 		if hasattr(item,"fill"):

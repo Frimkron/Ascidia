@@ -2,6 +2,8 @@ import unittest
 import core
 import patterns
 import main
+import io
+import xml.dom.minidom
 
 class TestMatchLookup(unittest.TestCase):
 
@@ -211,9 +213,129 @@ class TestMatchLookup(unittest.TestCase):
 		m.remove_cooccupants(match)
 
 
-# TODO
 class TestSvgOutput(unittest.TestCase):
-	pass
+	
+	def do_output(self,items):
+		s = io.BytesIO()
+		main.SvgOutput()._output(items,s)
+		return xml.dom.minidom.parseString(s.getvalue())
+	
+	def child_elements(self,node):
+		return filter(lambda x: x.nodeType==xml.dom.minidom.Node.ELEMENT_NODE, node.childNodes)
+	
+	def test_can_construct(self):	
+		main.SvgOutput()
 		
+	def test_creates_root_element(self):
+		e = self.do_output([]).documentElement
+		self.assertEquals("svg", e.tagName)
+		self.assertEquals("1.1", e.getAttribute("version"))
+		self.assertEquals("http://www.w3.org/2000/svg", e.namespaceURI)
+			
+	def test_handles_line(self):
+		e = self.do_output([core.Line((0,0),(1,1),1,"red",1,core.STROKE_SOLID)]).documentElement
+		ch = self.child_elements(e)
+		self.assertEquals(1, len(ch))
+		self.assertEquals("line", ch[0].tagName)
+		
+	def test_line_coordinates(self):
+		l = self.child_elements(self.do_output([core.Line(
+				(1,2),(3,4),1,"red",1,core.STROKE_SOLID)]).documentElement)[0]
+		self.assertEquals(12, float(l.getAttribute("x1")))
+		self.assertEquals(48, float(l.getAttribute("y1")))
+		self.assertEquals(36, float(l.getAttribute("x2")))
+		self.assertEquals(96, float(l.getAttribute("y2")))
+		
+	def test_line_stroke_colour(self):
+		l = self.child_elements(self.do_output([core.Line(
+				(1,2),(3,4),1,"red",1,core.STROKE_SOLID)]).documentElement)[0]
+		self.assertEquals("red", l.getAttribute("stroke"))
+		
+	def test_line_no_stroke(self):
+		l = self.child_elements(self.do_output([core.Line(
+				(1,2),(3,4),1,None,1,core.STROKE_SOLID)]).documentElement)[0]
+		self.assertEquals("none", l.getAttribute("stroke"))
+	
+	def test_line_stroke_width(self):
+		l = self.child_elements(self.do_output([core.Line(
+				(1,2),(3,4),1,"red",2,core.STROKE_SOLID)]).documentElement)[0]
+		self.assertEquals(5, float(l.getAttribute("stroke-width")))
+		
+	def test_line_stroke_solid(self):
+		l = self.child_elements(self.do_output([core.Line(
+				(1,2),(3,4),1,"red",1,core.STROKE_SOLID)]).documentElement)[0]
+		self.assertEquals("", l.getAttribute("stroke-dasharray"))	
+	
+	def test_line_stroke_dashed(self):
+		l = self.child_elements(self.do_output([core.Line(
+				(1,2),(3,4),1,"red",1,core.STROKE_DASHED)]).documentElement)[0]
+		self.assertEquals("8,8", l.getAttribute("stroke-dasharray"))
+		
+	def test_line_z(self):
+		ls = self.child_elements(self.do_output([
+				core.Line((1,2),(3,4),5,"green",1,core.STROKE_SOLID),
+				core.Line((9,8),(7,6),1,"blue",1,core.STROKE_SOLID),
+				core.Line((6,6),(6,5),3,"red",1,core.STROKE_SOLID), ]).documentElement)
+		self.assertEquals("blue",ls[0].getAttribute("stroke"))
+		self.assertEquals("red",ls[1].getAttribute("stroke"))
+		self.assertEquals("green",ls[2].getAttribute("stroke"))
+		
+	def test_handles_rectangle(self):
+		ch = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,4),1,"red",1,core.STROKE_SOLID,"blue")]).documentElement)
+		self.assertEquals(1, len(ch))
+		self.assertEquals("rect", ch[0].tagName)
+		
+	def test_rect_coordinates(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",1,core.STROKE_SOLID,"blue")]).documentElement)[0]
+		self.assertEquals(12,float(r.getAttribute("x")))
+		self.assertEquals(48,float(r.getAttribute("y")))
+		self.assertEquals(24,float(r.getAttribute("width")))
+		self.assertEquals(72,float(r.getAttribute("height")))
+	
+	def test_rect_stroke_colour(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",1,core.STROKE_SOLID,"blue")]).documentElement)[0]
+		self.assertEquals("red", r.getAttribute("stroke"))
+	
+	def test_rect_no_stroke(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,None,1,core.STROKE_SOLID,"blue")]).documentElement)[0]
+		self.assertEquals("none", r.getAttribute("stroke"))
+		
+	def test_rect_stroke_width(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",3,core.STROKE_SOLID,"blue")]).documentElement)[0]
+		self.assertEquals(7.5, float(r.getAttribute("stroke-width")))
+		
+	def test_rect_stroke_solid(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",2,core.STROKE_SOLID,"blue")]).documentElement)[0]
+		self.assertEquals("", r.getAttribute("stroke-dasharray"))
+		
+	def test_rect_stroke_dashed(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",2,core.STROKE_DASHED,"blue")]).documentElement)[0]
+		self.assertEquals("8,8", r.getAttribute("stroke-dasharray"))
+		
+	def test_rect_fill_colour(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",2,core.STROKE_SOLID,"blue")]).documentElement)[0]
+		self.assertEquals("blue",r.getAttribute("fill"))
+		
+	def test_rect_no_fill(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",2,core.STROKE_SOLID,None)]).documentElement)[0]
+		self.assertEquals("none",r.getAttribute("fill"))
+		
+	def test_rect_z(self):
+		rs = self.child_elements(self.do_output([
+			core.Rectangle((1,2),(3,4),5,"red",2,core.STROKE_SOLID,"blue"),
+			core.Rectangle((9,9),(8,8),1,"green",2,core.STROKE_SOLID,"red"),
+			core.Rectangle((3,4),(5,6),3,"blue",2,core.STROKE_SOLID,"green"), ]).documentElement)
+		self.assertEquals("green", rs[0].getAttribute("stroke"))
+		self.assertEquals("blue", rs[1].getAttribute("stroke"))
+		self.assertEquals("red", rs[2].getAttribute("stroke"))
 	
 unittest.main()
