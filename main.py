@@ -85,8 +85,8 @@ class SvgOutput(object):
 		parent.appendChild(el)
 		
 	def _do_Arc(self,arc,doc,parent):
-		rx = (arc.b[0]-arc.a[0])/2
-		ry = (arc.b[1]-arc.a[1])/2
+		rx = (arc.b[0]-arc.a[0])/2.0
+		ry = (arc.b[1]-arc.a[1])/2.0
 		cx,cy = arc.a[0]+rx, arc.a[1]+ry
 		sx = cx+math.cos(arc.start)*rx
 		sy = cy+math.sin(arc.start)*ry

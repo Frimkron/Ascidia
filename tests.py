@@ -4,6 +4,7 @@ import patterns
 import main
 import io
 import xml.dom.minidom
+import math
 
 class TestMatchLookup(unittest.TestCase):
 
@@ -337,5 +338,206 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals("green", rs[0].getAttribute("stroke"))
 		self.assertEquals("blue", rs[1].getAttribute("stroke"))
 		self.assertEquals("red", rs[2].getAttribute("stroke"))
+		
+	def test_handles_ellipse(self):
+		ch = self.child_elements(self.do_output([ core.Ellipse(
+				(2,3),(5,1),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)
+		self.assertEquals(1, len(ch))
+		self.assertEquals("ellipse", ch[0].tagName)
+		
+	def test_ellipse_coordinates(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals(42, float(e.getAttribute("cx")))
+		self.assertEquals(48, float(e.getAttribute("cy")))
+		self.assertEquals(18, float(e.getAttribute("rx")))
+		self.assertEquals(24, float(e.getAttribute("ry")))
+		
+	def test_ellipse_stroke_colour(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("red",e.getAttribute("stroke"))
+		
+	def test_ellipse_no_stroke(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,None,2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("none",e.getAttribute("stroke"))
+		
+	def test_ellipse_stroke_width(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals(5, float(e.getAttribute("stroke-width")))
+		
+	def test_ellipse_stroke_solid(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("", e.getAttribute("stroke-dasharray"))
+		
+	def test_ellipse_stroke_dashed(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_DASHED,"blue") ]).documentElement)[0]
+		self.assertEquals("8,8", e.getAttribute("stroke-dasharray"))
+		
+	def test_ellipse_fill_colour(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("blue", e.getAttribute("fill"))
+		
+	def test_ellipse_no_fill(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,None) ]).documentElement)[0]
+		self.assertEquals("none", e.getAttribute("fill"))
+		
+	def test_ellipse_z(self):
+		ch = self.child_elements(self.do_output([ 
+			core.Ellipse((2,1),(5,3),3,"red",2,core.STROKE_SOLID,"blue"),
+			core.Ellipse((2,2),(1,1),10,"blue",3,core.STROKE_SOLID,"green"),
+			core.Ellipse((3,3),(4,5),1,"green",1,core.STROKE_SOLID,"red") ]).documentElement)
+		self.assertEquals(3, len(ch))
+		self.assertEquals("green", ch[0].getAttribute("stroke"))
+		self.assertEquals("red", ch[1].getAttribute("stroke"))
+		self.assertEquals("blue", ch[2].getAttribute("stroke"))
+		
+	def test_handles_arc(self):
+		ch = self.child_elements(self.do_output([ core.Arc(
+				(2,5),(3,4),1,-math.pi/2,math.pi/4,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)
+		self.assertEquals(1, len(ch))
+		self.assertEquals("path", ch[0].tagName)
+		
+	def test_arc_coordinates(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("M 24,120 A 6,24 0 1 1 30,144", a.getAttribute("d"))
+		
+	def test_arc_stroke_colour(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("red", a.getAttribute("stroke"))
+		
+	def test_arc_no_stroke(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,None,1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("none", a.getAttribute("stroke"))
+		
+	def test_arc_stroke_width(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals(2.5, float(a.getAttribute("stroke-width")))
+		
+	def test_arc_stroke_solid(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("", a.getAttribute("stroke-dasharray"))
+		
+	def test_arc_stroke_dashed(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_DASHED,"blue") ]).documentElement)[0]
+		self.assertEquals("8,8", a.getAttribute("stroke-dasharray"))
+	
+	def test_arc_fill_colour(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
+		self.assertEquals("blue", a.getAttribute("fill"))
+		
+	def test_arc_no_fill(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,None) ]).documentElement)[0]
+		self.assertEquals("none", a.getAttribute("fill"))
+		
+	def test_arc_z(self):
+		ch = self.child_elements(self.do_output([ 
+				core.Arc((2,4),(3,6),5,-math.pi,math.pi/2,"red",2,core.STROKE_SOLID,"blue"),
+				core.Arc((1,2),(4,5),20,-math.pi/2,math.pi,"blue",2,core.STROKE_DASHED,"red"),
+				core.Arc((3,4),(7,1),1,math.pi,math.pi*2,"green",1,core.STROKE_SOLID,"orange"), ]).documentElement)
+		self.assertEquals(3, len(ch))
+		self.assertEquals("green", ch[0].getAttribute("stroke"))
+		self.assertEquals("red", ch[1].getAttribute("stroke"))
+		self.assertEquals("blue", ch[2].getAttribute("stroke"))
+		
+	def test_handles_quadcurve(self):
+		ch = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,"purple",2,core.STROKE_SOLID) ]).documentElement)
+		self.assertEquals(1, len(ch))
+		self.assertEquals("path", ch[0].tagName)
+		
+	def test_quadcurve_coordinates(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,"purple",2,core.STROKE_SOLID) ]).documentElement)[0]
+		self.assertEquals("M 12,48 Q 48,72 36,120",q.getAttribute("d"))
+		
+	def test_quadcurve_stroke_colour(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,"purple",2,core.STROKE_SOLID) ]).documentElement)[0]
+		self.assertEquals("purple", q.getAttribute("stroke"))
+		
+	def test_quadcurve_no_stroke(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,None,2,core.STROKE_SOLID) ]).documentElement)[0]
+		self.assertEquals("none", q.getAttribute("stroke"))
+		
+	def test_quadcurve_stroke_width(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,"purple",2,core.STROKE_SOLID) ]).documentElement)[0]
+		self.assertEquals(5, float(q.getAttribute("stroke-width")))
+		
+	def test_quadcurve_stroke_solid(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,"purple",2,core.STROKE_SOLID) ]).documentElement)[0]
+		self.assertEquals("", q.getAttribute("stroke-dasharray"))
+		
+	def test_quadcurve_stroke_dashed(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,"purple",2,core.STROKE_DASHED) ]).documentElement)[0]
+		self.assertEquals("8,8", q.getAttribute("stroke-dasharray"))
+		
+	def test_quadcurve_z(self):
+		ch = self.child_elements(self.do_output([ 
+			core.QuadCurve((1,2),(3,5),(4,3),1,"purple",2,core.STROKE_SOLID),
+			core.QuadCurve((0,1),(2,4),(3,4),3,"green",3,core.STROKE_DASHED),
+			core.QuadCurve((2,3),(4,0),(4,5),2,"wheat",1,core.STROKE_SOLID), ]).documentElement)
+		self.assertEquals(3, len(ch))
+		self.assertEquals("purple", ch[0].getAttribute("stroke"))
+		self.assertEquals("wheat", ch[1].getAttribute("stroke"))
+		self.assertEquals("green", ch[2].getAttribute("stroke"))
+		
+	def test_handles_text(self):
+		ch = self.child_elements(self.do_output([ core.Text(
+				(3,4),1,"!","red",1) ]).documentElement)
+		self.assertEquals(1, len(ch))
+		self.assertEquals("text", ch[0].tagName)
+		self.assertEquals("monospace", ch[0].getAttribute("font-family"))
+		
+	def test_text_coordinates(self):
+		t = self.child_elements(self.do_output([ core.Text(
+				(3,4),1,"!","red",1) ]).documentElement)[0]
+		self.assertEquals(36, float(t.getAttribute("x")))
+		self.assertEquals(114,float(t.getAttribute("y")))
+		
+	def test_text_content(self):
+		t = self.child_elements(self.do_output([ core.Text(
+				(3,4),1,"!","red",1) ]).documentElement)[0]
+		self.assertEquals(1, len(t.childNodes))
+		self.assertEquals("!", t.childNodes[0].nodeValue)
+		
+	def test_text_colour(self):
+		t = self.child_elements(self.do_output([ core.Text(
+				(3,4),1,"!","red",1) ]).documentElement)[0]
+		self.assertEquals("red", t.getAttribute("fill"))
+		
+	def test_text_size(self):
+		t = self.child_elements(self.do_output([ core.Text(
+				(3,4),1,"!","red",1.25) ]).documentElement)[0]
+		self.assertEquals(20, float(t.getAttribute("font-size")))
+		
+	def test_text_z(self):
+		ch = self.child_elements(self.do_output([ 
+			core.Text((3,4),4,"!","red",1),
+			core.Text((2,2),12,"?","blue",1),
+			core.Text((4,5),1,"&","green",1), ]).documentElement)
+		self.assertEquals(3, len(ch))
+		self.assertEquals("green",ch[0].getAttribute("fill"))
+		self.assertEquals("red",ch[1].getAttribute("fill"))
+		self.assertEquals("blue",ch[2].getAttribute("fill"))
+	
 	
 unittest.main()
