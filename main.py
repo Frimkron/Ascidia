@@ -172,19 +172,19 @@ class MatchLookup(object):
 CurrentChar = namedtuple("CurrentChar","row col char meta")
 
 
-if __name__ == "__main__":
+def process_diagram(text,patternlist):
 
-	# TODO: move this into class or method which can be unit tested
-	# TODO: command line interface
-		
+	lines = [l+"\n" for l in text.splitlines()]
+	lines.append( [core.END_OF_INPUT] )
+
 	complete_matches = []
 	complete_meta = {}
-	for pclass in patterns.PATTERNS:
+	for pclass in patternlist:
 		print pclass.__name__
 		ongoing = MatchLookup()	
-		for j,line in enumerate((INPUT+END_OF_INPUT).splitlines()):
-			for i,char in enumerate(line+"\n"):	
-				meta = complete_meta.get((j,i),M_NONE)
+		for j,line in enumerate(lines):
+			for i,char in enumerate(line):	
+				meta = complete_meta.get((j,i),core.M_NONE)
 				newp = pclass()
 				ongoing.add_match(newp)
 				for match in ongoing.get_all_matches():
@@ -192,24 +192,29 @@ if __name__ == "__main__":
 						continue
 					try:
 						matchmeta = match.test(CurrentChar(j,i,char,meta))
-					except PatternRejected:
+					except core.PatternRejected:
 						ongoing.remove_match(match)
 					except StopIteration:
 						complete_matches.append(match)
 						for p,m in ongoing.get_meta_for(match).items():
-							complete_meta[p] = complete_meta.get(p,M_NONE) | m
+							complete_meta[p] = complete_meta.get(p,core.M_NONE) | m
 						ongoing.remove_cooccupants(match)
 						ongoing.remove_match(match)
 					else:
 						ongoing.add_meta(match,(j,i),matchmeta)
 		
-	renderitems = []				
-	for m in complete_matches:
-		renderitems.extend(m.render())
+	return sum([m.render() for m in complete_matches],[])
+	
+
+if __name__ == "__main__":
+
+	# TODO: move this into class or method which can be unit tested
+	# TODO: command line interface
+	
+	renderitems = process_diagram("foo",patterns.PATTERNS)
+	
 	with open("test2.svg","w") as f:
 		SvgOutput.output(renderitems,f)
-	
-	
 	
 	
 

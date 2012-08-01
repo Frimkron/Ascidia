@@ -5,6 +5,8 @@ import main
 import io
 import xml.dom.minidom
 import math
+import mock
+
 
 class TestMatchLookup(unittest.TestCase):
 
@@ -538,6 +540,61 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals("green",ch[0].getAttribute("fill"))
 		self.assertEquals("red",ch[1].getAttribute("fill"))
 		self.assertEquals("blue",ch[2].getAttribute("fill"))
-	
+
+
+class TestProcessDiagram(unittest.TestCase):
+
+	def test_outputs_list(self):
+		result = main.process_diagram("",[])
+		self.assertTrue(isinstance(result,list))
+		
+	class MockPattern(object):
+		insts = []
+		tests = []
+		def __init__(self):
+			self.__class__.insts.append(self)
+			self.tests = []
+		def test(self,curr): 
+			self.tests.append(curr)
+			raise core.PatternRejected()
+		def render(self):
+			return []
+		
+	def test_applies_pattern_to_every_position(self):
+		input = "1 \n 34"
+		class MP(TestProcessDiagram.MockPattern): pass
+		MP.insts = []
+		main.process_diagram(input,[MP])
+		self.assertEquals(8, len(MP.insts))
+		for i,(row,col,c) in enumerate([
+				(0,0,"1"),(0,1," "),(0,2,"\n"),
+				(1,0," "),(1,1,"3"),(1,2,"4"),(1,3,"\n"),
+				(2,0,core.END_OF_INPUT) ]):
+			self.assertEquals([main.CurrentChar(row,col,c,core.M_NONE)],MP.insts[i].tests)
+			
+	def test_applies_every_pattern(self):
+		input = "1 \n 34"
+		class MPA(TestProcessDiagram.MockPattern): pass
+		class MPB(TestProcessDiagram.MockPattern): pass
+		MPA.insts = []
+		MPB.insts = []
+		main.process_diagram(input,[MPA,MPB])
+		self.assertEquals(8, len(MPA.insts))
+		self.assertEquals(8, len(MPB.insts))
+		
+	# TODO: do we care whether it applies the pattern to every position?
+	# 		Should test behaviour not implementation
+	#	* Empty list for no matches
+	#	* Correct render items for match
+	#	* Multiple matches for same pattern
+	#	* Match priority order for multiple patterns
+	#	* First for multiple overlapping instance of same pattern
+	#	* Leaves metadata for successful matches
+	#	* Doesnt leave metadata for failed matches
+	#	* Metadata not available to other instances of same pattern
+	#	* Matches allowed in unoccupied but matched spaces
+	#	* Newlines at line endings
+	#	* End of input at end of text
+		
 	
 unittest.main()
