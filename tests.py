@@ -544,57 +544,199 @@ class TestSvgOutput(unittest.TestCase):
 
 class TestProcessDiagram(unittest.TestCase):
 
-	def test_outputs_list(self):
+	def test_returns_empty_list_for_no_matches(self):
 		result = main.process_diagram("",[])
 		self.assertTrue(isinstance(result,list))
 		
-	class MockPattern(object):
-		insts = []
-		tests = []
-		def __init__(self):
-			self.__class__.insts.append(self)
-			self.tests = []
-		def test(self,curr): 
-			self.tests.append(curr)
-			raise core.PatternRejected()
-		def render(self):
-			return []
+	def test_single_character_pattern_match(self):
+		r = object()
+		class SingleCharPattern(object):
+			def test(self,curr):
+				raise StopIteration()
+			def render(self):
+				return [ r ]
+		result = main.process_diagram("a",[SingleCharPattern])
+		self.assertEquals(3,len(result))
+		self.assertEquals(r,result[0])
+	
+	def test_doesnt_output_rejected_pattern(self):
+		class RejectingPattern(object):
+			def test(self,curr):
+				raise core.PatternRejected()
+			def render(self):
+				return [ object() ]
+		result = main.process_diagram("a",[RejectingPattern])
+		self.assertEquals(0,len(result))
 		
-	def test_applies_pattern_to_every_position(self):
-		input = "1 \n 34"
-		class MP(TestProcessDiagram.MockPattern): pass
-		MP.insts = []
-		main.process_diagram(input,[MP])
-		self.assertEquals(8, len(MP.insts))
-		for i,(row,col,c) in enumerate([
-				(0,0,"1"),(0,1," "),(0,2,"\n"),
-				(1,0," "),(1,1,"3"),(1,2,"4"),(1,3,"\n"),
-				(2,0,core.END_OF_INPUT) ]):
-			self.assertEquals([main.CurrentChar(row,col,c,core.M_NONE)],MP.insts[i].tests)
-			
-	def test_applies_every_pattern(self):
-		input = "1 \n 34"
-		class MPA(TestProcessDiagram.MockPattern): pass
-		class MPB(TestProcessDiagram.MockPattern): pass
-		MPA.insts = []
-		MPB.insts = []
-		main.process_diagram(input,[MPA,MPB])
-		self.assertEquals(8, len(MPA.insts))
-		self.assertEquals(8, len(MPB.insts))
+	def test_multiple_character_pattern_match(self):
+		r = object()
+		class MultiCharPattern(object):
+			i = 0
+			def test(self,curr):
+				if self.i >= 1: raise StopIteration()
+				self.i += 1
+				return core.M_NONE
+			def render(self):
+				return [ r ]
+		result = main.process_diagram("a",[MultiCharPattern])
+		self.assertEquals(2, len(result))
+		self.assertEquals(r,result[0])
+		self.assertEquals(r,result[1])
 		
-	# TODO: do we care whether it applies the pattern to every position?
-	# 		Should test behaviour not implementation
-	#	* Empty list for no matches
-	#	* Correct render items for match
-	#	* Multiple matches for same pattern
-	#	* Match priority order for multiple patterns
-	#	* First for multiple overlapping instance of same pattern
-	#	* Leaves metadata for successful matches
-	#	* Doesnt leave metadata for failed matches
-	#	* Metadata not available to other instances of same pattern
-	#	* Matches allowed in unoccupied but matched spaces
-	#	* Newlines at line endings
-	#	* End of input at end of text
+	def test_doesnt_output_unfinished_pattern(self):
+		class NeverendingPattern(object):
+			def test(self,curr):
+				return core.M_NONE
+			def render(self):
+				return [ object() ]
+		result = main.process_diagram("a",[NeverendingPattern])
+		self.assertEquals(0,len(result))
+
+	def test_multiple_matching_patterns(self):
+		r1 = object()
+		r2 = object()
+		class Pattern1(object):
+			def test(self,curr):
+				raise StopIteration()
+			def render(self):
+				return [ r1 ]
+		class Pattern2(object):
+			def test(self,curr):
+				raise StopIteration()
+			def render(self):
+				return [ r2 ]
+		result = main.process_diagram("a",[Pattern1,Pattern2])
+		self.assertTrue( r1 in result )
+		self.assertTrue( r2 in result )
+
+	def test_feeds_pattern_current_position(self):
+		class PosStoringPattern(object):
+			i = 0
+			insts = []
+			positions = []
+			def __init__(self):
+				PosStoringPattern.insts.append(self)
+				self.positions = []
+			def test(self,curr):
+				self.positions.append((curr.col,curr.row))
+				if self.i >= 1: raise core.PatternRejected()
+				self.i += 1	
+				return core.M_NONE
+			def render(self):	
+				return []
+		main.process_diagram("a\nb\n",[PosStoringPattern])
+		self.assertEquals(5,len(PosStoringPattern.insts))
+		self.assertEquals([(0,0),(1,0)],PosStoringPattern.insts[0].positions)
+		self.assertEquals([(1,0),(0,1)],PosStoringPattern.insts[1].positions)
+		self.assertEquals([(0,1),(1,1)],PosStoringPattern.insts[2].positions)
+		self.assertEquals([(1,1),(0,2)],PosStoringPattern.insts[3].positions)
+		self.assertEquals([(0,2)],PosStoringPattern.insts[4].positions)
+		
+	def test_feeds_pattern_current_character(self):
+		class CharStoringPattern(object):
+			i = 0
+			insts = []
+			chars = []
+			def __init__(self):
+				CharStoringPattern.insts.append(self)
+				self.chars = []
+			def test(self,curr):
+				self.chars.append(curr.char)
+				if self.i >= 1: raise core.PatternRejected()
+				self.i += 1
+				return core.M_NONE
+			def render(self):
+				return []
+		main.process_diagram("ab",[CharStoringPattern])
+		self.assertEquals(4,len(CharStoringPattern.insts))
+		self.assertEquals(["a","b"],CharStoringPattern.insts[0].chars)
+		self.assertEquals(["b","\n"],CharStoringPattern.insts[1].chars)
+		self.assertEquals(["\n",core.END_OF_INPUT],CharStoringPattern.insts[2].chars)
+		self.assertEquals([core.END_OF_INPUT],CharStoringPattern.insts[3].chars)
+	
+	def test_feeds_pattern_metadata_from_previous_patterns(self):
+		class MetaPattern(object):
+			i = 0
+			def test(self,curr):
+				if self.i >= 1: raise StopIteration()
+				self.i += 1
+				return core.M_BOX_START_E
+			def render(self):
+				return []
+		class MetaStoringPattern(object):
+			i = 0
+			insts = []
+			metas = []
+			def __init__(self):
+				MetaStoringPattern.insts.append(self)
+				self.metas = []
+			def test(self,curr):
+				self.metas.append(curr.meta)
+				if self.i >= 1: raise StopIteration()
+				self.i += 1
+				return core.M_NONE
+			def render(self):
+				return []
+		main.process_diagram("ab",[MetaPattern,MetaStoringPattern])
+		self.assertEquals(4, len(MetaStoringPattern.insts))
+		self.assertEquals([core.M_BOX_START_E,core.M_BOX_START_E],MetaStoringPattern.insts[0].metas)
+		self.assertEquals([core.M_BOX_START_E,core.M_BOX_START_E],MetaStoringPattern.insts[1].metas)
+		self.assertEquals([core.M_BOX_START_E,core.M_NONE],MetaStoringPattern.insts[2].metas)
+		self.assertEquals([core.M_NONE],MetaStoringPattern.insts[3].metas)
+		
+	def test_occupied_meta_disallows_overlapping_pattern_instances(self):
+		class OccupyingPattern(object):
+			id = 0
+			i = 0
+			def __init__(self):
+				self.id = OccupyingPattern.id
+				OccupyingPattern.id += 1
+			def test(self,curr):
+				if self.i >= 2: raise StopIteration()
+				self.i += 1
+				return core.M_OCCUPIED
+			def render(self):
+				return [ self.id ]
+		result = main.process_diagram("abc",[OccupyingPattern])
+		self.assertEquals([0,2], result)
+	
+	def test_doesnt_leave_metadata_for_failed_matches(self):
+		r1 = object()
+		r2 = object()
+		class FailingMetaPattern(object):
+			i = 0
+			def test(self,curr):
+				if self.i >= 1: raise core.PatternRejected()
+				self.i += 1
+				return core.M_BOX_START_E
+			def render(self):
+				return []
+		class MetaMatchingPattern(object):
+			def test(self,curr):
+				if curr.meta == core.M_BOX_START_E: 
+					raise StopIteration()
+				else:
+					raise core.PatternRejected()
+			def render(self):
+				return []
+		result = main.process_diagram("abc",[FailingMetaPattern,MetaMatchingPattern])
+		self.assertTrue( r1 not in result )
+		self.assertTrue( r2 not in result )
+	
+	def test_metadata_not_passed_to_instances_of_same_pattern(self):
+		class MetaMatchingPattern(object):
+			i = 0
+			def test(self,curr):
+				if self.i >= 1: raise StopIteration()
+				self.i += 1	
+				if curr.char == "a" and curr.meta == core.M_NONE:
+					return core.M_BOX_START_E
+				else:
+					raise core.PatternRejected()
+			def render(self):
+				return [ object() ]
+		result = main.process_diagram("a a",[MetaMatchingPattern])
+		self.assertEquals(2, len(result))		
 		
 	
 unittest.main()
