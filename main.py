@@ -208,7 +208,6 @@ def process_diagram(text,patternlist):
 
 if __name__ == "__main__":
 
-	# TODO: move this into class or method which can be unit tested
 	# TODO: command line interface
 	
 	renderitems = process_diagram("foo",patterns.PATTERNS)

@@ -98,3 +98,4 @@ class Pattern(object):
 		if not self.is_finished: 
 			raise PatternStateError("Pattern not matched")
 		return []
+

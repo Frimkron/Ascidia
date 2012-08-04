@@ -796,3 +796,16 @@ Box connectors:
   |>O---
   |<>---
   |<#>--
+
+pclass()
+pclass().next()
+					curr = yield
+-> None
+pclass.test("a")
+					-> "a"
+					curr = yield occupied
+-> occupied
+pclass.test(" ")
+					-> " "
+					return
+-> StopIteration

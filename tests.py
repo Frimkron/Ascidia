@@ -737,6 +737,163 @@ class TestProcessDiagram(unittest.TestCase):
 				return [ object() ]
 		result = main.process_diagram("a a",[MetaMatchingPattern])
 		self.assertEquals(2, len(result))		
+
+
+class PatternTests(object):
+
+	pclass = None
+
+	def test_can_construct(self):
+		self.pclass()
 		
+	def test_raises_error_on_early_render(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternStateError):
+			p.render()
+
+
+class TestLiteralPattern(unittest.TestCase,PatternTests):
+
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.LiteralPattern
+		
+	def test_accepts_non_whitespace(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(3,2,"a",core.M_NONE))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,3," ",core.M_NONE))
+		
+	def test_accepts_only_single_non_whitespace(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(3,2,"a",core.M_NONE))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,3,"a",core.M_NONE))
+			
+	def test_rejects_if_whitespace(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2," ",core.M_NONE))
+	
+	def test_rejects_if_occupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"a",core.M_OCCUPIED))
+			
+	def test_accepts_other_meta(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(2,3,"a",core.M_BOX_START_E))
+		
+	def test_rejects_if_end_of_input(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,core.END_OF_INPUT,core.M_NONE))
+		
+	def do_render(self,row,col,char):
+		p = self.pclass()
+		p.test(main.CurrentChar(row,col,char,core.M_NONE))
+		try:
+			p.test(main.CurrentChar(row,col+1,"b",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+			
+	def test_render_returns_text(self):
+		result = self.do_render(0,0,"a")
+		self.assertEquals(1,len(result))
+		self.assertTrue(isinstance(result[0],core.Text))
+		
+	def test_render_coordinates(self):
+		text = self.do_render(3,2,"a")[0]
+		self.assertEquals((2,3), text.pos)
+	
+	def test_render_z(self):
+		text = self.do_render(3,2,"a")[0]
+		self.assertEquals(0, text.z)
+		
+	def test_render_text(self):
+		text = self.do_render(2,1,"H")[0]
+		self.assertEquals("H", text.text)
+		
+	def test_render_colour(self):
+		text = self.do_render(2,1,"a")[0]
+		self.assertEquals("black", text.colour)
+		
+	def test_render_size(self):
+		text = self.do_render(2,1,"a")[0]
+		self.assertEquals(1, text.size)
+
+
+class TestDbCylinderPattern(unittest.TestCase,PatternTests):
+
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.DbCylinderPattern
+	
+	def test_accepts_cylinder(self):
+		input = [
+			".--.\n",
+			"'--'\n",
+			"|  |\n",
+			"'--'" ]
+		p = self.pclass()
+		for j,line in enumerate(input):
+			for i,char in enumerate(line):
+				p.test(main.CurrentChar(j,i,char,core.M_NONE))
+		try:
+			p.test(main.CurrentChar(len(input),0,"\n",core.M_NONE))
+		except StopIteration: pass
+		
+	def test_expects_top_start_period(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,0,"p",core.M_NONE))
+			
+	def test_expects_top_start_period_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,0,".",core.M_OCCUPIED))
+			
+	def test_expects_top_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,0,".",core.M_NONE))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1,".",core.M_NONE))
+			
+	def test_expects_top_line_unoccupied(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,0,".",core.M_NONE))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,0,"-",core.M_OCCUPIED))
+			
+	def test_expects_top_end_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,0,".",core.M_NONE))
+		p.test(main.CurrentChar(0,1,"-",core.M_NONE))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"?",core.M_NONE))
+			
+	def test_expects_top_end_period_unoccupie(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,0,".",core.M_NONE))
+		p.test(main.CurrentChar(0,1,"-",core.M_NONE))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,".",core.M_OCCUPIED))
+		
+	def test_allows_long_top_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,1,".",core.M_NONE))
+		p.test(main.CurrentChar(0,2,"-",core.M_NONE))
+		p.test(main.CurrentChar(0,3,"-",core.M_NONE))
+		p.test(main.CurrentChar(0,4,"-",core.M_NONE))
+		p.test(main.CurrentChar(0,5,".",core.M_NONE))
+
+	def test_allows_rest_of_top_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,1,".",core.M_NONE))
+		p.test(main.CurrentChar(0,2,"-",core.M_NONE))
+		p.test(main.CurrentChar(0,3,".",core.M_NONE))
+		p.test(main.CurrentChar(0,4,"a",core.M_NONE))
+		p.test(main.CurrentChar(0,5,"b",core.M_NONE))
+		p.test(main.CurrentChar(0,6,"\n",core.M_NONE))
 	
 unittest.main()

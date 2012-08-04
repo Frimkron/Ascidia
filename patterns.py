@@ -1,4 +1,4 @@
-"""	
+""" 
 Pattern classes go here
 """
 
@@ -23,62 +23,8 @@ class LiteralPattern(Pattern):
 		
 	def render(self):
 		Pattern.render(self)
-		return [ Text(self.pos,0,self.char,"brown",1) ]
+		return [ Text(self.pos,0,self.char,"black",1) ]
 		
-
-class DiamondPattern(Pattern):
-
-	tl = None
-	br = None
-	
-	def matcher(self):
-		self.curr = yield
-		startj,starti = self.curr.row,self.curr.col
-		rowcount = 0
-		self.curr = yield self.expect("/")
-		self.curr = yield self.expect("\\")
-		while True:
-			try:
-				for meta in self.await_pos(self.offset(-(rowcount*2+2+1),1)):
-					self.curr = yield meta
-			except NoSuchPosition: break
-			if self.curr.char != "/": break
-			rowcount += 1
-			self.curr = yield self.expect("/")
-			for meta in self.await_pos(self.offset(rowcount*2,0)):
-				self.curr = yield meta
-			self.curr = yield self.expect("\\")
-		for meta in self.await_pos((starti-rowcount,startj+rowcount+1)):
-			self.curr = yield meta
-		w = rowcount*2 + 2
-		h = (rowcount+1) * 2
-		while True:
-			self.curr = yield self.expect("\\")
-			for meta in self.await_pos(self.offset(rowcount*2,0)):
-				self.curr = yield meta
-			self.curr = yield self.expect("/")	
-			if rowcount <= 0: break
-			for meta in self.await_pos(self.offset(-(rowcount*2+2-1),1)):
-				self.curr = yield meta
-			rowcount -= 1
-		self.tl = (starti-(w/2-1),startj)
-		self.br = (starti+(w/2),startj+(h-1))		
-		return
-		
-	def render(self):
-		Pattern.render(self)
-		w = self.br[0]-self.tl[0]+1
-		h = self.br[1]-self.tl[1]+1
-		return [		
-			Line( (self.tl[0]+w/2.0, self.tl[1]),
-				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID),
-			Line( (self.tl[0]+w/2.0, self.tl[1]),
-				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID),
-			Line( (self.tl[0]+w/2.0, self.br[1]+1.0),
-				(self.br[0]+1.0, self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID),
-			Line( (self.tl[0]+w/2.0, self.br[1]+1.0),
-				(self.tl[0], self.tl[1]+h/2.0), 1, "orange", 1, STROKE_SOLID) ]
-				
 		
 class DbCylinderPattern(Pattern):
 
@@ -753,7 +699,6 @@ class StickManPattern(Pattern):
 PATTERNS = [
 	StickManPattern,
 	DbCylinderPattern,
-	DiamondPattern,
 	BoxPattern,
 	SmallCirclePattern,
 	TinyCirclePattern,
