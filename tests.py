@@ -7,6 +7,10 @@ import xml.dom.minidom
 import math
 import mock
 
+# TODO: db cylinder pattern should be changed to accept optional 
+# final line with M_BOX_AFTER_S meta flag, similarly with right
+# edge.
+
 
 class TestMatchLookup(unittest.TestCase):
 
@@ -842,6 +846,11 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 		try:
 			p.test(main.CurrentChar(len(input),0,"\n",core.M_NONE))
 		except StopIteration: pass
+	
+	def feed_input(self,pattern,row,col,characters):
+		for char in characters:
+			pattern.test(main.CurrentChar(row,col,char,core.M_NONE))
+			col += 1
 		
 	def test_expects_top_start_period(self):
 		p = self.pclass()
@@ -867,33 +876,257 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 			
 	def test_expects_top_end_period(self):
 		p = self.pclass()
-		p.test(main.CurrentChar(0,0,".",core.M_NONE))
-		p.test(main.CurrentChar(0,1,"-",core.M_NONE))
+		self.feed_input(p,0,0,".-")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,2,"?",core.M_NONE))
 			
 	def test_expects_top_end_period_unoccupie(self):
 		p = self.pclass()
-		p.test(main.CurrentChar(0,0,".",core.M_NONE))
-		p.test(main.CurrentChar(0,1,"-",core.M_NONE))
+		self.feed_input(p,0,0,".-")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,2,".",core.M_OCCUPIED))
 		
 	def test_allows_long_top_line(self):
 		p = self.pclass()
-		p.test(main.CurrentChar(0,1,".",core.M_NONE))
-		p.test(main.CurrentChar(0,2,"-",core.M_NONE))
-		p.test(main.CurrentChar(0,3,"-",core.M_NONE))
-		p.test(main.CurrentChar(0,4,"-",core.M_NONE))
-		p.test(main.CurrentChar(0,5,".",core.M_NONE))
+		self.feed_input(p,0,1,".---.")
 
 	def test_allows_rest_of_top_line(self):
 		p = self.pclass()
-		p.test(main.CurrentChar(0,1,".",core.M_NONE))
-		p.test(main.CurrentChar(0,2,"-",core.M_NONE))
-		p.test(main.CurrentChar(0,3,".",core.M_NONE))
-		p.test(main.CurrentChar(0,4,"a",core.M_NONE))
-		p.test(main.CurrentChar(0,5,"b",core.M_NONE))
-		p.test(main.CurrentChar(0,6,"\n",core.M_NONE))
+		self.feed_input(p,0,1,".-.")
+		p.test(main.CurrentChar(0,2,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,3,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,4,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_second_line(self):
+		p = self.pclass()
+		self.feed_input(p,0,2,".-.\n")
+		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))		
+	
+	def test_expects_top_start_apos(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,0,"|",core.M_NONE))
+			
+	def test_expects_top_start_apos_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,0,"'",core.M_OCCUPIED))
+	
+	def test_expects_top_underline(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,1,"'",core.M_NONE))
+	
+	def test_expects_top_underline_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,1,"-",core.M_OCCUPIED))
+	
+	def test_rejects_top_underline_too_short(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".--.\n")
+		self.feed_input(p,1,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"'",core.M_NONE))
+			
+	def test_rejects_top_underline_too_lone(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"-",core.M_NONE))
+	
+	def test_expects_top_end_apos(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"a",core.M_NONE))
+			
+	def test_expects_top_end_apos_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"'",core.M_OCCUPIED))
+	
+	def test_allows_rest_of_second_line(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'")
+		p.test(main.CurrentChar(1,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,4,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,5,"\n",core.M_OCCUPIED))
+	
+	def test_allows_start_of_third_line(self):
+		p = self.pclass()
+		self.feed_input(p,0,2,".-.\n")
+		self.feed_input(p,1,0,"  '-'\n")
+		p.test(main.CurrentChar(2,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,1,"x",core.M_OCCUPIED))
+	
+	def test_expects_mid_start_pipe(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,0,"'",core.M_NONE))
+						
+	def test_expects_mid_start_pipe_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,0,"|",core.M_OCCUPIED))
+			
+	def test_allows_mid_space(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".--.\n")
+		self.feed_input(p,1,0,"'--'\n")
+		self.feed_input(p,2,0,"|")
+		p.test(main.CurrentChar(2,1,"p",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,2,"q",core.M_OCCUPIED))
+	
+	def test_expects_mid_end_pipe(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"p",core.M_NONE))
+			
+	def test_expects_mid_end_pipe_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"|",core.M_OCCUPIED))
+			
+	def test_allows_end_of_third_line(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |")
+		p.test(main.CurrentChar(2,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,4,"z",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,5,"\n",core.M_OCCUPIED))	
+	
+	def test_allows_start_of_last_line(self):
+		p = self.pclass()
+		self.feed_input(p,0,2,  ".-.\n")
+		self.feed_input(p,1,0,"  '-'\n")
+		self.feed_input(p,2,0,"  | |\n")
+		p.test(main.CurrentChar(3,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(3,1,"x",core.M_OCCUPIED))
+		
+	def test_expects_bottom_start_apos(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,0,"z",core.M_NONE))
+		
+	def test_expects_bottom_start_apos_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,0,"'",core.M_OCCUPIED))
+			
+	def test_expects_bottom_line(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		self.feed_input(p,3,0,"'")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,1,"'",core.M_NONE))
+			
+	def test_expects_bottom_line_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		self.feed_input(p,3,0,"'")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,1,"-",core.M_OCCUPIED))
+	
+	def test_rejects_bottom_line_too_short(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".--.\n")
+		self.feed_input(p,1,0,"'--'\n")
+		self.feed_input(p,2,0,"|  |\n")
+		self.feed_input(p,3,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,2,"'",core.M_NONE))
+	
+	def test_rejects_bottom_line_too_long(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		self.feed_input(p,3,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,2,"-",core.M_NONE))
+			
+	def test_expects_bottom_end_apos(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		self.feed_input(p,3,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,2,"z",core.M_NONE))
+			
+	def test_expects_bottom_end_apos_unoccupied(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		self.feed_input(p,3,0,"'-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,2,"'",core.M_OCCUPIED))
+			
+	def test_allows_multiple_mid_lines(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		self.feed_input(p,3,0,"| |\n")
+		self.feed_input(p,4,0,"| |\n")
+		
+	def test_sets_correct_meta_flags(self):
+		input = ((  ".---.  \n",),
+		         ("  '---'  \n",),
+		         ("  |   |  \n",),
+		         ("  '---'  \n",),
+		         ("       "    ,))
+		c = core.M_OCCUPIED | core.M_BOX_START_S | core.M_BOX_START_E
+		t = core.M_OCCUPIED | core.M_BOX_START_S
+		l = core.M_OCCUPIED | core.M_BOX_START_E
+		n = core.M_NONE
+		o = core.M_OCCUPIED
+		r = core.M_BOX_AFTER_E
+		b = core.M_BOX_AFTER_S
+		meta =  ((    c,t,t,t,t,r,n,n,),
+				 (n,n,l,o,o,o,o,r,n,n,),
+				 (n,n,l,n,n,n,o,r,n,n,),
+				 (n,n,l,o,o,o,o,r,n,n,),
+				 (n,n,b,b,b,b,b       ))
+		p = self.pclass()
+		for j,line in enumerate(input):
+			for i,char in enumerate(line):
+				m = p.test(main.CurrentChar(j,i,char,core.M_NONE))
+				self.assertEquals(meta[j][i],m)
 	
 unittest.main()
