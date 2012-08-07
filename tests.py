@@ -846,13 +846,14 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 			".--.\n",
 			"'--'\n",
 			"|  |\n",
-			"'--'" ]
+			"'--'\n",
+			"    " ]
 		p = self.pclass()
 		for j,line in enumerate(input):
 			for i,char in enumerate(line):
 				p.test(main.CurrentChar(j,i,char,core.M_NONE))
 		try:
-			p.test(main.CurrentChar(len(input),0,"\n",core.M_NONE))
+			p.test(main.CurrentChar(len(input),0," ",core.M_NONE))
 		except StopIteration: pass
 	
 	def feed_input(self,pattern,row,col,characters):
@@ -1105,6 +1106,32 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(3,2,"'",core.M_OCCUPIED))
 			
+	def test_allows_rest_of_last_line(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".-.\n")
+		self.feed_input(p,1,0,"'-'\n")
+		self.feed_input(p,2,0,"| |\n")
+		self.feed_input(p,3,0,"'-'ab\n")
+		
+	def test_accepts_partial_line_after(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".--.\n")
+		self.feed_input(p,1,0,"'--'\n")
+		self.feed_input(p,2,0,"|  |\n")
+		self.feed_input(p,3,0,"'--'\n")
+		self.feed_input(p,4,0,"ab\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(5,0,"c",core.M_NONE))
+			
+	def test_accepts_no_line_after(self):
+		p = self.pclass()
+		self.feed_input(p,0,0,".--.\n")
+		self.feed_input(p,1,0,"'--'\n")
+		self.feed_input(p,2,0,"|  |\n")
+		self.feed_input(p,3,0,"'--'\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,0,core.END_OF_INPUT,core.M_NONE))
+			
 	def test_allows_multiple_mid_lines(self):
 		p = self.pclass()
 		self.feed_input(p,0,0,".-.\n")
@@ -1113,29 +1140,29 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 		self.feed_input(p,3,0,"| |\n")
 		self.feed_input(p,4,0,"| |\n")
 		
-	#def test_sets_correct_meta_flags(self):
-	#	input = ((  ".---.  \n",),
-	#	         ("  '---'  \n",),
-	#	         ("  |   |  \n",),
-	#	         ("  '---'  \n",),
-	#	         ("       "    ,))
-	#	c = core.M_OCCUPIED | core.M_BOX_START_S | core.M_BOX_START_E
-	#	t = core.M_OCCUPIED | core.M_BOX_START_S
-	#	l = core.M_OCCUPIED | core.M_BOX_START_E
-	#	n = core.M_NONE
-	#	o = core.M_OCCUPIED
-	#	r = core.M_BOX_AFTER_E
-	#	b = core.M_BOX_AFTER_S
-	#	meta =  ((    c,t,t,t,t,r,n,n,),
-	#			 (n,n,l,o,o,o,o,r,n,n,),
-	#			 (n,n,l,n,n,n,o,r,n,n,),
-	#			 (n,n,l,o,o,o,o,r,n,n,),
-	#			 (n,n,b,b,b,b,b       ))
-	#	p = self.pclass()
-	#	for j,line in enumerate(input):
-	#		for i,char in enumerate(line):
-	#			m = p.test(main.CurrentChar(j,i,char,core.M_NONE))
-	#			self.assertEquals(meta[j][i],m)
+	def test_sets_correct_meta_flags(self):
+		input = ((2,  ".---.  \n",),
+		         (0,"  '---'  \n",),
+		         (0,"  |   |  \n",),
+		         (0,"  '---'  \n",),
+		         (0,"       "    ,))
+		c = core.M_OCCUPIED | core.M_BOX_START_S | core.M_BOX_START_E
+		t = core.M_OCCUPIED | core.M_BOX_START_S
+		l = core.M_OCCUPIED | core.M_BOX_START_E
+		n = core.M_NONE
+		o = core.M_OCCUPIED
+		r = core.M_BOX_AFTER_E
+		b = core.M_BOX_AFTER_S
+		meta =  ((    c,t,t,t,t,r,n,n,),
+				 (n,n,l,o,o,o,o,r,n,n,),
+				 (n,n,l,n,n,n,o,r,n,n,),
+				 (n,n,l,o,o,o,o,r,n,n,),
+				 (n,n,b,b,b,b,b       ))
+		p = self.pclass()
+		for j,(startcol,line) in enumerate(input):
+			for i,char in enumerate(line):
+				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
+				self.assertEquals(meta[j][i],m)
 
 	def do_render(self,x,y,w,h):
 		p = self.pclass()
@@ -1143,9 +1170,10 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 		self.feed_input(p,y+1,0,      " "*x + "'" + "-"*w + "'\n")
 		for i in range(h):
 			self.feed_input(p,y+2+i,0," "*x + "|" + " "*w + "|\n")
-		self.feed_input(p,y+2+h,0,    " "*x + "'" + "-"*w + "'"  )
+		self.feed_input(p,y+2+h,0,    " "*x + "'" + "-"*w + "'\n")
+		self.feed_input(p,y+2+h+1,0,  " "*x + " " + " "*w + " "  )
 		try:
-			p.test(main.CurrentChar(y+2+h,x+1+w,"\n",core.M_NONE))
+			p.test(main.CurrentChar(y+2+h+1,x+1+w+1,"\n",core.M_NONE))
 		except StopIteration: pass
 		return p.render()
 			
@@ -1213,20 +1241,29 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 		self.assertEquals(0,arc.start)
 		self.assertEquals(math.pi,arc.end)
 	
-	#def test_render_z(self):
-	#	text = self.do_render(3,2,"a")[0]
-	#	self.assertEquals(0, text.z)
-		
-	#def test_render_text(self):
-	#	text = self.do_render(2,1,"H")[0]
-	#	self.assertEquals("H", text.text)
-		
-	#def test_render_colour(self):
-	#	text = self.do_render(2,1,"a")[0]
-	#	self.assertEquals("black", text.colour)
-		
-	#def test_render_size(self):
-	#	text = self.do_render(2,1,"a")[0]
-	#	self.assertEquals(1, text.size)
+	def test_render_z(self):
+		result = self.do_render(2,2,3,4)
+		for r in result:
+			self.assertEquals(0,r.z)
+				
+	def test_render_stroke_colour(self):
+		result = self.do_render(2,2,3,4)
+		for r in result:
+			self.assertEquals("black",r.stroke)
+			
+	def test_render_stroke_width(self):
+		result = self.do_render(2,2,3,4)
+		for r in result:
+			self.assertEquals(1,r.w)
+
+	def test_render_stroke_style(self):
+		result = self.do_render(2,2,3,4)
+		for r in result:
+			self.assertEquals(core.STROKE_SOLID,r.stype)
+			
+	def test_render_fill_colour(self):
+		result = filter(lambda x: not isinstance(x,core.Line), self.do_render(2,2,3,4))
+		for r in result:
+			self.assertEquals(None,r.fill)
 	
 unittest.main()

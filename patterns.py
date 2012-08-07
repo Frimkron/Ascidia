@@ -31,17 +31,20 @@ class DbCylinderPattern(Pattern):
 	tl = None
 	br = None
 	
+	# TODO: meta flags 
+	# TODO: tests for pattern at right edge
 	def matcher(self):
 		w,h = 0,0
 		self.curr = yield
 		self.tl = (self.curr.col,self.curr.row)
-		self.curr = yield self.expect(".")
-		self.curr = yield self.expect("-")
+		self.curr = yield self.expect(".",M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
+		self.curr = yield self.expect("-",M_OCCUPIED|M_BOX_START_S)
 		while self.curr.char != ".":
-			self.curr = yield self.expect("-")
+			self.curr = yield self.expect("-",M_OCCUPIED|M_BOX_START_S)
 		w = self.curr.col-self.tl[0]+1
-		self.curr = yield self.expect(".")
-		for meta in self.await_pos(self.offset(-w,1)):
+		self.curr = yield self.expect(".",M_OCCUPIED|M_BOX_START_S)
+		self.curr = yield M_BOX_AFTER_E
+		for meta in self.await_pos(self.offset(-(w+1),1)):
 			self.curr = yield meta
 		self.curr = yield self.expect("'")
 		for n in range(w-2):
@@ -62,6 +65,13 @@ class DbCylinderPattern(Pattern):
 			self.curr = yield self.expect("-")
 		self.br = (self.curr.col,self.curr.row)
 		self.curr = yield self.expect("'")
+		try:
+			for meta in self.await_pos(self.offset(-(w-1),1,self.br)):
+				self.curr = yield meta
+			for n in range(w):
+				for meta in self.await_pos(self.offset(1,0)):
+					self.curr = yield M_NONE
+		except NoSuchPosition: pass
 		return
 		
 	def render(self):
@@ -69,14 +79,14 @@ class DbCylinderPattern(Pattern):
 		return [
 			Ellipse((self.tl[0]+0.5,self.tl[1]+0.5),
 				(self.br[0]+0.5,self.tl[1]+1.0+0.5),
-				1,"purple",1,STROKE_SOLID,None),
+				0,"black",1,STROKE_SOLID,None),
 			Line((self.tl[0]+0.5,self.tl[1]+1.0),
-				(self.tl[0]+0.5,self.br[1]), 1,"purple",1,STROKE_SOLID),
+				(self.tl[0]+0.5,self.br[1]), 0,"black",1,STROKE_SOLID),
 			Line((self.br[0]+0.5,self.tl[1]+1.0),
-				(self.br[0]+0.5,self.br[1]), 1,"purple",1,STROKE_SOLID),
+				(self.br[0]+0.5,self.br[1]), 0,"black",1,STROKE_SOLID),
 			Arc((self.tl[0]+0.5,self.br[1]-1.0+0.5),
 				(self.br[0]+0.5,self.br[1]+0.5),
-				1, 0.0, math.pi, "purple",1,STROKE_SOLID,None)	]
+				0, 0.0, math.pi, "black",1,STROKE_SOLID,None)	]
 				
 
 class BoxPattern(Pattern):
