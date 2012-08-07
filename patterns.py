@@ -1,7 +1,7 @@
 """ 
 Pattern classes go here
 """
-
+import math
 from core import *
 
 
@@ -725,3 +725,4 @@ PATTERNS = [
 	DCrowsFeetPattern,
 	LiteralPattern
 ]
+

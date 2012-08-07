@@ -827,6 +827,14 @@ class TestLiteralPattern(unittest.TestCase,PatternTests):
 		self.assertEquals(1, text.size)
 
 
+def find_with(test,items,property,value):
+	for i in items:
+		if getattr(i,property) == value:
+			return i
+	test.fail("%s not found in '%s' properties %s" % (str(value),property,
+		str([getattr(i,property) for i in items])))
+
+
 class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 
 	def __init__(self,*args,**kargs):
@@ -1105,28 +1113,120 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 		self.feed_input(p,3,0,"| |\n")
 		self.feed_input(p,4,0,"| |\n")
 		
-	def test_sets_correct_meta_flags(self):
-		input = ((  ".---.  \n",),
-		         ("  '---'  \n",),
-		         ("  |   |  \n",),
-		         ("  '---'  \n",),
-		         ("       "    ,))
-		c = core.M_OCCUPIED | core.M_BOX_START_S | core.M_BOX_START_E
-		t = core.M_OCCUPIED | core.M_BOX_START_S
-		l = core.M_OCCUPIED | core.M_BOX_START_E
-		n = core.M_NONE
-		o = core.M_OCCUPIED
-		r = core.M_BOX_AFTER_E
-		b = core.M_BOX_AFTER_S
-		meta =  ((    c,t,t,t,t,r,n,n,),
-				 (n,n,l,o,o,o,o,r,n,n,),
-				 (n,n,l,n,n,n,o,r,n,n,),
-				 (n,n,l,o,o,o,o,r,n,n,),
-				 (n,n,b,b,b,b,b       ))
+	#def test_sets_correct_meta_flags(self):
+	#	input = ((  ".---.  \n",),
+	#	         ("  '---'  \n",),
+	#	         ("  |   |  \n",),
+	#	         ("  '---'  \n",),
+	#	         ("       "    ,))
+	#	c = core.M_OCCUPIED | core.M_BOX_START_S | core.M_BOX_START_E
+	#	t = core.M_OCCUPIED | core.M_BOX_START_S
+	#	l = core.M_OCCUPIED | core.M_BOX_START_E
+	#	n = core.M_NONE
+	#	o = core.M_OCCUPIED
+	#	r = core.M_BOX_AFTER_E
+	#	b = core.M_BOX_AFTER_S
+	#	meta =  ((    c,t,t,t,t,r,n,n,),
+	#			 (n,n,l,o,o,o,o,r,n,n,),
+	#			 (n,n,l,n,n,n,o,r,n,n,),
+	#			 (n,n,l,o,o,o,o,r,n,n,),
+	#			 (n,n,b,b,b,b,b       ))
+	#	p = self.pclass()
+	#	for j,line in enumerate(input):
+	#		for i,char in enumerate(line):
+	#			m = p.test(main.CurrentChar(j,i,char,core.M_NONE))
+	#			self.assertEquals(meta[j][i],m)
+
+	def do_render(self,x,y,w,h):
 		p = self.pclass()
-		for j,line in enumerate(input):
-			for i,char in enumerate(line):
-				m = p.test(main.CurrentChar(j,i,char,core.M_NONE))
-				self.assertEquals(meta[j][i],m)
+		self.feed_input(p,y,x,                "." + "-"*w + ".\n")
+		self.feed_input(p,y+1,0,      " "*x + "'" + "-"*w + "'\n")
+		for i in range(h):
+			self.feed_input(p,y+2+i,0," "*x + "|" + " "*w + "|\n")
+		self.feed_input(p,y+2+h,0,    " "*x + "'" + "-"*w + "'"  )
+		try:
+			p.test(main.CurrentChar(y+2+h,x+1+w,"\n",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+			
+	def test_render_returns_correct_shapes(self):
+		result = self.do_render(2,2,3,1)
+		self.assertEquals(4,len(result))
+		self.assertEquals(1,len(filter(lambda x: isinstance(x,core.Ellipse), result)))
+		self.assertEquals(1,len(filter(lambda x: isinstance(x,core.Arc), result)))
+		self.assertEquals(2,len(filter(lambda x: isinstance(x,core.Line), result)))
+			
+	def test_render_line_coordinates(self):
+		lines = filter(lambda x: isinstance(x,core.Line), self.do_render(2,2,3,1))
+		linea = find_with(self,lines,"a",(2.5,3))
+		self.assertEquals((2.5,5),linea.b)
+		lineb = find_with(self,lines,"a",(6.5,3))
+		self.assertEquals((6.5,5),lineb.b)
+		
+	def test_render_line_coordinates_wider(self):
+		lines = filter(lambda x: isinstance(x,core.Line), self.do_render(5,1,5,1))
+		linea = find_with(self,lines,"a",(5.5,2))
+		self.assertEquals((5.5,4),linea.b)
+		lineb = find_with(self,lines,"a",(11.5,2))
+		self.assertEquals((11.5,4),lineb.b)
+		
+	def test_render_line_coordinates_taller(self):
+		lines = filter(lambda x: isinstance(x,core.Line), self.do_render(3,2,3,3))
+		linea = find_with(self,lines,"a",(3.5,3))
+		self.assertEquals((3.5,7), linea.b)
+		lineb = find_with(self,lines,"a",(7.5,3))
+		self.assertEquals((7.5,7), lineb.b)
+		
+	def test_render_ellipse_coordinates(self):
+		ellipse = filter(lambda x: isinstance(x,core.Ellipse), self.do_render(2,2,3,1))[0]
+		self.assertEquals((2.5,2.5),ellipse.a)
+		self.assertEquals((6.5,3.5),ellipse.b)
+		
+	def test_render_ellipse_coordinates_wider(self):
+		ellipse = filter(lambda x: isinstance(x,core.Ellipse), self.do_render(3,2,4,1))[0]
+		self.assertEquals((3.5,2.5),ellipse.a)
+		self.assertEquals((8.5,3.5),ellipse.b)
+
+	def test_render_ellipse_coordinates_taller(self):
+		ellipse = filter(lambda x: isinstance(x,core.Ellipse), self.do_render(4,1,3,3))[0]
+		self.assertEquals((4.5,1.5),ellipse.a)
+		self.assertEquals((8.5,2.5),ellipse.b)
+		
+	def test_render_arc_coordinates(self):
+		arc = filter(lambda x: isinstance(x,core.Arc), self.do_render(2,2,3,1))[0]
+		self.assertEquals((2.5,4.5),arc.a)
+		self.assertEquals((6.5,5.5),arc.b)
+		self.assertEquals(0,arc.start)
+		self.assertEquals(math.pi,arc.end)
+		
+	def test_render_arc_coordinates_wider(self):
+		arc = filter(lambda x: isinstance(x,core.Arc), self.do_render(3,1,4,1))[0]
+		self.assertEquals((3.5,3.5),arc.a)
+		self.assertEquals((8.5,4.5),arc.b)
+		self.assertEquals(0,arc.start)
+		self.assertEquals(math.pi,arc.end)
+	
+	def test_render_arc_coordinates_taller(self):
+		arc = filter(lambda x: isinstance(x,core.Arc), self.do_render(2,2,3,4))[0]
+		self.assertEquals((2.5,7.5),arc.a)
+		self.assertEquals((6.5,8.5),arc.b)
+		self.assertEquals(0,arc.start)
+		self.assertEquals(math.pi,arc.end)
+	
+	#def test_render_z(self):
+	#	text = self.do_render(3,2,"a")[0]
+	#	self.assertEquals(0, text.z)
+		
+	#def test_render_text(self):
+	#	text = self.do_render(2,1,"H")[0]
+	#	self.assertEquals("H", text.text)
+		
+	#def test_render_colour(self):
+	#	text = self.do_render(2,1,"a")[0]
+	#	self.assertEquals("black", text.colour)
+		
+	#def test_render_size(self):
+	#	text = self.do_render(2,1,"a")[0]
+	#	self.assertEquals(1, text.size)
 	
 unittest.main()
