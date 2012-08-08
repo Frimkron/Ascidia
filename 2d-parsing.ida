@@ -809,3 +809,14 @@ pclass.test(" ")
 					-> " "
 					return
 -> StopIteration
+
+
+At each stage in the pattern we move forward by some amount. The position we 
+are trying to reach may or may not actually exist, because of line endings 
+and the end of the input. This this applies to consuming a single character, 
+too.
+
+[ ][ ][.][-][-][.][,n]
+[ ][ ]['][-][-]['][n]
+[ ][ ][|][ ][ ][|][n]
+[ ][ ]['][-][-]['][n]

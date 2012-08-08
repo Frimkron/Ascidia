@@ -31,8 +31,6 @@ class DbCylinderPattern(Pattern):
 	tl = None
 	br = None
 	
-	# TODO: meta flags 
-	# TODO: tests for pattern at right edge
 	def matcher(self):
 		w,h = 0,0
 		self.curr = yield
@@ -44,33 +42,38 @@ class DbCylinderPattern(Pattern):
 		w = self.curr.col-self.tl[0]+1
 		self.curr = yield self.expect(".",M_OCCUPIED|M_BOX_START_S)
 		self.curr = yield M_BOX_AFTER_E
-		for meta in self.await_pos(self.offset(-(w+1),1)):
+		for meta in self.await_pos(self.offset(0,1,self.tl)):
 			self.curr = yield meta
-		self.curr = yield self.expect("'")
+		self.curr = yield self.expect("'",M_OCCUPIED|M_BOX_START_E)
 		for n in range(w-2):
-			self.curr = yield self.expect("-")
-		self.curr = yield self.expect("'")
-		for meta in self.await_pos(self.offset(-w,1)):
+			self.curr = yield self.expect("-",M_OCCUPIED)
+		self.curr = yield self.expect("'",M_OCCUPIED)
+		self.curr = yield M_BOX_AFTER_E
+		for meta in self.await_pos(self.offset(0,2,self.tl)):
 			self.curr = yield meta
 		while True:	
-			self.curr = yield self.expect("|")
+			linestart = self.curr.col,self.curr.row
+			self.curr = yield self.expect("|",M_OCCUPIED|M_BOX_START_E)
 			for meta in self.await_pos(self.offset(w-2,0)):
 				self.curr = yield meta
-			self.curr = yield self.expect("|")
-			for meta in self.await_pos(self.offset(-w,1)):
+			self.curr = yield self.expect("|",M_OCCUPIED)
+			self.curr = yield M_BOX_AFTER_E
+			for meta in self.await_pos(self.offset(0,1,linestart)):
 				self.curr = yield meta
 			if self.curr.char == "'": break
-		self.curr = yield self.expect("'")
+		linestart = self.curr.col,self.curr.row
+		self.curr = yield self.expect("'",M_OCCUPIED|M_BOX_START_E)
 		for n in range(w-2):
-			self.curr = yield self.expect("-")
+			self.curr = yield self.expect("-",M_OCCUPIED)
 		self.br = (self.curr.col,self.curr.row)
-		self.curr = yield self.expect("'")
+		self.curr = yield self.expect("'",M_OCCUPIED)
 		try:
-			for meta in self.await_pos(self.offset(-(w-1),1,self.br)):
+			self.curr = yield M_BOX_AFTER_E
+			for meta in self.await_pos(self.offset(0,1,linestart)):
 				self.curr = yield meta
 			for n in range(w):
 				for meta in self.await_pos(self.offset(1,0)):
-					self.curr = yield M_NONE
+					self.curr = yield M_BOX_AFTER_S
 		except NoSuchPosition: pass
 		return
 		
@@ -462,7 +465,7 @@ class LinePattern(Pattern):
 					pos = self.curr.col,self.curr.row
 					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
 			self.endpos = pos
-			yield self.endmeta
+			if self.curr.char != END_OF_INPUT: yield self.endmeta
 		except NoSuchPosition:
 			self.endpos = pos
 		return
