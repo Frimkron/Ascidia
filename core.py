@@ -81,7 +81,9 @@ class Pattern(object):
 
 	def await_pos(self,pos):
 		while (self.curr.col,self.curr.row) != pos:
-			if self.curr.row > pos[1] or self.curr.char == END_OF_INPUT:
+			if( self.curr.row > pos[1] 
+					or (self.curr.row == pos[1] and self.curr.col > pos[0])
+					or self.curr.char == END_OF_INPUT ):
 				raise NoSuchPosition(pos)
 			yield M_NONE
 			

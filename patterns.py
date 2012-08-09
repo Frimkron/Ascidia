@@ -473,7 +473,7 @@ class LinePattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [ Line((self.startpos[0]+0.5+self.xdir*-0.5,self.startpos[1]+0.5+self.ydir*-0.5),
-				(self.endpos[0]+0.5+self.xdir*0.5,self.endpos[1]+0.5+self.ydir*0.5),1,"blue",1,self.stroketype) ]
+				(self.endpos[0]+0.5+self.xdir*0.5,self.endpos[1]+0.5+self.ydir*0.5),0,"black",1,self.stroketype) ]
 		
 
 

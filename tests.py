@@ -7,10 +7,6 @@ import xml.dom.minidom
 import math
 import mock
 
-# TODO: db cylinder pattern should be changed to accept optional 
-# final line with M_BOX_AFTER_S meta flag, similarly with right
-# edge.
-
 
 class TestMatchLookup(unittest.TestCase):
 
@@ -1340,5 +1336,247 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(1,1,"/",core.M_OCCUPIED))
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(1,2," ",core.M_NONE))
+			
+	def test_allows_line_to_end_at_left_edge(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/\n")
+		feed_input(p,1,0," / \n")
+		feed_input(p,2,0,"/  \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0," ",core.M_NONE))
+			
+	def test_allows_line_to_end_at_bottom_left_corner(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/\n")
+		feed_input(p,1,0," / \n")
+		feed_input(p,2,0,"/  \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
+			
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((3,   "/  \n"),
+				 (0,"  /   \n"),
+				 (0," /    \n"),
+				 (0," "       ))
+		s = core.M_OCCUPIED|core.M_LINE_START_SW
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		a = core.M_LINE_AFTER_SW
+		meta =  ((      s,n,n,n,),
+				 (n,n,o,n,n,n,n,),
+				 (n,o,n,n,n,n,n,),
+				 (a,            )) 
+		for j,(startcol,line) in enumerate(input):
+			for i,char in enumerate(line):
+				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
+				self.assertEquals(meta[j][i],m)
+				
+	def do_render(self,x,y,l):
+		p = self.pclass()
+		for i in range(l):
+			feed_input(p,y+i,x-i,"/\n")
+			feed_input(p,y+i+1,0," "*(x-1-i))			
+		feed_input(p,y+l,x-l," ")
+		try:
+			p.test(main.CurrentChar(y+l,x-l+1," ",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+		
+	def test_render_returns_line(self):
+		r = self.do_render(4,2,2)
+		self.assertEquals(1,len(r))
+		self.assertTrue(isinstance(r[0],core.Line))
 	
+	def test_render_coordinates(self):
+		l = self.do_render(4,2,2)[0]
+		self.assertEquals((5,2),l.a)
+		self.assertEquals((3,4),l.b)
+		
+	def test_render_coordinates_longer(self):
+		l = self.do_render(5,1,3)[0]
+		self.assertEquals((6,1),l.a)
+		self.assertEquals((3,4),l.b)
+	
+	def test_render_coordinates_shorter(self):
+		l = self.do_render(6,3,1)[0]
+		self.assertEquals((7,3),l.a)
+		self.assertEquals((6,4),l.b)
+
+	def test_render_z(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals(0,l.z)
+		
+	def test_render_stroke_colour(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals("black",l.stroke)
+	
+	def test_render_stroke_width(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals(1,l.w)
+	
+	def test_render_stroke_style(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals(core.STROKE_SOLID,l.stype)
+	
+	
+class TestDownDiagLinePattern(unittest.TestCase,PatternTests):
+	
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.DownDiagLinePattern
+		
+	def test_accepts_line(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\   \n")
+		feed_input(p,1,0,"  \\  \n")
+		feed_input(p,2,0,"   \\ \n")
+		feed_input(p,3,0,"     ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,4," ",core.M_NONE))
+			
+	def test_expects_start_backslash(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,0," ",core.M_NONE))
+			
+	def test_expects_start_backslash_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,0,"\\",core.M_OCCUPIED))
+			
+	def test_allows_rest_of_start_line(self):
+		p = self.pclass()
+		feed_input(p,0,0,"\\")
+		p.test(main.CurrentChar(0,1,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,2,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,3,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_next_line(self):
+		p = self.pclass()
+		feed_input(p,0,1,"\\\n")
+		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
+		
+	def test_accepts_single_char_line(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\\n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,2," ",core.M_NONE))
+	
+	def test_accepts_rest_of_next_line(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\\n")
+		feed_input(p,1,0,"  \\")
+		p.test(main.CurrentChar(1,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,4,"\n",core.M_OCCUPIED))
+		
+	def test_allows_no_character_at_end_due_to_eoi(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\  \n")
+		feed_input(p,1,0,"  \\ \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,0,core.END_OF_INPUT,core.M_NONE))
+			
+	def test_allows_no_character_at_end_due_to_short_line(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\  \n")
+		feed_input(p,1,0,"  \\ \n")
+		feed_input(p,2,0," \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0," ",core.M_NONE))
+			
+	def test_allows_line_to_end_at_occupied_line(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\ \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"\\",core.M_OCCUPIED))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_line_to_end_at_right_edge(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\  \n")
+		feed_input(p,1,0,"  \\ \n")
+		feed_input(p,2,0,"   \\\n")
+		feed_input(p,3,0,"    \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,0," ",core.M_NONE))
+			
+	def test_allows_line_to_end_at_bottom_right_corner(self):
+		p = self.pclass()
+		feed_input(p,0,1, "\\  \n")
+		feed_input(p,1,0,"  \\ \n")
+		feed_input(p,2,0,"   \\\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
+			
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((2,  "\\   \n"),
+				 (0,"   \\  \n"),
+				 (0,"    \\ \n"),
+				 (0,"      "   ))
+		s = core.M_OCCUPIED|core.M_LINE_START_SE
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		a = core.M_LINE_AFTER_SE
+		meta =  ((    s,n,n,n,n,),
+				 (n,n,n,o,n,n,n,),
+				 (n,n,n,n,o,n,n,),
+				 (n,n,n,n,n,a,  )) 
+		for j,(startcol,line) in enumerate(input):
+			for i,char in enumerate(line):
+				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
+				self.assertEquals(meta[j][i],m)
+				
+	def do_render(self,x,y,l):
+		p = self.pclass()
+		for i in range(l):
+			feed_input(p,y+i,x+i,"\\\n")
+			feed_input(p,y+i+1,0," "*(x-1+i))			
+		feed_input(p,y+l,x+l," ")
+		try:
+			p.test(main.CurrentChar(y+l,x+l+1," ",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+		
+	def test_render_returns_line(self):
+		r = self.do_render(4,2,2)
+		self.assertEquals(1,len(r))
+		self.assertTrue(isinstance(r[0],core.Line))
+	
+	def test_render_coordinates(self):
+		l = self.do_render(4,2,2)[0]
+		self.assertEquals((4,2),l.a)
+		self.assertEquals((6,4),l.b)
+		
+	def test_render_coordinates_longer(self):
+		l = self.do_render(5,1,3)[0]
+		self.assertEquals((5,1),l.a)
+		self.assertEquals((8,4),l.b)
+	
+	def test_render_coordinates_shorter(self):
+		l = self.do_render(6,3,1)[0]
+		self.assertEquals((6,3),l.a)
+		self.assertEquals((7,4),l.b)
+
+	def test_render_z(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals(0,l.z)
+		
+	def test_render_stroke_colour(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals("black",l.stroke)
+	
+	def test_render_stroke_width(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals(1,l.w)
+	
+	def test_render_stroke_style(self):
+		l = self.do_render(3,3,3)[0]
+		self.assertEquals(core.STROKE_SOLID,l.stype)	
+	
+				
 unittest.main()
