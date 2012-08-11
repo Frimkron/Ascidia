@@ -649,6 +649,7 @@ class LJumpPattern(JumpPattern):
 	char = "("
 		
 	def render(self):
+		JumpPattern.render(self)
 		return [ 
 			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
 				1,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
@@ -661,6 +662,7 @@ class RJumpPattern(JumpPattern):
 	char = ")"
 	
 	def render(self):
+		JumpPattern.render(self)
 		return [
 			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
 				1,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
@@ -673,6 +675,7 @@ class UJumpPattern(JumpPattern):
 	char = "^"
 	
 	def render(self):
+		JumpPattern.render(self)
 		return [
 			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0),
 				1,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID),
@@ -701,6 +704,7 @@ class StickManPattern(Pattern):
 		return
 		
 	def render(self):
+		Pattern.render(self)
 		return [
 			Ellipse(self.offset(0,1-1.0/CHAR_H_RATIO,self.pos),self.offset(1,1,self.pos),1,"yellow",1,STROKE_SOLID,None),
 			Line(self.offset(0.5,1,self.pos),self.offset(0.5,1.8,self.pos),1,"yellow",1,STROKE_SOLID),
@@ -715,14 +719,14 @@ PATTERNS = [
 	BoxPattern,
 	SmallCirclePattern,
 	TinyCirclePattern,
-	HorizDashedLinePattern,
+	HorizDashedLinePattern,		#
 	HorizLinePattern,			#
 	VertLinePattern,			#
-	VertDashedLinePattern,
+	VertDashedLinePattern,		#
 	UpDiagLinePattern,			#
-	UpDiagDashedLinePattern,
+	UpDiagDashedLinePattern,	#
 	DownDiagLinePattern,		#
-	DownDiagDashedLinePattern,
+	DownDiagDashedLinePattern,	#
 	LineSqCornerPattern,
 	LineRdCornerPattern,
 	LJumpPattern,

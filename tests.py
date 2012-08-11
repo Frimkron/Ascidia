@@ -2387,62 +2387,260 @@ class TestHorizDashedLinePattern(unittest.TestCase,PatternTests):
 		feed_input(p,2,2,"- - \n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
-	"""				
+	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
-		input = ((2,  "--- "),)
-		s = core.M_OCCUPIED|core.M_LINE_START_E
+		input = ((2,  "- - - -  "),)
+		s = core.M_OCCUPIED|core.M_LINE_START_E|core.M_DASH_START_E
 		o = core.M_OCCUPIED
 		n = core.M_NONE
-		a = core.M_LINE_AFTER_E
-		meta =  ((s,o,o,a,),)
+		a = core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
+		meta =  ((s,o,o,o,o,o,o,o,a,),)
 		for j,(startcol,line) in enumerate(input):
 			for i,char in enumerate(line):
 				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
 				self.assertEquals(meta[j][i],m)
-				
+	
 	def do_render(self,x,y,l):
 		p = self.pclass()
-		feed_input(p,y,x,"-"*l + " ")
+		feed_input(p,y,x,"- "*(l//2) + " ")
 		try:
 			p.test(main.CurrentChar(y,x+l+1," ",core.M_NONE))
 		except StopIteration: pass
 		return p.render()
 		
 	def test_render_returns_line(self):
-		r = self.do_render(4,2,2)
+		r = self.do_render(4,2,4)
 		self.assertEquals(1,len(r))
 		self.assertTrue(isinstance(r[0],core.Line))
 	
 	def test_render_coordinates(self):
-		l = self.do_render(4,2,2)[0]
+		l = self.do_render(4,2,6)[0]
 		self.assertEquals((4,2.5),l.a)
-		self.assertEquals((6,2.5),l.b)
+		self.assertEquals((10,2.5),l.b)
 		
 	def test_render_coordinates_longer(self):
-		l = self.do_render(5,1,3)[0]
+		l = self.do_render(5,1,8)[0]
 		self.assertEquals((5,1.5),l.a)
-		self.assertEquals((8,1.5),l.b)
+		self.assertEquals((13,1.5),l.b)
 	
 	def test_render_coordinates_shorter(self):
-		l = self.do_render(6,3,1)[0]
+		l = self.do_render(6,3,4)[0]
 		self.assertEquals((6,3.5),l.a)
-		self.assertEquals((7,3.5),l.b)
+		self.assertEquals((10,3.5),l.b)
 
 	def test_render_z(self):
-		l = self.do_render(3,3,3)[0]
+		l = self.do_render(3,3,4)[0]
 		self.assertEquals(0,l.z)
 		
 	def test_render_stroke_colour(self):
-		l = self.do_render(3,3,3)[0]
+		l = self.do_render(3,3,4)[0]
 		self.assertEquals("black",l.stroke)
 	
 	def test_render_stroke_width(self):
-		l = self.do_render(3,3,3)[0]
+		l = self.do_render(3,3,4)[0]
 		self.assertEquals(1,l.w)
 	
 	def test_render_stroke_style(self):
-		l = self.do_render(3,3,3)[0]
-		self.assertEquals(core.STROKE_SOLID,l.stype)	
-	"""	
+		l = self.do_render(3,3,4)[0]
+		self.assertEquals(core.STROKE_DASHED,l.stype)	
+
+
+class TestStickManPattern(unittest.TestCase,PatternTests):
+
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.StickManPattern
+	
+	def test_accepts_stick_man(self):
+		p = self.pclass()
+		feed_input(p,0,1, "O  \n")
+		feed_input(p,1,0,"-|- \n")
+		feed_input(p,2,0,"/ \\")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,3," ",core.M_NONE))
+			
+	def test_expects_head(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
+			
+	def test_expects_head_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1,"O",core.M_OCCUPIED))
+	
+	def test_allows_zero_as_head(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,1,"0",core.M_NONE))
+		
+	def test_allows_lowercase_oh_as_head(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,1,"o",core.M_NONE))
+		
+	def test_allows_rest_of_head_line(self):
+		p = self.pclass()
+		feed_input(p,0,1,"O")
+		p.test(main.CurrentChar(0,2,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,3,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,4,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_arms_line(self):
+		p = self.pclass()
+		feed_input(p,0,3,"Oab\n")
+		p.test(main.CurrentChar(1,0,"c",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"d",core.M_OCCUPIED))
+		
+	def test_expects_left_arm_hyphen(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "O\n")
+		feed_input(p,1,0,"z")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,1,"?",core.M_NONE))
+			
+	def test_expects_left_arm_hyphen_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "Oz\n")
+		feed_input(p,1,0,"z")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,1,"-",core.M_OCCUPIED))
+			
+	def test_expects_body_pipe(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "O\n")
+		feed_input(p,1,0,"z-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"X",core.M_NONE))
+			
+	def test_expects_body_pipe_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "O\n")
+		feed_input(p,1,0,"z-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"|",core.M_OCCUPIED))
+			
+	def test_expects_right_arm_hyphen(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "O\n")
+		feed_input(p,1,0,"z-|")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3,"7",core.M_NONE))
+			
+	def test_expects_right_arm_hyphen_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "O\n")
+		feed_input(p,1,0,"z-|")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3,"-",core.M_OCCUPIED))
+	
+	def test_allows_rest_of_arm_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "O\n")
+		feed_input(p,1,0,"z-|-")
+		p.test(main.CurrentChar(1,4,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,5,"q",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,6,"\n",core.M_OCCUPIED))
+	
+	def test_allows_start_of_leg_line(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "O\n")
+		feed_input(p,1,0,"  -|-\n")
+		p.test(main.CurrentChar(2,0,"y",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,1,"&",core.M_OCCUPIED))
+	
+	def test_expects_left_leg_forwardslash(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "O\n")
+		feed_input(p,1,0,"  -|-\n")
+		feed_input(p,2,0,"ab")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"g",core.M_NONE))
+			
+	def test_expects_left_leg_forwardslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "O\n")
+		feed_input(p,1,0,"  -|-\n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"/",core.M_OCCUPIED))
+	
+	def test_expects_space_between_legs(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "O\n")
+		feed_input(p,1,0,"  -|-\n")
+		feed_input(p,2,0,"  /")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,3,"'",core.M_NONE))
+			
+	def test_expects_space_between_legs_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "O\n")
+		feed_input(p,1,0,"  -|-\n")
+		feed_input(p,2,0,"  /")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,3," ",core.M_OCCUPIED))
+		
+	def test_expects_right_leg_backslash(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "O\n")
+		feed_input(p,1,0,"  -|-\n")
+		feed_input(p,2,0,"  / ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4,"U",core.M_NONE))
+			
+	def test_expects_right_leg_backslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "O\n")
+		feed_input(p,1,0,"  -|-\n")
+		feed_input(p,2,0,"  / ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4,"\\",core.M_OCCUPIED))
+			
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((3,   "O   \n",),
+				 (0,"  -|-  \n",),
+				 (0,"  / \\",   ),)
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		meta =  ((      o,n,n,n,n,),
+				 (n,n,o,o,o,n,n,n,),
+				 (n,n,o,o,o,      ),)
+		for j,(startcol,line) in enumerate(input):
+			for i,char in enumerate(line):
+				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
+				self.assertEquals(meta[j][i], m)
+
+	def do_render(self,x,y):
+		p = self.pclass()
+		feed_input(p,y,x,     "O\n")
+		feed_input(p,y+1,x-1,"-|-\n")
+		feed_input(p,y+2,x-1,"/ \\")
+		try:
+			p.test(main.CurrentChar(y+2,x+2," ",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+		
+	def test_render_returns_correct_shapes(self):
+		r = self.do_render(3,2)
+		self.assertEquals(5,len(r))
+		self.assertEquals(1,len(filter(lambda x: isinstance(x,core.Ellipse), r)))
+		self.assertEquals(4,len(filter(lambda x: isinstance(x,core.Line), r)))
+		
+	def test_render_coordinates(self):
+		r = self.do_render(3,2)
+		head = filter(lambda x: isinstance(x,core.Ellipse), r)[0]
+		self.assertEquals((3,2.5),head.a)
+		self.assertEquals((4,3),head.b)
+		arms = find_with(self,filter(lambda x: isinstance(x,core.Line), r),"a",(2,3.25))
+		self.assertEquals((2,3.25),arms.a)
+		self.assertEquals((5,3.25),arms.b)
+		lleg = find_with(self,filter(lambda x: isinstance(x,core.Line), r),"b",(2.5,4.8))
+		self.assertEquals((3.5,3.8),lleg.a)
+		self.assertEquals((2.5,4.8),lleg.b)
+		rleg = find_with(self,filter(lambda x: isinstance(x,core.Line), r),"b",(4.5,4.8))
+		self.assertEquals((3.5,3.8),rleg.a)
+		self.assertEquals((4.5,4.8),rleg.b)
+		
+	
 unittest.main()
