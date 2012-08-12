@@ -2641,6 +2641,686 @@ class TestStickManPattern(unittest.TestCase,PatternTests):
 		rleg = find_with(self,filter(lambda x: isinstance(x,core.Line), r),"b",(4.5,4.8))
 		self.assertEquals((3.5,3.8),rleg.a)
 		self.assertEquals((4.5,4.8),rleg.b)
+
+	def test_render_z(self):
+		r = self.do_render(3,2)
+		for shape in r:
+			self.assertEquals(0,shape.z)
+			
+	def test_render_stroke_colour(self):
+		r = self.do_render(3,2)
+		for shape in r:
+			self.assertEquals("black",shape.stroke)
+			
+	def test_render_stroke_width(self):
+		r = self.do_render(3,2)
+		for shape in r:
+			self.assertEquals(1,shape.w)
+			
+	def test_render_stroke_style(self):
+		r = self.do_render(3,2)
+		for shape in r:
+			self.assertEquals(core.STROKE_SOLID, shape.stype)
+			
+	def test_render_fill_colour(self):
+		r = self.do_render(3,2)
+		e = filter(lambda x: isinstance(x,core.Ellipse), r)[0]
+		self.assertEquals(None, e.fill)
+
+
+class TestLineSqCornerPattern(unittest.TestCase,PatternTests):
+
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.LineSqCornerPattern
 		
+	def test_accepts_corner(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_LINE_AFTER_E))
+		feed_input(p,0,4," \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_expects_plus_sign(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"?",core.M_LINE_AFTER_E))
+	
+	def test_expects_plus_sign_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"+",core.M_OCCUPIED))
+	
+	def test_allows_rest_of_first_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,"+")
+		p.test(main.CurrentChar(0,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,4,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,5,"\n",core.M_OCCUPIED))
+		
+	def test_allows_occupied_second_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_LINE_AFTER_E))
+		feed_input(p,0,3,"\n")
+		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,2,"c",core.M_OCCUPIED|core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"d",core.M_OCCUPIED))
+			
+	def test_rejects_zero_lines(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+ \n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_rejects_single_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+ \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+	
+	def test_allows_northwest_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_LINE_AFTER_SE))
+		feed_input(p,0,3,   " \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_north_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_LINE_AFTER_S))
+		feed_input(p,0,3,   " \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+	
+	def test_allows_northeast_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_LINE_AFTER_SW))
+		feed_input(p,0,3,   " \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_west_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_LINE_AFTER_E))
+		feed_input(p,0,3,   " \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_east_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_NONE))
+		p.test(main.CurrentChar(0,3,"-",core.M_LINE_START_E))
+		feed_input(p,0,4,"\n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+		
+	def test_allows_southwest_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+ \n")
+		feed_input(p,1,0," ")
+		p.test(main.CurrentChar(1,1,"/",core.M_LINE_START_SW))
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_southeast_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+ \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"\\",core.M_LINE_START_SE)) 	
+	
+	def test_allows_more_than_two_lines(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"+",core.M_LINE_AFTER_SE|core.M_LINE_AFTER_SW))
+		feed_input(p,0,1," \n")
+		feed_input(p,1,0," ")
+		p.test(main.CurrentChar(1,1,"/",core.M_LINE_START_SW))
+		feed_input(p,1,2," ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"\\",core.M_LINE_START_SE))
+
+	def test_ignores_line_characters(self):
+		p = self.pclass()
+		feed_input(p,0,2,"+")
+		p.test(main.CurrentChar(0,3,"Z",core.M_LINE_START_E))
+		feed_input(p,0,4,"\n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"Q",core.M_LINE_START_SE))
+	
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((2,  "+ \n"),
+				 (0,"  |"  ))
+		w = core.M_LINE_AFTER_E
+		s = core.M_LINE_START_S
+		n = core.M_NONE
+		o = core.M_OCCUPIED
+		inmeta = ((    w,n,n,),
+				  (n,n,s,  ))
+		outmeta =((    o,n,n,),
+				  (n,n,n,  ))
+		for j,(startcol,line) in enumerate(input):
+			for i,char in enumerate(line):
+				im = inmeta[j][i]
+				om = outmeta[j][i]
+				self.assertEquals(om,p.test(main.CurrentChar(j,startcol+i,char,im)))		
+			
+	def do_render(self,x,y,lines):
+		p = self.pclass()
+		p.test(main.CurrentChar(y,x,"+",lines & (core.M_LINE_AFTER_E|core.M_LINE_AFTER_S
+				|core.M_LINE_AFTER_SW|core.M_LINE_AFTER_SE|core.M_DASH_AFTER_E
+				|core.M_DASH_AFTER_S|core.M_DASH_AFTER_SW|core.M_DASH_AFTER_SE)))
+		p.test(main.CurrentChar(y,x+1," ",lines & (core.M_LINE_START_E|core.M_DASH_START_E)))
+		p.test(main.CurrentChar(y,x+2,"\n",core.M_NONE))
+		feed_input(p,y+1,0," "*(x-1))
+		p.test(main.CurrentChar(y+1,x-1," ",lines & (core.M_LINE_START_SW|core.M_DASH_START_SW)))
+		p.test(main.CurrentChar(y+1,x," ",lines & (core.M_LINE_START_S|core.M_DASH_START_S)))
+		try:
+			p.test(main.CurrentChar(y+1,x+1," ",lines & (core.M_LINE_START_SE|core.M_DASH_START_SE)))
+		except StopIteration: pass
+		return p.render()
+				
+	def test_render_returns_lines(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E)
+		for shape in r:
+			self.assertTrue( isinstance(shape,core.Line) )
+			
+	def test_render_returns_two_lines_for_two_directions_(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E)
+		self.assertEquals(2, len(r))
+		
+	def test_render_returns_six_lines_for_six_directions(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E|core.M_LINE_START_SE
+				|core.M_LINE_AFTER_SE|core.M_LINE_AFTER_E|core.M_LINE_START_SW)
+		self.assertEquals(6, len(r))
+	
+	def test_render_coordinates_northwest(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SE)
+		l = find_with(self,r,"b",(2,2))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_north(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		l = find_with(self,r,"b",(2.5,2))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_northeast(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SW)
+		l = find_with(self,r,"b",(3,2))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_east(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_E)
+		l = find_with(self,r,"b",(3,2.5))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_southeast(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SE)
+		l = find_with(self,r,"b",(3,3))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_south(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_S)
+		l = find_with(self,r,"b",(2.5,3))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_southwest(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SW)
+		l = find_with(self,r,"b",(2,3))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_west(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		l = find_with(self,r,"b",(2,2.5))
+		self.assertEquals((2.5,2.5),l.a)
+		
+	def test_render_coordinates_position(self):
+		r = self.do_render(4,6,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		l1 = find_with(self,r,"b",(4,6.5))
+		self.assertEquals((4.5,6.5),l1.a)
+		l2 = find_with(self,r,"b",(4.5,6))
+		self.assertEquals((4.5,6.5),l2.a)	
+	
+	def test_render_z(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals(0,shape.z)
+	
+	def test_render_stroke_colour(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals("black",shape.stroke)
+			
+	def test_render_stroke_width(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals(1,shape.w)
+			
+	def test_render_stroke_style_solid(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals(core.STROKE_SOLID,shape.stype)
+			
+	def test_render_stroke_type_dashed(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
+				|core.M_LINE_AFTER_S|core.M_DASH_AFTER_S)
+		for shape in r:
+			self.assertEquals(core.STROKE_DASHED,shape.stype)
+			
+	def test_render_stroke_types_mixed(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
+				|core.M_LINE_AFTER_S)
+		l1 = find_with(self,r,"b",(2,2.5))
+		self.assertEquals(core.STROKE_DASHED,l1.stype)
+		l2 = find_with(self,r,"b",(2.5,2))
+		self.assertEquals(core.STROKE_SOLID,l2.stype)
+		
+	
+class TestLineRdCornerPattern(unittest.TestCase,PatternTests):
+
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.LineRdCornerPattern
+		
+	def test_accepts_corner(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_E))
+		feed_input(p,0,4," \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+	
+	def test_expects_period(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"?",core.M_LINE_AFTER_E))
+	
+	def test_expects_period_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,".",core.M_OCCUPIED))
+			
+	def test_allows_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_NONE))
+		
+	def test_rejects_apostraphe_occupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"'",core.M_OCCUPIED))
+		
+	def test_allows_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_NONE))
+		
+	def test_rejects_colon_occupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,":",core.M_OCCUPIED))
+			
+	def test_allows_rest_of_first_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,".")
+		p.test(main.CurrentChar(0,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,4,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,5,"\n",core.M_OCCUPIED))
+		
+	def test_allows_occupied_second_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_E))
+		feed_input(p,0,3,"\n")
+		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,2,"c",core.M_OCCUPIED|core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"d",core.M_OCCUPIED))
+			
+	def test_rejects_zero_lines(self):
+		p = self.pclass()
+		feed_input(p,0,2,  ". \n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_rejects_single_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  ". \n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+	
+	def test_allows_northwest_line_with_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_LINE_AFTER_SE|core.M_LINE_AFTER_E))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			
+	def test_allows_northwest_line_with_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_SE|core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_rejects_northwest_line_with_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_SE|core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_north_line_with_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_LINE_AFTER_S|core.M_LINE_AFTER_E))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			
+	def test_allows_north_line_with_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_S|core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_rejects_north_line_with_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_S|core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_northeast_line_with_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_LINE_AFTER_SW|core.M_LINE_AFTER_E))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			
+	def test_allows_northeast_line_with_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_SW|core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_rejects_northeast_line_with_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_SW|core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_east_line_with_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_LINE_AFTER_E))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(0,3,"-",core.M_LINE_START_E))
+		
+	def test_allows_east_line_with_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_E))
+		p.test(main.CurrentChar(0,3,"-",core.M_LINE_START_E))
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_east_line_with_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_E))
+		p.test(main.CurrentChar(0,3,"-",core.M_LINE_START_E))
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_rejects_southeast_line_with_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_LINE_AFTER_E))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			
+	def test_allows_southeast_line_with_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"\\",core.M_LINE_START_SE))
+			
+	def test_allows_southeast_line_with_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"\\",core.M_LINE_START_SE))
+			
+	def test_rejects_south_line_with_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_LINE_AFTER_E))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			
+	def test_allows_south_line_with_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_south_line_with_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_rejects_southwest_line_with_apostraphe(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"'",core.M_LINE_AFTER_E))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			
+	def test_allows_southwest_line_with_colon(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0," ")
+		p.test(main.CurrentChar(1,1,"/",core.M_LINE_START_SW))
+		feed_input(p,1,2," ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_southwest_line_with_period(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,".",core.M_LINE_AFTER_E))
+		feed_input(p,0,3," ")
+		feed_input(p,1,0," ")
+		p.test(main.CurrentChar(1,1,"/",core.M_LINE_START_SW))
+		feed_input(p,1,2," ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_more_than_two_lines(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,":",core.M_LINE_AFTER_SE|core.M_LINE_AFTER_SW))
+		feed_input(p,0,1," \n")
+		feed_input(p,1,0," ")
+		p.test(main.CurrentChar(1,1,"/",core.M_LINE_START_SW))
+		feed_input(p,1,2," ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"\\",core.M_LINE_START_SE))
+	
+	def test_ignores_line_characters(self):
+		p = self.pclass()
+		feed_input(p,0,2,".")
+		p.test(main.CurrentChar(0,3,"Z",core.M_LINE_START_E))
+		feed_input(p,0,4,"\n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3,"Q",core.M_LINE_START_SE))
+	
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((2,  ". \n"),
+				 (0,"  |"  ))
+		w = core.M_LINE_AFTER_E
+		s = core.M_LINE_START_S
+		n = core.M_NONE
+		o = core.M_OCCUPIED
+		inmeta = ((    w,n,n,),
+				  (n,n,s,  ))
+		outmeta =((    o,n,n,),
+				  (n,n,n,  ))
+		for j,(startcol,line) in enumerate(input):
+			for i,char in enumerate(line):
+				im = inmeta[j][i]
+				om = outmeta[j][i]
+				self.assertEquals(om,p.test(main.CurrentChar(j,startcol+i,char,im)))		
+	
+	def do_render(self,x,y,lines):
+		p = self.pclass()
+		p.test(main.CurrentChar(y,x,":",lines & (core.M_LINE_AFTER_E|core.M_LINE_AFTER_S
+				|core.M_LINE_AFTER_SW|core.M_LINE_AFTER_SE|core.M_DASH_AFTER_E
+				|core.M_DASH_AFTER_S|core.M_DASH_AFTER_SW|core.M_DASH_AFTER_SE)))
+		p.test(main.CurrentChar(y,x+1," ",lines & (core.M_LINE_START_E|core.M_DASH_START_E)))
+		p.test(main.CurrentChar(y,x+2,"\n",core.M_NONE))
+		feed_input(p,y+1,0," "*(x-1))
+		p.test(main.CurrentChar(y+1,x-1," ",lines & (core.M_LINE_START_SW|core.M_DASH_START_SW)))
+		p.test(main.CurrentChar(y+1,x," ",lines & (core.M_LINE_START_S|core.M_DASH_START_S)))
+		try:
+			p.test(main.CurrentChar(y+1,x+1," ",lines & (core.M_LINE_START_SE|core.M_DASH_START_SE)))
+		except StopIteration: pass
+		return p.render()
+				
+	def test_render_returns_quad_curves(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E)
+		for shape in r:
+			self.assertTrue( isinstance(shape,core.QuadCurve) )
+	
+	def test_render_returns_one_curve_for_two_directions(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E)
+		self.assertEquals(1, len(r))
+	
+	def test_render_returns_fifteen_curves_for_six_directions(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E|core.M_LINE_START_SE
+				|core.M_LINE_AFTER_SE|core.M_LINE_AFTER_E|core.M_LINE_START_SW)
+		self.assertEquals(15, len(r))
+	
+	def test_render_coordinates_northwest(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SE)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((2,2),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+		
+	def test_render_coordinates_north(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((2.5,2),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+	
+	def test_render_coordinates_northeast(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SW)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((3,2),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+		
+	def test_render_coordinates_east(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_E)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((3,2.5),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+		
+	def test_render_coordinates_southeast(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SE)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((3,3),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+	
+	def test_render_coordinates_south(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_S)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((2.5,3),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+		
+	def test_render_coordinates_southwest(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SW)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((2,3),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+	
+	def test_render_coordinates_west(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)[0]
+		self.assertEquals((2,2.5),l.a)
+		self.assertEquals((2.5,2),l.b)
+		self.assertEquals((2.5,2.5),l.c)
+		
+	def test_render_coordinates_position(self):
+		l = self.do_render(4,6,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)[0]
+		self.assertEquals((4,6.5),l.a)
+		self.assertEquals((4.5,6),l.b)	
+		self.assertEquals((4.5,6.5),l.c)	
+	
+	def test_render_z(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals(0,shape.z)
+	
+	def test_render_stroke_colour(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals("black",shape.stroke)
+			
+	def test_render_stroke_width(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals(1,shape.w)
+			
+	def test_render_stroke_style_solid(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
+		for shape in r:
+			self.assertEquals(core.STROKE_SOLID,shape.stype)
+			
+	def test_render_stroke_type_dashed(self):
+		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
+				|core.M_LINE_AFTER_S|core.M_DASH_AFTER_S)
+		for shape in r:
+			self.assertEquals(core.STROKE_DASHED,shape.stype)
+			
+	def test_render_stroke_types_mixed(self):
+		l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
+				|core.M_LINE_AFTER_S)[0]
+		self.assertEquals(core.STROKE_SOLID,l.stype)		
+					
 	
 unittest.main()

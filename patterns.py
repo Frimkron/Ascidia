@@ -1,6 +1,7 @@
 """ 
 Pattern classes go here
 """
+
 import math
 from core import *
 
@@ -182,7 +183,7 @@ class LineSqCornerPattern(Pattern):
 		retval = []
 		for x,y,dsh in self.ends:
 			retval.append( Line(centre,(centre[0]+x*0.5,centre[1]+y*0.5),
-					1,"pink",1,STROKE_DASHED if dsh else STROKE_SOLID) )
+					0,"black",1,STROKE_DASHED if dsh else STROKE_SOLID) )
 		return retval
 
 
@@ -244,7 +245,7 @@ class LineRdCornerPattern(Pattern):
 			for oth in rest:
 				a = centre[0]+end[0]*0.5, centre[1]+end[1]*0.5
 				b = centre[0]+oth[0]*0.5, centre[1]+oth[1]*0.5
-				retval.append( QuadCurve(a,b,centre,1,"pink",1,
+				retval.append( QuadCurve(a,b,centre,0,"black",1,
 					STROKE_DASHED if end[2] and oth[2] else STROKE_SOLID) )		
 		return retval
 
@@ -706,15 +707,15 @@ class StickManPattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [
-			Ellipse(self.offset(0,1-1.0/CHAR_H_RATIO,self.pos),self.offset(1,1,self.pos),1,"yellow",1,STROKE_SOLID,None),
-			Line(self.offset(0.5,1,self.pos),self.offset(0.5,1.8,self.pos),1,"yellow",1,STROKE_SOLID),
-			Line(self.offset(-1,1.25,self.pos),self.offset(2,1.25,self.pos),1,"yellow",1,STROKE_SOLID),
-			Line(self.offset(0.5,1.8,self.pos),self.offset(-0.5,2.8,self.pos),1,"yellow",1,STROKE_SOLID),
-			Line(self.offset(0.5,1.8,self.pos),self.offset(1.5,2.8,self.pos),1,"yellow",1,STROKE_SOLID), ]
+			Ellipse(self.offset(0,1-1.0/CHAR_H_RATIO,self.pos),self.offset(1,1,self.pos),0,"black",1,STROKE_SOLID,None),
+			Line(self.offset(0.5,1,self.pos),self.offset(0.5,1.8,self.pos),0,"black",1,STROKE_SOLID),
+			Line(self.offset(-1,1.25,self.pos),self.offset(2,1.25,self.pos),0,"black",1,STROKE_SOLID),
+			Line(self.offset(0.5,1.8,self.pos),self.offset(-0.5,2.8,self.pos),0,"black",1,STROKE_SOLID),
+			Line(self.offset(0.5,1.8,self.pos),self.offset(1.5,2.8,self.pos),0,"black",1,STROKE_SOLID), ]
 
 		
 PATTERNS = [
-	StickManPattern,			
+	StickManPattern,			#
 	DbCylinderPattern,			#
 	BoxPattern,
 	SmallCirclePattern,
@@ -727,8 +728,8 @@ PATTERNS = [
 	UpDiagDashedLinePattern,	#
 	DownDiagLinePattern,		#
 	DownDiagDashedLinePattern,	#
-	LineSqCornerPattern,
-	LineRdCornerPattern,
+	LineSqCornerPattern,		#
+	LineRdCornerPattern,		#
 	LJumpPattern,
 	RJumpPattern,
 	UJumpPattern,
