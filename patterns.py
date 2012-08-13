@@ -653,9 +653,9 @@ class LJumpPattern(JumpPattern):
 		JumpPattern.render(self)
 		return [ 
 			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
-				1,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
+				0,"black",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
 			Arc((self.pos[0]+0.5-0.6,self.pos[1]),(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
-				1,math.pi*0.5,math.pi*1.5,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID, None), ]
+				0,math.pi*0.5,math.pi*1.5,"black",1,STROKE_DASHED if self.vdash else STROKE_SOLID, None), ]
 	
 	
 class RJumpPattern(JumpPattern):
@@ -666,9 +666,9 @@ class RJumpPattern(JumpPattern):
 		JumpPattern.render(self)
 		return [
 			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
-				1,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
+				0,"black",1,STROKE_DASHED if self.hdash else STROKE_SOLID),
 			Arc((self.pos[0]+0.5-0.6,self.pos[1]),(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
-				1,math.pi*-0.5,math.pi*0.5,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID,None), ]
+				0,math.pi*-0.5,math.pi*0.5,"black",1,STROKE_DASHED if self.vdash else STROKE_SOLID,None), ]
 	
 	
 class UJumpPattern(JumpPattern):
@@ -679,9 +679,9 @@ class UJumpPattern(JumpPattern):
 		JumpPattern.render(self)
 		return [
 			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0),
-				1,"cyan",1,STROKE_DASHED if self.vdash else STROKE_SOLID),
+				0,"black",1,STROKE_DASHED if self.vdash else STROKE_SOLID),
 			Arc((self.pos[0],self.pos[1]+0.5-0.4),(self.pos[0]+1.0,self.pos[1]+0.5+0.4),
-				1,math.pi,math.pi*2,"cyan",1,STROKE_DASHED if self.hdash else STROKE_SOLID,None), ]
+				0,math.pi,math.pi*2,"black",1,STROKE_DASHED if self.hdash else STROKE_SOLID,None), ]
 
 
 class StickManPattern(Pattern):
@@ -730,9 +730,9 @@ PATTERNS = [
 	DownDiagDashedLinePattern,	#
 	LineSqCornerPattern,		#
 	LineRdCornerPattern,		#
-	LJumpPattern,
-	RJumpPattern,
-	UJumpPattern,
+	LJumpPattern,				#
+	RJumpPattern,				#
+	UJumpPattern,				#
 	LArrowheadPattern,
 	RArrowheadPattern,
 	DArrowheadPattern,
