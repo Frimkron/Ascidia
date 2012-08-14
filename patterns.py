@@ -271,12 +271,14 @@ class ArrowheadPattern(Pattern):
 			if self.curr.meta & self.boxmeta: self.tobox = True
 		else:
 			if not self.curr.meta & self.linemeta: self.reject()
+			if self.curr.meta & self.dashmeta: self.dashed = True
 		self.curr = yield M_OCCUPIED
 		try:
 			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 				self.curr = yield meta
 			if self.flipped:
 				if not self.curr.meta & self.linemeta: self.reject()
+				if self.curr.meta & self.dashmeta: self.dashed = True
 			else:
 				if self.curr.meta & self.boxmeta: self.tobox = True	
 		except NoSuchPosition:
@@ -284,6 +286,7 @@ class ArrowheadPattern(Pattern):
 		return
 		
 	def render(self):
+		Pattern.render(self)
 		flip = -1 if self.flipped else 1
 		centre = (self.pos[0]+0.5,self.pos[1]+0.5)
 		spos = (centre[0]-0.5*self.xdir*flip,centre[1]-0.5*self.ydir*flip)
@@ -291,9 +294,9 @@ class ArrowheadPattern(Pattern):
 		apos1 = (apos2[0]-0.8*self.xdir*flip-0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO-0.5*self.xdir*flip/CHAR_H_RATIO)
 		apos3 = (apos2[0]-0.8*self.xdir*flip+0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO+0.5*self.xdir*flip/CHAR_H_RATIO)
 		return [
-			Line(apos1,apos2,1,"darkred",1,STROKE_SOLID),
-			Line(apos3,apos2,1,"darkred",1,STROKE_SOLID),
-			Line(spos,apos2,1,"darkred",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+			Line(apos1,apos2,0,"black",1,STROKE_SOLID),
+			Line(apos3,apos2,0,"black",1,STROKE_SOLID),
+			Line(spos,apos2,0,"black",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 		
 
 class LArrowheadPattern(ArrowheadPattern):
@@ -369,6 +372,7 @@ class CrowsFeetPattern(Pattern):
 		return
 		
 	def render(self):
+		Pattern.render(self)
 		
 		flip = -1 if self.flipped else 1
 		centre = ( self.pos[0]+0.5, self.pos[1]+0.5 )
@@ -733,8 +737,8 @@ PATTERNS = [
 	LJumpPattern,				#
 	RJumpPattern,				#
 	UJumpPattern,				#
-	LArrowheadPattern,
-	RArrowheadPattern,
+	LArrowheadPattern,			#
+	RArrowheadPattern,			#
 	DArrowheadPattern,
 	UArrowheadPattern,
 	LCrowsFeetPattern,
