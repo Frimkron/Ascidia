@@ -384,10 +384,10 @@ class CrowsFeetPattern(Pattern):
 					centre[1]+self.ydir*1.0*flip + 0.6*(not self.ydir)/CHAR_H_RATIO )
 		fpos0 = ( fpos2[0]-self.xdir*1.0*flip, fpos2[1]-self.ydir*1.0*flip/CHAR_H_RATIO )
 		return [ 
-			Line(fpos0,fpos1,1,"gray",1,STROKE_SOLID),
-			Line(fpos0,fpos2,1,"gray",1,STROKE_SOLID),
-			Line(fpos0,fpos3,1,"gray",1,STROKE_SOLID),
-			Line(spos,fpos0,1,"gray",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+			Line(fpos0,fpos1,0,"black",1,STROKE_SOLID),
+			Line(fpos0,fpos2,0,"black",1,STROKE_SOLID),
+			Line(fpos0,fpos3,0,"black",1,STROKE_SOLID),
+			Line(spos,fpos0,0,"black",1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 	
 class LCrowsFeetPattern(CrowsFeetPattern):
@@ -739,9 +739,9 @@ PATTERNS = [
 	UJumpPattern,				#
 	LArrowheadPattern,			#
 	RArrowheadPattern,			#
-	DArrowheadPattern,
-	UArrowheadPattern,
-	LCrowsFeetPattern,
+	DArrowheadPattern,			#
+	UArrowheadPattern,			#
+	LCrowsFeetPattern,			#
 	RCrowsFeetPattern,
 	UCrowsFeetPattern,
 	DCrowsFeetPattern,

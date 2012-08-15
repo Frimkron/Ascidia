@@ -834,3 +834,14 @@ too.
  ok <  ok?  >  :     :    _- -_     |  n                 '.'    < dm >         <   >
 \  / \     /    '. .'    -_   _-    +---->                                      '.'
        \./        '        -_-
+   _     _                         +--------------+  Can't have box separator
+  |\  ^  /|       /         \      | FooFactory   |  lines as separate pattern
+    \ | /        /_|       |_\     |--------------|  because box's representation
+     \|/        /   \     /   \    |              |  would have to change to
+   <-- -->           +---+         |              |  incorporate section shading
+     /|\         \_ /     \_/      |--------------|  
+    / | \         \|      |/       | makeFoo()    |  
+  |/_ V _\|        \      /        +--------------+  
+    
+    
+        
