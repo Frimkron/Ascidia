@@ -206,11 +206,19 @@ def process_diagram(text,patternlist):
 	return sum([m.render() for m in complete_matches],[])
 	
 
+INPUT = """\
+---+
+   |      O   .---.
+   +---> -|-  '---'
+         / \\ |   |
+              '---'
+"""
+
 if __name__ == "__main__":
 
 	# TODO: command line interface
 	
-	renderitems = process_diagram("foo",patterns.PATTERNS)
+	renderitems = process_diagram(INPUT,patterns.PATTERNS)
 	
 	with open("test2.svg","w") as f:
 		SvgOutput.output(renderitems,f)

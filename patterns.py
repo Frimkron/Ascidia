@@ -721,9 +721,9 @@ class StickManPattern(Pattern):
 PATTERNS = [
 	StickManPattern,			#
 	DbCylinderPattern,			#
-	BoxPattern,
-	SmallCirclePattern,
-	TinyCirclePattern,
+	#BoxPattern,
+	#SmallCirclePattern,
+	#TinyCirclePattern,
 	HorizDashedLinePattern,		#
 	HorizLinePattern,			#
 	VertLinePattern,			#
@@ -742,9 +742,9 @@ PATTERNS = [
 	DArrowheadPattern,			#
 	UArrowheadPattern,			#
 	LCrowsFeetPattern,			#
-	RCrowsFeetPattern,
-	UCrowsFeetPattern,
-	DCrowsFeetPattern,
+	RCrowsFeetPattern,			#
+	UCrowsFeetPattern,			#
+	DCrowsFeetPattern,			#
 	LiteralPattern				#
 ]
 
