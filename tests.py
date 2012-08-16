@@ -218,9 +218,9 @@ class TestMatchLookup(unittest.TestCase):
 
 class TestSvgOutput(unittest.TestCase):
 	
-	def do_output(self,items):
+	def do_output(self,items,prefs=main.OutputPrefs("black","white")):
 		s = io.BytesIO()
-		main.SvgOutput()._output(items,s)
+		main.SvgOutput()._output(items,s,prefs)
 		return xml.dom.minidom.parseString(s.getvalue())
 	
 	def child_elements(self,node):
@@ -253,6 +253,12 @@ class TestSvgOutput(unittest.TestCase):
 		l = self.child_elements(self.do_output([core.Line(
 				(1,2),(3,4),1,"red",1,core.STROKE_SOLID)]).documentElement)[0]
 		self.assertEquals("red", l.getAttribute("stroke"))
+		
+	def test_line_special_stroke_colour(self):
+		l = self.child_elements(self.do_output([core.Line(
+				(1,2),(3,4),1,core.C_FOREGROUND,1,core.STROKE_SOLID)],
+			main.OutputPrefs("purple","green")).documentElement)[0]
+		self.assertEquals("purple", l.getAttribute("stroke"))
 		
 	def test_line_no_stroke(self):
 		l = self.child_elements(self.do_output([core.Line(
@@ -302,6 +308,12 @@ class TestSvgOutput(unittest.TestCase):
 				(1,2),(3,5),1,"red",1,core.STROKE_SOLID,"blue")]).documentElement)[0]
 		self.assertEquals("red", r.getAttribute("stroke"))
 	
+	def test_rect_special_stroke_colour(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,core.C_FOREGROUND,1,core.STROKE_SOLID,"blue")],
+			main.OutputPrefs("yellow","indigo")).documentElement)[0]
+		self.assertEquals("yellow", r.getAttribute("stroke"))
+	
 	def test_rect_no_stroke(self):
 		r = self.child_elements(self.do_output([core.Rectangle(
 				(1,2),(3,5),1,None,1,core.STROKE_SOLID,"blue")]).documentElement)[0]
@@ -326,6 +338,12 @@ class TestSvgOutput(unittest.TestCase):
 		r = self.child_elements(self.do_output([core.Rectangle(
 				(1,2),(3,5),1,"red",2,core.STROKE_SOLID,"blue")]).documentElement)[0]
 		self.assertEquals("blue",r.getAttribute("fill"))
+		
+	def test_rect_special_fill_colour(self):
+		r = self.child_elements(self.do_output([core.Rectangle(
+				(1,2),(3,5),1,"red",2,core.STROKE_SOLID,core.C_BACKGROUND)],
+			main.OutputPrefs("brown","gray")).documentElement)[0]
+		self.assertEquals("gray",r.getAttribute("fill"))
 		
 	def test_rect_no_fill(self):
 		r = self.child_elements(self.do_output([core.Rectangle(
@@ -360,6 +378,12 @@ class TestSvgOutput(unittest.TestCase):
 				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
 		self.assertEquals("red",e.getAttribute("stroke"))
 		
+	def test_ellipse_special_stroke_colour(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,core.C_BACKGROUND,2,core.STROKE_SOLID,"blue") ],
+			main.OutputPrefs("green","orange")).documentElement)[0]
+		self.assertEquals("orange",e.getAttribute("stroke"))
+		
 	def test_ellipse_no_stroke(self):
 		e = self.child_elements(self.do_output([ core.Ellipse(
 				(2,1),(5,3),1,None,2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
@@ -384,6 +408,12 @@ class TestSvgOutput(unittest.TestCase):
 		e = self.child_elements(self.do_output([ core.Ellipse(
 				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,"blue") ]).documentElement)[0]
 		self.assertEquals("blue", e.getAttribute("fill"))
+		
+	def test_ellipse_special_fill_colour(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(
+				(2,1),(5,3),1,"red",2,core.STROKE_SOLID,core.C_FOREGROUND) ],
+			main.OutputPrefs("pink","black")).documentElement)[0]
+		self.assertEquals("pink",e.getAttribute("fill"))
 		
 	def test_ellipse_no_fill(self):
 		e = self.child_elements(self.do_output([ core.Ellipse(
@@ -416,6 +446,12 @@ class TestSvgOutput(unittest.TestCase):
 				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
 		self.assertEquals("red", a.getAttribute("stroke"))
 		
+	def test_arc_special_stroke_colour(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,core.C_FOREGROUND,1,core.STROKE_SOLID,"blue") ],
+			main.OutputPrefs("silver","gold")).documentElement)[0]
+		self.assertEquals("silver",a.getAttribute("stroke"))
+		
 	def test_arc_no_stroke(self):
 		a = self.child_elements(self.do_output([ core.Arc(
 				(2,4),(3,6),1,-math.pi,math.pi/2,None,1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
@@ -440,6 +476,12 @@ class TestSvgOutput(unittest.TestCase):
 		a = self.child_elements(self.do_output([ core.Arc(
 				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,"blue") ]).documentElement)[0]
 		self.assertEquals("blue", a.getAttribute("fill"))
+		
+	def test_arc_special_fill_colour(self):
+		a = self.child_elements(self.do_output([ core.Arc(
+				(2,4),(3,6),1,-math.pi,math.pi/2,"red",1,core.STROKE_SOLID,core.C_FOREGROUND) ],
+			main.OutputPrefs("lime","magenta")).documentElement)[0]
+		self.assertEquals("lime", a.getAttribute("fill"))
 		
 	def test_arc_no_fill(self):
 		a = self.child_elements(self.do_output([ core.Arc(
@@ -471,6 +513,12 @@ class TestSvgOutput(unittest.TestCase):
 		q = self.child_elements(self.do_output([ core.QuadCurve(
 				(1,2),(3,5),(4,3),1,"purple",2,core.STROKE_SOLID) ]).documentElement)[0]
 		self.assertEquals("purple", q.getAttribute("stroke"))
+		
+	def test_quadcurve_special_stroke_colour(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(
+				(1,2),(3,5),(4,3),1,core.C_FOREGROUND,2,core.STROKE_SOLID) ],
+			main.OutputPrefs("darkred","green")).documentElement)[0]
+		self.assertEquals("darkred",q.getAttribute("stroke"))
 		
 	def test_quadcurve_no_stroke(self):
 		q = self.child_elements(self.do_output([ core.QuadCurve(
@@ -525,6 +573,12 @@ class TestSvgOutput(unittest.TestCase):
 		t = self.child_elements(self.do_output([ core.Text(
 				(3,4),1,"!","red",1) ]).documentElement)[0]
 		self.assertEquals("red", t.getAttribute("fill"))
+		
+	def test_text_special_colour(self):
+		t = self.child_elements(self.do_output([ core.Text(
+				(3,4),1,"!",core.C_BACKGROUND,1) ],
+			main.OutputPrefs("orange","yellow")).documentElement)[0]
+		self.assertEquals("yellow", t.getAttribute("fill"))
 		
 	def test_text_size(self):
 		t = self.child_elements(self.do_output([ core.Text(
@@ -816,7 +870,7 @@ class TestLiteralPattern(unittest.TestCase,PatternTests):
 		
 	def test_render_colour(self):
 		text = self.do_render(2,1,"a")[0]
-		self.assertEquals("black", text.colour)
+		self.assertEquals(core.C_FOREGROUND, text.colour)
 		
 	def test_render_size(self):
 		text = self.do_render(2,1,"a")[0]
@@ -1250,7 +1304,7 @@ class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		result = self.do_render(2,2,3,4)
 		for r in result:
-			self.assertEquals("black",r.stroke)
+			self.assertEquals(core.C_FOREGROUND,r.stroke)
 			
 	def test_render_stroke_width(self):
 		result = self.do_render(2,2,3,4)
@@ -1415,7 +1469,7 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,3)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,3)[0]
@@ -1574,7 +1628,7 @@ class TestDownDiagLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,3)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,3)[0]
@@ -1732,7 +1786,7 @@ class TestVertLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,3)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,3)[0]
@@ -1837,7 +1891,7 @@ class TestHorizLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,3)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,3)[0]
@@ -1995,7 +2049,7 @@ class TestUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,3)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,3)[0]
@@ -2154,7 +2208,7 @@ class TestDownDiagLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,3)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,3)[0]
@@ -2312,7 +2366,7 @@ class TestVertDashedLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,3)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,3)[0]
@@ -2441,7 +2495,7 @@ class TestHorizDashedLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_render_stroke_colour(self):
 		l = self.do_render(3,3,4)[0]
-		self.assertEquals("black",l.stroke)
+		self.assertEquals(core.C_FOREGROUND,l.stroke)
 	
 	def test_render_stroke_width(self):
 		l = self.do_render(3,3,4)[0]
@@ -2656,7 +2710,7 @@ class TestStickManPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(3,2)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(3,2)
@@ -2915,7 +2969,7 @@ class TestLineSqCornerPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
@@ -3305,7 +3359,7 @@ class TestLineRdCornerPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
@@ -3453,7 +3507,7 @@ class TestLJumpPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(3,2,core.M_NONE)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(3,2,core.M_NONE)
@@ -3605,7 +3659,7 @@ class TestRJumpPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(3,2,core.M_NONE)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(3,2,core.M_NONE)
@@ -3757,7 +3811,7 @@ class TestUJumpPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(3,2,core.M_NONE)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(3,2,core.M_NONE)
@@ -3883,7 +3937,7 @@ class TestLArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False,False)
@@ -4000,7 +4054,7 @@ class TestRArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False,False)
@@ -4146,7 +4200,7 @@ class TestUArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False,False)
@@ -4298,7 +4352,7 @@ class TestDArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False,False)
@@ -4413,7 +4467,7 @@ class TestLCrowsFeetPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False)
@@ -4527,7 +4581,7 @@ class TestRCrowsFeetPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False)
@@ -4683,7 +4737,7 @@ class TestUCrowsFeetPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False)
@@ -4831,7 +4885,7 @@ class TestDCrowsFeetPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,False)
 		for shape in r:
-			self.assertEquals("black",shape.stroke)
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
 			
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,False)

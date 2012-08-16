@@ -17,6 +17,9 @@ QuadCurve = namedtuple("QuadCurve","a b c z stroke w stype")
 STROKE_SOLID = object()
 STROKE_DASHED = object()
 
+C_FOREGROUND = object()
+C_BACKGROUND = object()
+
 M_NONE = 0
 M_OCCUPIED = (1<<0)
 M_BOX_START_S = (1<<1)
