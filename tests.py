@@ -605,16 +605,16 @@ class TestProcessDiagram(unittest.TestCase):
 	
 	def test_background_rect_size(self):
 		r = main.process_diagram(
-			"012345"+
-			"012345"+
+			"012345\n"+
+			"012345\n"+
 			"012345", [])[0]
 		self.assertEquals((0,0),r.a)
 		self.assertEquals((6,3),r.b)
 		
 	def test_background_rect_size_jagged(self):
 		r = main.process_diagram(
-			"0123"+
-			"012345"+
+			"0123\n"+
+			"012345\n"+
 			"01234", [])[0]
 		self.assertEquals((0,0),r.a)
 		self.assertEquals((6,3),r.b)

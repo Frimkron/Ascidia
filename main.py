@@ -1,4 +1,7 @@
+#!/usr/bin/python2
 
+import sys
+import argparse
 import xml.dom
 import xml.dom.minidom
 import math
@@ -192,11 +195,13 @@ def process_diagram(text,patternlist):
 
 	lines = [l+"\n" for l in text.splitlines()]
 	lines.append( [core.END_OF_INPUT] )
+	height = len(lines)-1
+	width = max([len(x) for x in lines])-1
 
 	complete_matches = []
 	complete_meta = {}
 	for pclass in patternlist:
-		print pclass.__name__
+		#print pclass.__name__
 		ongoing = MatchLookup()	
 		for j,line in enumerate(lines):
 			for i,char in enumerate(line):	
@@ -220,26 +225,46 @@ def process_diagram(text,patternlist):
 						ongoing.add_meta(match,(j,i),matchmeta)
 		
 	result = sum([m.render() for m in complete_matches],[])
-	result.append( core.Rectangle((0,0),(10,10),-1,None,1,core.STROKE_SOLID,core.C_BACKGROUND) )
+	result.append( core.Rectangle((0,0),(width,height),-1,None,1,core.STROKE_SOLID,core.C_BACKGROUND) )
 	return result
 	
 
-INPUT = """\
----+ ;
-   | ;    O   .---.
-   +-)-> -|-  '---'
-     ;   / `  |DB1|
-     ;   user '---'
-""".replace("`","\\")
-
 if __name__ == "__main__":
 
-	# TODO: command line interface
+	ap = argparse.ArgumentParser()
+	ap.add_argument("-o","--outfile",default=None,help="output file")
+	ap.add_argument("-f","--foreground",default="black",help="foreground colour")
+	ap.add_argument("-b","--background",default="white",help="background colour")
+	ap.add_argument("infile",default="-",nargs="?",help="input file")
+	args = ap.parse_args()
+
+	if args.infile == "-":
+		instream = sys.stdin
+	else:
+		instream = open(args.infile,"r")
+
+	with instream:
+		input = instream.read()
 	
-	renderitems = process_diagram(INPUT,patterns.PATTERNS)
+	renderitems = process_diagram(input,patterns.PATTERNS)
+
+	if args.outfile is None and args.infile == "-":
+		outstream = sys.stdout
+	elif args.outfile is None and args.infile != "-":
+		name = args.infile
+		extpos = name.rfind(".")
+		if extpos != -1: name = name[:extpos]
+		name += ".svg"
+		outstream = open(name,"w")
+	elif args.outfile == "-":
+		outstream = sys.stdout
+	else:
+		outstream = open(args.outfile,"w")
+		
+	prefs = OutputPrefs(args.foreground,args.background)
 	
-	with open("test2.svg","w") as f:
-		SvgOutput.output(renderitems,f,OutputPrefs("magenta","black"))
+	with outstream:
+		SvgOutput.output(renderitems,outstream,prefs)
 	
 	
 
