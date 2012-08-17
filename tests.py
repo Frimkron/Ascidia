@@ -598,10 +598,39 @@ class TestSvgOutput(unittest.TestCase):
 
 class TestProcessDiagram(unittest.TestCase):
 
-	def test_returns_empty_list_for_no_matches(self):
+	def test_returns_background_rect(self):
 		result = main.process_diagram("",[])
-		self.assertTrue(isinstance(result,list))
+		self.assertEquals(1, len(result))
+		self.assertTrue( isinstance(result[0],core.Rectangle) )
+	
+	def test_background_rect_size(self):
+		r = main.process_diagram(
+			"012345"+
+			"012345"+
+			"012345", [])[0]
+		self.assertEquals((0,0),r.a)
+		self.assertEquals((6,3),r.b)
 		
+	def test_background_rect_size_jagged(self):
+		r = main.process_diagram(
+			"0123"+
+			"012345"+
+			"01234", [])[0]
+		self.assertEquals((0,0),r.a)
+		self.assertEquals((6,3),r.b)
+	
+	def test_background_rect_colours(self):
+		r = main.process_diagram("",[])[0]
+		self.assertEquals(core.C_BACKGROUND,r.fill)
+		self.assertEquals(None,r.stroke)
+		
+	def test_background_z(self):
+		r = main.process_diagram("",[])[0]
+		self.assertEquals(-1, r.z)
+	
+	def remove_background(self,result):
+		return filter(lambda x: not isinstance(x,core.Rectangle),result)
+	
 	def test_single_character_pattern_match(self):
 		r = object()
 		class SingleCharPattern(object):
@@ -609,7 +638,7 @@ class TestProcessDiagram(unittest.TestCase):
 				raise StopIteration()
 			def render(self):
 				return [ r ]
-		result = main.process_diagram("a",[SingleCharPattern])
+		result = self.remove_background(main.process_diagram("a",[SingleCharPattern]))
 		self.assertEquals(3,len(result))
 		self.assertEquals(r,result[0])
 	
@@ -619,7 +648,7 @@ class TestProcessDiagram(unittest.TestCase):
 				raise core.PatternRejected()
 			def render(self):
 				return [ object() ]
-		result = main.process_diagram("a",[RejectingPattern])
+		result = self.remove_background(main.process_diagram("a",[RejectingPattern]))
 		self.assertEquals(0,len(result))
 		
 	def test_multiple_character_pattern_match(self):
@@ -632,7 +661,7 @@ class TestProcessDiagram(unittest.TestCase):
 				return core.M_NONE
 			def render(self):
 				return [ r ]
-		result = main.process_diagram("a",[MultiCharPattern])
+		result = self.remove_background(main.process_diagram("a",[MultiCharPattern]))
 		self.assertEquals(2, len(result))
 		self.assertEquals(r,result[0])
 		self.assertEquals(r,result[1])
@@ -643,7 +672,7 @@ class TestProcessDiagram(unittest.TestCase):
 				return core.M_NONE
 			def render(self):
 				return [ object() ]
-		result = main.process_diagram("a",[NeverendingPattern])
+		result = self.remove_background(main.process_diagram("a",[NeverendingPattern]))
 		self.assertEquals(0,len(result))
 
 	def test_multiple_matching_patterns(self):
@@ -659,7 +688,7 @@ class TestProcessDiagram(unittest.TestCase):
 				raise StopIteration()
 			def render(self):
 				return [ r2 ]
-		result = main.process_diagram("a",[Pattern1,Pattern2])
+		result = self.remove_background(main.process_diagram("a",[Pattern1,Pattern2]))
 		self.assertTrue( r1 in result )
 		self.assertTrue( r2 in result )
 
@@ -751,7 +780,7 @@ class TestProcessDiagram(unittest.TestCase):
 				return core.M_OCCUPIED
 			def render(self):
 				return [ self.id ]
-		result = main.process_diagram("abc",[OccupyingPattern])
+		result = self.remove_background(main.process_diagram("abc",[OccupyingPattern]))
 		self.assertEquals([0,2], result)
 	
 	def test_doesnt_leave_metadata_for_failed_matches(self):
@@ -773,7 +802,8 @@ class TestProcessDiagram(unittest.TestCase):
 					raise core.PatternRejected()
 			def render(self):
 				return []
-		result = main.process_diagram("abc",[FailingMetaPattern,MetaMatchingPattern])
+		result = self.remove_background(main.process_diagram("abc",
+				[FailingMetaPattern,MetaMatchingPattern]))
 		self.assertTrue( r1 not in result )
 		self.assertTrue( r2 not in result )
 	
@@ -789,7 +819,7 @@ class TestProcessDiagram(unittest.TestCase):
 					raise core.PatternRejected()
 			def render(self):
 				return [ object() ]
-		result = main.process_diagram("a a",[MetaMatchingPattern])
+		result = self.remove_background(main.process_diagram("a a",[MetaMatchingPattern]))
 		self.assertEquals(2, len(result))		
 
 

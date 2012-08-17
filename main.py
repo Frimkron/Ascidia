@@ -9,8 +9,14 @@ import core
 import patterns
 
 
-OutputPrefs = namedtuple("OutputPrefs","fgcolour bgcolour")
 
+class OutputPrefs(object):
+	def __init__(self, 
+			fgcolour="black", 
+			bgcolour="white" ):
+		for k,v in locals().items():		
+			if k!="self": setattr(self,k,v)
+			
 
 class SvgOutput(object):
 
@@ -213,7 +219,9 @@ def process_diagram(text,patternlist):
 					else:
 						ongoing.add_meta(match,(j,i),matchmeta)
 		
-	return sum([m.render() for m in complete_matches],[])
+	result = sum([m.render() for m in complete_matches],[])
+	result.append( core.Rectangle((0,0),(10,10),-1,None,1,core.STROKE_SOLID,core.C_BACKGROUND) )
+	return result
 	
 
 INPUT = """\
