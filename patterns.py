@@ -142,7 +142,7 @@ class BoxPattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [Rectangle((self.tl[0]+0.5,self.tl[1]+0.5),
-			(self.br[0]+0.5,self.br[1]+0.5),1,"red",1,STROKE_SOLID,None)]
+			(self.br[0]+0.5,self.br[1]+0.5),0,C_FOREGROUND,1,STROKE_SOLID,None)]
 			
 			
 class LineSqCornerPattern(Pattern):
@@ -721,7 +721,7 @@ class StickManPattern(Pattern):
 PATTERNS = [
 	StickManPattern,			#
 	DbCylinderPattern,			#
-	#BoxPattern,
+	BoxPattern,					#
 	#SmallCirclePattern,
 	#TinyCirclePattern,
 	HorizDashedLinePattern,		#

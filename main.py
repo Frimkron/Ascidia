@@ -1,5 +1,41 @@
 #!/usr/bin/python2
 
+"""	
+TODO:
+	* Boxes (with separators)
+	* Parallelogram boxes
+	* Large diamonds
+	* Outline arrows "|<|--"
+	* Outline diamond connector "<>--"
+	* Filled diamond connector "<#>--"
+	* Large ellipses 
+	* Rounded corner boxes
+	* Slash-cornered boxes
+	* Note/document (folded corner, cutoff)
+	* Cloud boxes
+	* Tiny ellipse "o"
+	* Tiny box "[]"
+	* Small ellipse "( foo )"
+	* Small boxes "[ foo ]"
+	* Nested ellipses "(( foo ))"
+	* Nested boxes "[[ foo ]]"	
+	* Tiny diamond "<>"
+	* Small diamonds "< foo >"
+	* Nested diamonds "<< foo >>"
+	* Circle arrow "|O<|--"
+	* Circle connector "--O|"
+	* Circle crows foot "|>O--"
+	* One crows foot "|>|--"
+	* Only one connector "-||--"
+	* 3d boxes
+	* Disallow alphas beside down arrows
+	* Stacked boxes
+	* Box/Cylinder shadows
+	* Hexagon boxes	
+	* Terminal
+	* Diagonal arrowheads
+"""
+
 import sys
 import argparse
 import xml.dom
@@ -201,7 +237,7 @@ def process_diagram(text,patternlist):
 	complete_matches = []
 	complete_meta = {}
 	for pclass in patternlist:
-		#print pclass.__name__
+		print pclass.__name__
 		ongoing = MatchLookup()	
 		for j,line in enumerate(lines):
 			for i,char in enumerate(line):	
