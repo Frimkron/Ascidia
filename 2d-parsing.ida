@@ -843,5 +843,38 @@ too.
     / | \         \|      |/       | makeFoo()    |  
   |/_ V _\|        \      /        +--------------+  
     
-    
+
++---------+ +---------+ +----+----+----+   .-----.
+| Foobar  | | Foobar  | |####|////|####|   '-----'
++---------+ |---------| +----+----+----+   |  |  |
+| foo     | | foo     | |    |....|    |   |  |  |
+| bar     | | bar     | +----+----+----+   '-----'
++---------+ |---------|
+| foobar()| | foobar()|
++---------+ +---------+
         
+[!] Separator lines cause an issue in that using a + at the edges is ugly
+	(especially for cylinder), and not requiring them means that all lines
+	in content must be incorporated into pattern and cause it to fail if
+	they're not separators. This is because we need to output the occupied
+	meta flag for them, even before we know they span the whole pattern.
+	
+ .---+---.      .-----.
+(  A | B  )    /       \
+ '---+---'    (---------)
+               \       /
+                '-----'
+
+[!] If we dont use +, people will expect to be able to use it anyway.
+- Meh. Plus the lack of + is more explicit as a separator vs connected 
+  boxes.
+
+[*] Separator just means you have to commit to the line if one starts at
+	the top or left edge:
+	
++-----+ +-----+ +-----+ +-----+ +-----+ +-----+ +-----+
+| |   | | |   | |-----| |-    | |  ---| |     | |     |
+| |   | |     | |     | |     | |     | | |   | |     |
++-----+ +-----+ +-----+ +-----+ +-----+ +-----+ +-----+
+  yes     no      yes    no       yes     yes     yes
+

@@ -5169,11 +5169,119 @@ class TestBoxPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,4,"\n",core.M_NONE))
 	
+	def test_allows_h_separator(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |----|\n")
+	
+	def test_expects_continuation_of_h_separator(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,4," ",core.M_NONE))
+			
+	def test_expects_continuation_of_h_separator_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,4,"-",core.M_OCCUPIED))
+			
+	def test_allows_non_separator_h_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  | ---|\n")
+		
+	def test_allows_h_non_separator_start_if_occupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |")
+		p.test(main.CurrentChar(1,3,"-",core.M_OCCUPIED))
+		feed_input(p,1,4,"---+\n")
+		
+	def test_allows_multiple_h_separators(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |----|\n")
+		feed_input(p,2,0,"  |    |\n")
+		feed_input(p,3,0,"  |----|\n")
+	
+	def test_allows_v_separator(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |  | |\n")
+		feed_input(p,2,0,"  |  | |\n")
+		feed_input(p,3,0,"  +----+\n")
+		
+	def test_expects_continuation_of_v_separator(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |  | |\n")
+		feed_input(p,2,0,"  |  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5," ",core.M_NONE))
+			
+	def test_expects_continuation_of_v_separator_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |  | |\n")
+		feed_input(p,2,0,"  |  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"|",core.M_OCCUPIED))
+	
+	def test_allows_non_separator_v_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |  | |\n")
+		feed_input(p,3,0,"  |  | |\n")
+		feed_input(p,4,0,"  +----+\n")
+	
+	def test_allows_v_non_separator_start_if_occupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |  ")
+		p.test(main.CurrentChar(1,5,"|",core.M_OCCUPIED))
+		feed_input(p,1,6," |\n")
+	
+	def test_allows_multiple_v_separators(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+-----+\n")
+		feed_input(p,1,0,"  | | | |\n")
+		feed_input(p,2,0,"  | | | |\n")
+		feed_input(p,3,0,"  +-----+\n")
+	
+	def test_allows_crossing_separators(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |  | |\n")
+		feed_input(p,2,0,"  |--+-|\n")
+		feed_input(p,3,0,"  |  | |\n")
+		feed_input(p,4,0,"  +----+\n")
+		
+	def test_expects_plus_at_separator_intersection(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |  | |\n")
+		feed_input(p,2,0,"  |--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"|",core.M_NONE))
+			
+	def test_expects_plus_at_separator_intersection_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |  | |\n")
+		feed_input(p,2,0,"  |--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"+",core.M_OCCUPIED))
+	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((2,  "+---+  \n",),
-				 (0,"  |   |  \n",),
-				 (0,"  |   |  \n",),
+				 (0,"  | | |  \n",),
+				 (0,"  |-+-|  \n",),
+				 (0,"  | | |  \n",),
 				 (0,"  +---+  \n",),
 				 (0,"       ",    ),)
 		c = core.M_BOX_START_S | core.M_BOX_START_E | core.M_OCCUPIED
@@ -5184,8 +5292,9 @@ class TestBoxPattern(unittest.TestCase,PatternTests):
 		r = core.M_BOX_AFTER_E
 		b = core.M_BOX_AFTER_S
 		outmeta = ((    c,t,t,t,t,r,n,n,),
-				   (n,n,l,n,n,n,o,r,n,n,),
-				   (n,n,l,n,n,n,o,r,n,n,),
+				   (n,n,l,n,o,n,o,r,n,n,),
+				   (n,n,l,o,o,o,o,r,n,n,),
+				   (n,n,l,n,o,n,o,r,n,n,),
 				   (n,n,l,o,o,o,o,r,n,n,),
 				   (n,n,b,b,b,b,b,      ),)
 		for j,(startcol,line) in enumerate(input):
