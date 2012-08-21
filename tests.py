@@ -4944,11 +4944,11 @@ class TestDCrowsFeetPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)	
 
 
-class TestBoxPattern(unittest.TestCase,PatternTests):
+class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 
 	def __init__(self,*args,**kargs):
 		unittest.TestCase.__init__(self,*args,**kargs)
-		self.pclass = patterns.BoxPattern	
+		self.pclass = patterns.RectangularBoxPattern	
 	
 	def test_accepts_box(self):
 		p = self.pclass()
@@ -5173,7 +5173,7 @@ class TestBoxPattern(unittest.TestCase,PatternTests):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
 		feed_input(p,1,0,"  |----|\n")
-	
+			
 	def test_expects_continuation_of_h_separator(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
@@ -5276,6 +5276,23 @@ class TestBoxPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(2,5,"+",core.M_OCCUPIED))
 	
+	def test_allows_intersections_on_first_content_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |--+-|\n")
+		
+	def test_allows_intersections_in_first_content_column(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |+---|\n")
+		
+	def test_allows_intersection_in_content_tl_corner(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |+---|\n")
+		feed_input(p,2,0,"  ||   |\n")
+	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((2,  "+---+  \n",),
@@ -5302,11 +5319,20 @@ class TestBoxPattern(unittest.TestCase,PatternTests):
 				m = outmeta[j][i]
 				self.assertEquals(m, p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE)))
 		 
-	def do_render(self,x,y,w,h):
+	def do_render(self,x,y,w,h,hs=[],vs=[]):
 		p = self.pclass()
 		feed_input(p,y,x,"+" + "-"*w + "+\n")
 		for i in range(h):
-			feed_input(p,y+1+i,0," "*x + "|" + " "*w + "|\n")
+			feed_input(p,y+1+i,0," "*x + "|")
+			for n in range(w):
+				chr = { 
+					(True,True): "+",
+				  	(True,False): "-",
+				  	(False,True): "|",
+				  	(False,False): " " 
+				}[(i in vs,n in hs)]
+				feed_input(p,y+1,x+1+n, chr)
+			feed_input(p,y+1,x+1+w, "|\n")
 		feed_input(p,y+h+1,0," "*x + "+" + "-"*w + "+\n")
 		feed_input(p,y+h+2,0," "*x + " " + " "*w + " ")
 		try:

@@ -93,13 +93,16 @@ class DbCylinderPattern(Pattern):
 				0, 0.0, math.pi, C_FOREGROUND,1,STROKE_SOLID,None)	]
 				
 
-class BoxPattern(Pattern):
+class RectangularBoxPattern(Pattern):
 	
 	tl = None
 	br = None
+	hs = None
+	vs = None
 	
 	def matcher(self):
 		w,h = 0,0
+		self.hs,self.vs = [],[]
 		self.curr = yield
 		self.tl = (self.curr.col,self.curr.row)
 		rowstart = self.curr.col,self.curr.row
@@ -112,6 +115,9 @@ class BoxPattern(Pattern):
 		self.curr = yield M_BOX_AFTER_E
 		for meta in self.await_pos(self.offset(0,1,rowstart)): 
 			self.curr = yield meta
+		rowstart = self.curr.col,self.curr.row
+		self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
+		# TODO: separators			
 		while True:
 			rowstart = self.curr.col,self.curr.row
 			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
@@ -719,32 +725,32 @@ class StickManPattern(Pattern):
 
 		
 PATTERNS = [
-	StickManPattern,			#
-	DbCylinderPattern,			#
-	BoxPattern,					#
+	StickManPattern,			
+	DbCylinderPattern,			
+	RectangularBoxPattern,					
 	#SmallCirclePattern,
 	#TinyCirclePattern,
-	HorizDashedLinePattern,		#
-	HorizLinePattern,			#
-	VertLinePattern,			#
-	VertDashedLinePattern,		#
-	UpDiagLinePattern,			#
-	UpDiagDashedLinePattern,	#
-	DownDiagLinePattern,		#
-	DownDiagDashedLinePattern,	#
-	LineSqCornerPattern,		#
-	LineRdCornerPattern,		#
-	LJumpPattern,				#
-	RJumpPattern,				#
-	UJumpPattern,				#
-	LArrowheadPattern,			#
-	RArrowheadPattern,			#
-	DArrowheadPattern,			#
-	UArrowheadPattern,			#
-	LCrowsFeetPattern,			#
-	RCrowsFeetPattern,			#
-	UCrowsFeetPattern,			#
-	DCrowsFeetPattern,			#
-	LiteralPattern				#
+	HorizDashedLinePattern,		
+	HorizLinePattern,			
+	VertLinePattern,			
+	VertDashedLinePattern,		
+	UpDiagLinePattern,			
+	UpDiagDashedLinePattern,	
+	DownDiagLinePattern,		
+	DownDiagDashedLinePattern,	
+	LineSqCornerPattern,		
+	LineRdCornerPattern,		
+	LJumpPattern,				
+	RJumpPattern,				
+	UJumpPattern,				
+	LArrowheadPattern,			
+	RArrowheadPattern,			
+	DArrowheadPattern,			
+	UArrowheadPattern,			
+	LCrowsFeetPattern,			
+	RCrowsFeetPattern,			
+	UCrowsFeetPattern,			
+	DCrowsFeetPattern,			
+	LiteralPattern
 ]
 

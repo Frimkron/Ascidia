@@ -878,3 +878,41 @@ too.
 +-----+ +-----+ +-----+ +-----+ +-----+ +-----+ +-----+
   yes     no      yes    no       yes     yes     yes
 
+[!] Separator intersections make for a bit of ambiguity when it comes to
+	nested boxes:
+-	                       +------------+
++-----+ This input will    | |        | | Instead of a nested box
+|+---+| yield a box that   |-+--------+-| like the user might expect.
+||   || looks like this:   | |        | |
+|+---+|                    |-+--------+-|
++-----+                    | |        | |
+                           +------------+
++----------+                     +-----+
+| |      | | Disallow separator  |--.  | <- not allowed
+|-+------+-| at border?          |  |  | 
+| |      | |                     |  '--|
+| |      | |                     +-----+
+|-+------+-|
+| |      | |
++----------+
+
+[?] *Could* separator grid be a separate pattern?
+- could draw background rects separately
+- but would need to parse out the shape of the box
+- how to detect *surrounding* box?
+
++---------------+
+|   +--{-------+|   
+|  /    |     / |  
+| /     |    /  | 
+|+-------}--+   |
++---------------+
+
+[!] Meta flags dont provide efficient access to the *inside* edges of box.
+[!] Its going to be super awkward to deal with things like cloud boxes
+
+  .------.
+ (  |  |  )
+(---+--+---)
+ (  |  |  )
+  '------'
