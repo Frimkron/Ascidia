@@ -5172,40 +5172,58 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 	def test_allows_h_separator(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |----|\n")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |----|\n")
 			
 	def test_expects_continuation_of_h_separator(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |-")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |-")
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(1,4," ",core.M_NONE))
+			p.test(main.CurrentChar(2,4," ",core.M_NONE))
 			
 	def test_expects_continuation_of_h_separator_unoccupied(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |-")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |-")
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(1,4,"-",core.M_OCCUPIED))
+			p.test(main.CurrentChar(2,4,"-",core.M_OCCUPIED))
 			
 	def test_allows_non_separator_h_line(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  | ---|\n")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  | ---|\n")
 		
 	def test_allows_h_non_separator_start_if_occupied(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |")
-		p.test(main.CurrentChar(1,3,"-",core.M_OCCUPIED))
-		feed_input(p,1,4,"---+\n")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |")
+		p.test(main.CurrentChar(2,3,"-",core.M_OCCUPIED))
+		feed_input(p,2,4,"---+\n")
+	
+	def test_doesnt_assume_h_separator_if_first_row(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |--- |\n")
+		
+	def test_doesnt_assume_h_separator_if_section_too_small(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |----|\n")
+		feed_input(p,3,0,"  |--  |\n")
 		
 	def test_allows_multiple_h_separators(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |----|\n")
-		feed_input(p,2,0,"  |    |\n")
-		feed_input(p,3,0,"  |----|\n")
+		feed_input(p,1,0,"  |    |\n")
+		feed_input(p,2,0,"  |----|\n")
+		feed_input(p,3,0,"  |    |\n")
+		feed_input(p,4,0,"  |----|\n")
 	
 	def test_allows_v_separator(self):
 		p = self.pclass()
@@ -5252,6 +5270,20 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,2,0,"  | | | |\n")
 		feed_input(p,3,0,"  +-----+\n")
 	
+	def test_doesnt_assume_v_separator_if_first_col(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+----+\n")
+		feed_input(p,1,0,"  ||   |\n")
+		feed_input(p,2,0,"  ||   |\n")
+		feed_input(p,3,0,"  |    |\n")
+		
+	def test_doesnt_assume_v_separator_if_section_too_small(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+-----+\n")
+		feed_input(p,1,0,"  |  || |\n")
+		feed_input(p,2,0,"  |  || |\n")
+		feed_input(p,3,0,"  |  |  |\n")
+	
 	def test_allows_crossing_separators(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+----+\n")
@@ -5276,29 +5308,12 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(2,5,"+",core.M_OCCUPIED))
 	
-	def test_allows_intersections_on_first_content_line(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |--+-|\n")
-		
-	def test_allows_intersections_in_first_content_column(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  |+---|\n")
-		
-	def test_allows_intersection_in_content_tl_corner(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |+---|\n")
-		feed_input(p,2,0,"  ||   |\n")
-	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((2,  "+---+  \n",),
-				 (0,"  | | |  \n",),
+				 (0,"  |+|||  \n",),
 				 (0,"  |-+-|  \n",),
-				 (0,"  | | |  \n",),
+				 (0,"  |-| |  \n",),
 				 (0,"  +---+  \n",),
 				 (0,"       ",    ),)
 		c = core.M_BOX_START_S | core.M_BOX_START_E | core.M_OCCUPIED
@@ -5331,10 +5346,10 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 				  	(False,True): "|",
 				  	(False,False): " " 
 				}[(i in vs,n in hs)]
-				feed_input(p,y+1,x+1+n, chr)
-			feed_input(p,y+1,x+1+w, "|\n")
-		feed_input(p,y+h+1,0," "*x + "+" + "-"*w + "+\n")
-		feed_input(p,y+h+2,0," "*x + " " + " "*w + " ")
+				feed_input(p,y+1+i,x+1+n, chr)
+			feed_input(p,y+1+i,x+1+w, "|\n")
+		feed_input(p,y+1+h+0,0," "*x + "+" + "-"*w + "+\n")
+		feed_input(p,y+1+h+1,0," "*x + " " + " "*w + " ")
 		try:
 			p.test(main.CurrentChar(y+h+2,x+w+2," ",core.M_NONE))
 		except StopIteration: pass

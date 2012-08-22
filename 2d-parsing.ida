@@ -911,8 +911,26 @@ too.
 [!] Meta flags dont provide efficient access to the *inside* edges of box.
 [!] Its going to be super awkward to deal with things like cloud boxes
 
-  .------.
- (  |  |  )
+  .------.   - I think practically it has to be implemented as part
+ (  |  |  )  of the same pattern
 (---+--+---)
  (  |  |  )
   '------'
+
+[*] Restrict separators such that they must have at least 1 char content?
+- done right, could still allow full-width lines and not have dumb false
+  positives for the separators
+
++------+    This input would    +------+    This input would 
+|------| N  match, giving a     |------| N  be rejected, because
+|------| Y  box separated in    |------| Y  the last line would 
+|------| N  the middle with     |------| N  start to be parsed
++------+    two addition horiz  |------| Y  as a separator,
+            lines.              +------+    yielding a 0-height 
+ N    N                                      section.
++------+    This input would    
+|+----+| N  yield nested boxes.  The right and bottom lines are  
+||    ||    Top and left lines   not valid separators either,  
+||    ||    are not recognised   because they start with plus 
+|+----+| N  as separators        signs without intersecting 
++------+                         another separator.
