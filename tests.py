@@ -5040,9 +5040,9 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 	def test_rejects_short_content_line(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "+---+\n")
-		feed_input(p,1,0,"  |  \n")
+		feed_input(p,1,0,"  |  ")
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(2,0," ",core.M_NONE))
+			p.test(main.CurrentChar(1,5,"\n",core.M_NONE))
 		
 	def test_expects_right_pipe(self):
 		p = self.pclass()
@@ -5169,68 +5169,68 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,4,"\n",core.M_NONE))
 	
-	def test_allows_h_separator(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  |----|\n")
+	#def test_allows_h_separator(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |    |\n")
+	#	feed_input(p,2,0,"  |----|\n")
 			
-	def test_expects_continuation_of_h_separator(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  |-")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(2,4," ",core.M_NONE))
+	#def test_expects_continuation_of_h_separator(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	##	feed_input(p,1,0,"  |    |\n")
+	#	feed_input(p,2,0,"  |-")
+	#	with self.assertRaises(core.PatternRejected):
+	#		p.test(main.CurrentChar(2,4," ",core.M_NONE))
 			
-	def test_expects_continuation_of_h_separator_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  |-")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(2,4,"-",core.M_OCCUPIED))
+	#def test_expects_continuation_of_h_separator_unoccupied(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |    |\n")
+	#	feed_input(p,2,0,"  |-")
+	#	with self.assertRaises(core.PatternRejected):
+	#		p.test(main.CurrentChar(2,4,"-",core.M_OCCUPIED))
 			
-	def test_allows_non_separator_h_line(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  | ---|\n")
+	#def test_allows_non_separator_h_line(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |    |\n")
+	#	feed_input(p,2,0,"  | ---|\n")
 		
-	def test_allows_h_non_separator_start_if_occupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  |")
-		p.test(main.CurrentChar(2,3,"-",core.M_OCCUPIED))
-		feed_input(p,2,4,"---+\n")
+	#def test_allows_h_non_separator_start_if_occupied(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |    |\n")
+	#	feed_input(p,2,0,"  |")
+	#	p.test(main.CurrentChar(2,3,"-",core.M_OCCUPIED))
+	#	feed_input(p,2,4,"---+\n")
 	
-	def test_doesnt_assume_h_separator_if_first_row(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |--- |\n")
+	#def test_doesnt_assume_h_separator_if_first_row(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |--- |\n")
 		
-	def test_doesnt_assume_h_separator_if_section_too_small(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  |----|\n")
-		feed_input(p,3,0,"  |--  |\n")
+	#def test_doesnt_assume_h_separator_if_section_too_small(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |    |\n")
+	#	feed_input(p,2,0,"  |----|\n")
+	#	feed_input(p,3,0,"  |--  |\n")
 		
-	def test_allows_multiple_h_separators(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |    |\n")
-		feed_input(p,2,0,"  |----|\n")
-		feed_input(p,3,0,"  |    |\n")
-		feed_input(p,4,0,"  |----|\n")
+	#def test_allows_multiple_h_separators(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |    |\n")
+	#	feed_input(p,2,0,"  |----|\n")
+	#	feed_input(p,3,0,"  |    |\n")
+	#	feed_input(p,4,0,"  |----|\n")
 	
-	def test_allows_v_separator(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |  | |\n")
-		feed_input(p,2,0,"  |  | |\n")
-		feed_input(p,3,0,"  +----+\n")
+	#def test_allows_v_separator(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |  | |\n")
+	#	feed_input(p,2,0,"  |  | |\n")
+	#	feed_input(p,3,0,"  +----+\n")
 		
 	def test_expects_continuation_of_v_separator(self):
 		p = self.pclass()
@@ -5277,36 +5277,36 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,2,0,"  ||   |\n")
 		feed_input(p,3,0,"  |    |\n")
 		
-	def test_doesnt_assume_v_separator_if_section_too_small(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+\n")
-		feed_input(p,1,0,"  |  || |\n")
-		feed_input(p,2,0,"  |  || |\n")
-		feed_input(p,3,0,"  |  |  |\n")
+	#def test_doesnt_assume_v_separator_if_section_too_small(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+-----+\n")
+	#	feed_input(p,1,0,"  |  || |\n")
+	#	feed_input(p,2,0,"  |  || |\n")
+	#	feed_input(p,3,0,"  |  |  |\n")
 	
-	def test_allows_crossing_separators(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |  | |\n")
-		feed_input(p,2,0,"  |--+-|\n")
-		feed_input(p,3,0,"  |  | |\n")
-		feed_input(p,4,0,"  +----+\n")
+	#def test_allows_crossing_separators(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	##	feed_input(p,1,0,"  |  | |\n")
+	#	feed_input(p,2,0,"  |--+-|\n")
+	#	feed_input(p,3,0,"  |  | |\n")
+	#	feed_input(p,4,0,"  +----+\n")
 		
-	def test_expects_plus_at_separator_intersection(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |  | |\n")
-		feed_input(p,2,0,"  |--")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(2,5,"|",core.M_NONE))
+	#def test_expects_plus_at_separator_intersection(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	##	feed_input(p,1,0,"  |  | |\n")
+	##	feed_input(p,2,0,"  |--")
+	#	with self.assertRaises(core.PatternRejected):
+	#		p.test(main.CurrentChar(2,5,"|",core.M_NONE))
 			
-	def test_expects_plus_at_separator_intersection_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+\n")
-		feed_input(p,1,0,"  |  | |\n")
-		feed_input(p,2,0,"  |--")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(2,5,"+",core.M_OCCUPIED))
+	#def test_expects_plus_at_separator_intersection_unoccupied(self):
+	#	p = self.pclass()
+	#	feed_input(p,0,2,  "+----+\n")
+	#	feed_input(p,1,0,"  |  | |\n")
+	#	feed_input(p,2,0,"  |--")
+	#	with self.assertRaises(core.PatternRejected):
+	#		p.test(main.CurrentChar(2,5,"+",core.M_OCCUPIED))
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()

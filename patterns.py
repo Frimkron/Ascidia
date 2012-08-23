@@ -106,42 +106,94 @@ class RectangularBoxPattern(Pattern):
 		self.curr = yield
 		self.tl = (self.curr.col,self.curr.row)
 		rowstart = self.curr.col,self.curr.row
+		
+		# top left corner
 		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
+		
+		# top line 
 		self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
 		while self.curr.char != "+":
 			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
 		w = self.curr.col-self.tl[0]+1
+		
+		# top right corner
 		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S)
 		self.curr = yield M_BOX_AFTER_E
+		
+		# next line
 		for meta in self.await_pos(self.offset(0,1,rowstart)): 
 			self.curr = yield meta
+			
+		# first content line left side
 		rowstart = self.curr.col,self.curr.row
 		self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
-		# TODO: separators			
-		while True:
+
+		# first content line content
+		for n in range(w-2):
+			if not self.occupied() and self.curr.char == "|":
+				self.vs.append(self.curr.col)
+				self.curr = yield M_OCCUPIED
+			else:
+				self.curr = yield M_NONE
+			if self.curr.char == "\n": self.reject()
+			
+		# first content line right side
+		self.curr = yield self.expect("|",meta=M_OCCUPIED)
+		self.curr = yield M_BOX_AFTER_E
+			
+		# next line
+		for meta in self.await_pos(self.offset(0,1,rowstart)):
+			self.curr = yield meta
+			
+		# middle section	
+		lasths,lastvs = self.tl
+		while self.curr.char != "+":
+		
+			# left side
 			rowstart = self.curr.col,self.curr.row
 			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
-			for meta in self.await_pos(self.offset(w-2,0)):
-				self.curr = yield meta
+			
+			# content
+			for n in range(w-2):
+				if self.curr.col in self.vs:
+					self.curr = yield self.expect("|",meta=M_OCCUPIED)
+				else:
+					self.curr = yield M_NONE
+				if self.curr.char == "\n": self.reject() 
+			
+			# right side
 			self.curr = yield self.expect("|",meta=M_OCCUPIED)
 			self.curr = yield M_BOX_AFTER_E
+			
+			# next line
 			for meta in self.await_pos(self.offset(0,1,rowstart)):
 				self.curr = yield meta
-			if self.curr.char == "+": break
+			
+		# bottom left corner		
 		rowstart = self.curr.col,self.curr.row
 		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_E)
+		
+		# bottom line
 		for n in range(w-2):
 			self.curr = yield self.expect("-",meta=M_OCCUPIED)
+			
+		# bottom right corner
 		self.br = (self.curr.col,self.curr.row)
 		self.curr = yield self.expect("+",meta=M_OCCUPIED)
 		self.curr = yield M_BOX_AFTER_E
+		
+		# optional final line
 		try:
+			# next line
 			for meta in self.await_pos(self.offset(0,1,rowstart)):
 				self.curr = yield meta
+				
+			# area below box
 			rowstart = self.curr.col,self.curr.row
 			for n in range(w):
 				if self.curr.char=="\n": break
 				self.curr = yield M_BOX_AFTER_S
+				
 		except NoSuchPosition: pass
 		return
 		
