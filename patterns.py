@@ -106,6 +106,7 @@ class RectangularBoxPattern(Pattern):
 		self.curr = yield
 		self.tl = (self.curr.col,self.curr.row)
 		rowstart = self.curr.col,self.curr.row
+		lastvs,lasths = self.tl
 		
 		# top left corner
 		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
@@ -130,8 +131,10 @@ class RectangularBoxPattern(Pattern):
 
 		# first content line content
 		for n in range(w-2):
-			if not self.occupied() and self.curr.char == "|":
+			if( not self.occupied() and self.curr.char == "|"
+					and self.curr.col-lastvs > 1 ):
 				self.vs.append(self.curr.col)
+				lastvs = self.curr.col
 				self.curr = yield M_OCCUPIED
 			else:
 				self.curr = yield M_NONE
@@ -146,20 +149,31 @@ class RectangularBoxPattern(Pattern):
 			self.curr = yield meta
 			
 		# middle section	
-		lasths,lastvs = self.tl
 		while self.curr.char != "+":
 		
 			# left side
 			rowstart = self.curr.col,self.curr.row
 			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
-			
-			# content
-			for n in range(w-2):
-				if self.curr.col in self.vs:
-					self.curr = yield self.expect("|",meta=M_OCCUPIED)
-				else:
-					self.curr = yield M_NONE
-				if self.curr.char == "\n": self.reject() 
+
+			# content			
+			if( not self.occupied() and self.curr.char == "-"
+					and self.curr.row-lasths > 1 ):
+				# horizontal separator
+				self.hs.append(self.curr.row)
+				lasths = self.curr.row
+				for n in range(w-2):
+					if self.curr.col in self.vs:
+						self.curr = yield self.expect("-|",meta=M_OCCUPIED)
+					else:
+						self.curr = yield self.expect("-",meta=M_OCCUPIED)
+			else:
+				# non-separator
+				for n in range(w-2):
+					if self.curr.col in self.vs:
+						self.curr = yield self.expect("|",meta=M_OCCUPIED)
+					else:
+						self.curr = yield M_NONE
+					if self.curr.char == "\n": self.reject() 
 			
 			# right side
 			self.curr = yield self.expect("|",meta=M_OCCUPIED)
@@ -199,8 +213,20 @@ class RectangularBoxPattern(Pattern):
 		
 	def render(self):
 		Pattern.render(self)
-		return [Rectangle((self.tl[0]+0.5,self.tl[1]+0.5),
-			(self.br[0]+0.5,self.br[1]+0.5),0,C_FOREGROUND,1,STROKE_SOLID,None)]
+		retval = []
+		if len(self.vs)>0 or len(self.hs)>0:
+			secboundx = [self.tl[0]] + self.vs + [self.br[0]]
+			secboundy = [self.tl[1]] + self.hs + [self.br[1]]
+			for j in range(len(self.hs)+1):
+				for i in range(len(self.vs)+1):
+					fcolour = {
+						(0,0): "silver", (0,1): "white", (1,0): "lightblue", (1,1): "blue",
+					}[(j%2,i%2)]
+					retval.append( Rectangle((secboundx[i]+0.5,secboundy[j]+0.5),
+						(secboundx[i+1]+0.5,secboundy[j+1]+0.5),-0.1,None,1,STROKE_SOLID,fcolour) )
+		retval.append( Rectangle((self.tl[0]+0.5,self.tl[1]+0.5),
+			(self.br[0]+0.5,self.br[1]+0.5),0,C_FOREGROUND,1,STROKE_SOLID,None) )
+		return retval
 			
 			
 class LineSqCornerPattern(Pattern):

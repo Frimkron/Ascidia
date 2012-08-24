@@ -934,3 +934,28 @@ too.
 ||    ||    are not recognised   because they start with plus 
 |+----+| N  as separators        signs without intersecting 
 +------+                         another separator.
+
+
+[!] Damn. Patterns can't be self-similar. The intersections of the box 
+    section separators can themselves form boxes which are accepted 
+    before the outer box is completed, causing it to be rejected.
+    
++-----+         Would losing the + help? It would solve the immediate
+| | | |         problem, but would it be intuitive? I guess intuitiveness
+|-+-+-|   +-+   has to to come after functionality.
+| | | | = | |   
+|-+-+-|   +-+   +-----+  Could allow user to use either | or - at 
+| | | |         |  |  |  intersections, as long as they don't use +
++-----+         |--|--|
+                |  |  |
+                +-----+
+[!] Nesting separated boxes highlights an issue: the correct z level
+	for the background is going to depend on the nesting level.
+	
+[?] Will an outer box always be at a lower x and y?
+- if so, the z can be based on the position.
+
++---- z -2   ----+ doesnt matter
+|+--  z -1       |  +---
+||               |  |   
+
