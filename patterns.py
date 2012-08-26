@@ -24,7 +24,7 @@ class LiteralPattern(Pattern):
 		
 	def render(self):
 		Pattern.render(self)
-		return [ Text(self.pos,0,self.char,C_FOREGROUND,1) ]
+		return [ Text(pos=self.pos,z=0,text=self.char,colour=C_FOREGROUND,alpha=1.0,size=1) ]
 		
 		
 class DbCylinderPattern(Pattern):
@@ -81,16 +81,15 @@ class DbCylinderPattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [
-			Ellipse((self.tl[0]+0.5,self.tl[1]+0.5),
-				(self.br[0]+0.5,self.tl[1]+1.0+0.5),
-				0,C_FOREGROUND,1,STROKE_SOLID,None),
-			Line((self.tl[0]+0.5,self.tl[1]+1.0),
-				(self.tl[0]+0.5,self.br[1]), 0,C_FOREGROUND,1,STROKE_SOLID),
-			Line((self.br[0]+0.5,self.tl[1]+1.0),
-				(self.br[0]+0.5,self.br[1]), 0,C_FOREGROUND,1,STROKE_SOLID),
-			Arc((self.tl[0]+0.5,self.br[1]-1.0+0.5),
-				(self.br[0]+0.5,self.br[1]+0.5),
-				0, 0.0, math.pi, C_FOREGROUND,1,STROKE_SOLID,None)	]
+			Ellipse(a=(self.tl[0]+0.5,self.tl[1]+0.5),b=(self.br[0]+0.5,self.tl[1]+1.0+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID,fill=None,falpha=0.0),
+			Line(a=(self.tl[0]+0.5,self.tl[1]+1.0),b=(self.tl[0]+0.5,self.br[1]), 
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.br[0]+0.5,self.tl[1]+1.0),b=(self.br[0]+0.5,self.br[1]), 
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Arc(a=(self.tl[0]+0.5,self.br[1]-1.0+0.5),b=(self.br[0]+0.5,self.br[1]+0.5),
+				z=0, start=0.0, end=math.pi, stroke=C_FOREGROUND, salpha=1.0,
+				w=1,stype=STROKE_SOLID,fill=None,falpha=0.0)	]
 				
 
 class RectangularBoxPattern(Pattern):
@@ -222,10 +221,12 @@ class RectangularBoxPattern(Pattern):
 					fcolour = {
 						(0,0): "silver", (0,1): "white", (1,0): "lightblue", (1,1): "blue",
 					}[(j%2,i%2)]
-					retval.append( Rectangle((secboundx[i]+0.5,secboundy[j]+0.5),
-						(secboundx[i+1]+0.5,secboundy[j+1]+0.5),-0.1,None,1,STROKE_SOLID,fcolour) )
-		retval.append( Rectangle((self.tl[0]+0.5,self.tl[1]+0.5),
-			(self.br[0]+0.5,self.br[1]+0.5),0,C_FOREGROUND,1,STROKE_SOLID,None) )
+					retval.append( Rectangle(a=(secboundx[i]+0.5,secboundy[j]+0.5),
+						b=(secboundx[i+1]+0.5,secboundy[j+1]+0.5),z=-0.1,stroke=None,
+						salpha=0.0,w=1,stype=STROKE_SOLID,fill=C_FOREGROUND,falpha=1.0) )
+		retval.append( Rectangle(a=(self.tl[0]+0.5,self.tl[1]+0.5),
+			b=(self.br[0]+0.5,self.br[1]+0.5),z=0,stroke=C_FOREGROUND,salpha=1.0,
+			w=1,stype=STROKE_SOLID,fill=None,falpha=0.0) )
 		return retval
 			
 			
@@ -266,8 +267,9 @@ class LineSqCornerPattern(Pattern):
 		centre = self.pos[0]+0.5,self.pos[1]+0.5
 		retval = []
 		for x,y,dsh in self.ends:
-			retval.append( Line(centre,(centre[0]+x*0.5,centre[1]+y*0.5),
-					0,C_FOREGROUND,1,STROKE_DASHED if dsh else STROKE_SOLID) )
+			retval.append( Line(a=centre,b=(centre[0]+x*0.5,centre[1]+y*0.5),
+					z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+					stype=STROKE_DASHED if dsh else STROKE_SOLID) )
 		return retval
 
 
@@ -329,8 +331,9 @@ class LineRdCornerPattern(Pattern):
 			for oth in rest:
 				a = centre[0]+end[0]*0.5, centre[1]+end[1]*0.5
 				b = centre[0]+oth[0]*0.5, centre[1]+oth[1]*0.5
-				retval.append( QuadCurve(a,b,centre,0,C_FOREGROUND,1,
-					STROKE_DASHED if end[2] and oth[2] else STROKE_SOLID) )		
+				retval.append( QuadCurve(a=a,b=b,c=centre,z=0,stroke=C_FOREGROUND,
+					salpha=1.0,w=1,
+					stype=STROKE_DASHED if end[2] and oth[2] else STROKE_SOLID) )		
 		return retval
 
 
@@ -378,9 +381,10 @@ class ArrowheadPattern(Pattern):
 		apos1 = (apos2[0]-0.8*self.xdir*flip-0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO-0.5*self.xdir*flip/CHAR_H_RATIO)
 		apos3 = (apos2[0]-0.8*self.xdir*flip+0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO+0.5*self.xdir*flip/CHAR_H_RATIO)
 		return [
-			Line(apos1,apos2,0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(apos3,apos2,0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(spos,apos2,0,C_FOREGROUND,1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+			Line(a=apos1,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=apos3,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=spos,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 		
 
 class LArrowheadPattern(ArrowheadPattern):
@@ -468,10 +472,11 @@ class CrowsFeetPattern(Pattern):
 					centre[1]+self.ydir*1.0*flip + 0.6*(not self.ydir)/CHAR_H_RATIO )
 		fpos0 = ( fpos2[0]-self.xdir*1.0*flip, fpos2[1]-self.ydir*1.0*flip/CHAR_H_RATIO )
 		return [ 
-			Line(fpos0,fpos1,0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(fpos0,fpos2,0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(fpos0,fpos3,0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(spos,fpos0,0,C_FOREGROUND,1,STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+			Line(a=fpos0,b=fpos1,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=fpos0,b=fpos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=fpos0,b=fpos3,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=spos,b=fpos0,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 	
 class LCrowsFeetPattern(CrowsFeetPattern):
@@ -561,8 +566,9 @@ class LinePattern(Pattern):
 		
 	def render(self):
 		Pattern.render(self)
-		return [ Line((self.startpos[0]+0.5+self.xdir*-0.5,self.startpos[1]+0.5+self.ydir*-0.5),
-				(self.endpos[0]+0.5+self.xdir*0.5,self.endpos[1]+0.5+self.ydir*0.5),0,C_FOREGROUND,1,self.stroketype) ]
+		return [ Line(a=(self.startpos[0]+0.5+self.xdir*-0.5,self.startpos[1]+0.5+self.ydir*-0.5),
+				b=(self.endpos[0]+0.5+self.xdir*0.5,self.endpos[1]+0.5+self.ydir*0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=self.stroketype) ]
 		
 
 
@@ -669,9 +675,9 @@ class TinyCirclePattern(Pattern):
 		
 	def render(self):
 		Pattern.render(self)
-		return [ Ellipse((self.pos[0]+0.5-0.4,self.pos[1]+0.5-0.4/CHAR_H_RATIO), 
-				(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), 1, 
-				"magenta", 1, STROKE_SOLID, None) ]
+		return [ Ellipse(a=(self.pos[0]+0.5-0.4,self.pos[1]+0.5-0.4/CHAR_H_RATIO), 
+				b=(self.pos[0]+0.5+0.4,self.pos[1]+0.5+0.4/CHAR_H_RATIO), z=1, 
+				stroke="magenta", salpha=1.0, w=1, stype=STROKE_SOLID, fill=None, falpha=0.0) ]
 				
 				
 class SmallCirclePattern(Pattern):
@@ -697,9 +703,9 @@ class SmallCirclePattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		d = self.right-self.left
-		return [ Ellipse((self.left+0.5,self.y+0.5-d/2.0/CHAR_H_RATIO),
-				(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), 1, "green",
-				1,STROKE_SOLID,None) ]
+		return [ Ellipse(a=(self.left+0.5,self.y+0.5-d/2.0/CHAR_H_RATIO),
+				b=(self.right+0.5,self.y+0.5+d/2.0/CHAR_H_RATIO), z=1, stroke="green",
+				salpha=1.0, w=1, stype=STROKE_SOLID, fill=None, falpha=0.0) ]
 
 
 class JumpPattern(Pattern):
@@ -740,10 +746,12 @@ class LJumpPattern(JumpPattern):
 	def render(self):
 		JumpPattern.render(self)
 		return [ 
-			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
-				0,C_FOREGROUND,1,STROKE_DASHED if self.hdash else STROKE_SOLID),
-			Arc((self.pos[0]+0.5-0.6,self.pos[1]),(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
-				0,math.pi*0.5,math.pi*1.5,C_FOREGROUND,1,STROKE_DASHED if self.vdash else STROKE_SOLID, None), ]
+			Line(a=(self.pos[0],self.pos[1]+0.5),b=(self.pos[0]+1.0,self.pos[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.hdash else STROKE_SOLID),
+			Arc(a=(self.pos[0]+0.5-0.6,self.pos[1]),b=(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
+				z=0,start=math.pi*0.5,end=math.pi*1.5,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.vdash else STROKE_SOLID, fill=None,falpha=0.0), ]
 	
 	
 class RJumpPattern(JumpPattern):
@@ -753,10 +761,12 @@ class RJumpPattern(JumpPattern):
 	def render(self):
 		JumpPattern.render(self)
 		return [
-			Line((self.pos[0],self.pos[1]+0.5),(self.pos[0]+1.0,self.pos[1]+0.5),
-				0,C_FOREGROUND,1,STROKE_DASHED if self.hdash else STROKE_SOLID),
-			Arc((self.pos[0]+0.5-0.6,self.pos[1]),(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
-				0,math.pi*-0.5,math.pi*0.5,C_FOREGROUND,1,STROKE_DASHED if self.vdash else STROKE_SOLID,None), ]
+			Line(a=(self.pos[0],self.pos[1]+0.5),b=(self.pos[0]+1.0,self.pos[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.hdash else STROKE_SOLID),
+			Arc(a=(self.pos[0]+0.5-0.6,self.pos[1]),b=(self.pos[0]+0.5+0.6,self.pos[1]+1.0),
+				z=0,start=math.pi*-0.5,end=math.pi*0.5,stroke=C_FOREGROUND,salpha=1.0,
+				w=1,stype=STROKE_DASHED if self.vdash else STROKE_SOLID,fill=None,falpha=0.0), ]
 	
 	
 class UJumpPattern(JumpPattern):
@@ -766,10 +776,12 @@ class UJumpPattern(JumpPattern):
 	def render(self):
 		JumpPattern.render(self)
 		return [
-			Line((self.pos[0]+0.5,self.pos[1]),(self.pos[0]+0.5,self.pos[1]+1.0),
-				0,C_FOREGROUND,1,STROKE_DASHED if self.vdash else STROKE_SOLID),
-			Arc((self.pos[0],self.pos[1]+0.5-0.4),(self.pos[0]+1.0,self.pos[1]+0.5+0.4),
-				0,math.pi,math.pi*2,C_FOREGROUND,1,STROKE_DASHED if self.hdash else STROKE_SOLID,None), ]
+			Line(a=(self.pos[0]+0.5,self.pos[1]),b=(self.pos[0]+0.5,self.pos[1]+1.0),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.vdash else STROKE_SOLID),
+			Arc(a=(self.pos[0],self.pos[1]+0.5-0.4),b=(self.pos[0]+1.0,self.pos[1]+0.5+0.4),
+				z=0,start=math.pi,end=math.pi*2,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.hdash else STROKE_SOLID,fill=None,falpha=0.0), ]
 
 
 class StickManPattern(Pattern):
@@ -795,11 +807,16 @@ class StickManPattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [
-			Ellipse(self.offset(0,1-1.0/CHAR_H_RATIO,self.pos),self.offset(1,1,self.pos),0,C_FOREGROUND,1,STROKE_SOLID,None),
-			Line(self.offset(0.5,1,self.pos),self.offset(0.5,1.8,self.pos),0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(self.offset(-1,1.25,self.pos),self.offset(2,1.25,self.pos),0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(self.offset(0.5,1.8,self.pos),self.offset(-0.5,2.8,self.pos),0,C_FOREGROUND,1,STROKE_SOLID),
-			Line(self.offset(0.5,1.8,self.pos),self.offset(1.5,2.8,self.pos),0,C_FOREGROUND,1,STROKE_SOLID), ]
+			Ellipse(a=self.offset(0,1-1.0/CHAR_H_RATIO,self.pos),b=self.offset(1,1,self.pos),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID,fill=None,falpha=0.0),
+			Line(a=self.offset(0.5,1,self.pos),b=self.offset(0.5,1.8,self.pos),z=0,
+				stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=self.offset(-1,1.25,self.pos),b=self.offset(2,1.25,self.pos),z=0,
+				stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=self.offset(0.5,1.8,self.pos),b=self.offset(-0.5,2.8,self.pos),z=0,
+				stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=self.offset(0.5,1.8,self.pos),b=self.offset(1.5,2.8,self.pos),z=0,
+				stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID), ]
 
 		
 PATTERNS = [

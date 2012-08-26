@@ -959,3 +959,10 @@ too.
 |+--  z -1       |  +---
 ||               |  |   
 
+Box background z level must be between -1 (the background) and 0 (the foreground).
+Pattern doesnt know how large the image is.
+
+[*] Could have the z *approach* 0 asymtoticaly.
+- Such a hack, but it'll work for the time being at least.
+
+Need to add stroke & fill alpha properties to all shapes

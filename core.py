@@ -7,12 +7,12 @@ from collections import namedtuple
 
 CHAR_H_RATIO = 2.0
 
-Line = namedtuple("Line","a b z stroke w stype")
-Rectangle = namedtuple("Rectangle","a b z stroke w stype fill")
-Ellipse = namedtuple("Ellipse", "a b z stroke w stype fill")
-Arc = namedtuple("Arc","a b z start end stroke w stype fill")
-Text = namedtuple("Text","pos z text colour size")
-QuadCurve = namedtuple("QuadCurve","a b c z stroke w stype")
+Line = namedtuple("Line","a b z stroke salpha w stype")
+Rectangle = namedtuple("Rectangle","a b z stroke salpha w stype fill falpha")
+Ellipse = namedtuple("Ellipse", "a b z stroke salpha w stype fill falpha")
+Arc = namedtuple("Arc","a b z start end stroke salpha w stype fill falpha")
+Text = namedtuple("Text","pos z text colour alpha size")
+QuadCurve = namedtuple("QuadCurve","a b c z stroke salpha w stype")
 
 STROKE_SOLID = object()
 STROKE_DASHED = object()

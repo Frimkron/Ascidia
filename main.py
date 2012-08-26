@@ -98,6 +98,9 @@ class SvgOutput(object):
 	def _w(self,w):
 		return str(float(w * SvgOutput.STROKE_W))
 			
+	def _alpha(self,a):
+		return str(a)
+			
 	def _style_attrs(self,item,el,prefs):
 		if hasattr(item,"stroke"):
 			el.setAttribute("stroke",self._colour(item.stroke,prefs))
@@ -107,8 +110,12 @@ class SvgOutput(object):
 			if item.stype == core.STROKE_DASHED:
 				el.setAttribute("stroke-dasharray",",".join(
 						map(str,SvgOutput.DASH_PATTERN)))
+		if hasattr(item,"salpha"):
+			el.setAttribute("stroke-opacity",self._alpha(item.salpha))
 		if hasattr(item,"fill"):
 			el.setAttribute("fill",self._colour(item.fill,prefs))
+		if hasattr(item,"falpha"):
+			el.setAttribute("fill-opacity",self._alpha(item.falpha))
 			
 	def _do_Line(self,line,doc,parent,prefs):
 		el = doc.createElement("line")
@@ -170,6 +177,7 @@ class SvgOutput(object):
 		el.setAttribute("font-family","monospace")
 		el.appendChild(doc.createTextNode(text.text))
 		el.setAttribute("fill",self._colour(text.colour,prefs))
+		el.setAttribute("fill-opacity",self._alpha(text.alpha))
 		el.setAttribute("font-size",str(int(text.size*SvgOutput.FONT_SIZE)))
 		parent.appendChild(el)
 		
@@ -261,7 +269,8 @@ def process_diagram(text,patternlist):
 						ongoing.add_meta(match,(j,i),matchmeta)
 		
 	result = sum([m.render() for m in complete_matches],[])
-	result.append( core.Rectangle((0,0),(width,height),-1,None,1,core.STROKE_SOLID,core.C_BACKGROUND) )
+	result.append( core.Rectangle(a=(0,0),b=(width,height),z=-1,stroke=None,salpha=0.0,
+		w=1,stype=core.STROKE_SOLID,fill=core.C_BACKGROUND,falpha=1.0) )
 	return result
 	
 
