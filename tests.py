@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 import unittest
 import core
 import patterns
@@ -5523,13 +5525,20 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 	def test_render_h_sections_fill_alpha(self):
 		r = self.do_render(3,2,12,4,[],[4,8])
 		b1 = find_with(self,r,"b",(8.5,7.5))
-		self.assertEquals(0.6,b1.falpha)
+		self.assertEquals(0.25,b1.falpha)
 		b2 = find_with(self,r,"b",(12.5,7.5))
 		self.assertEquals(0.0,b2.falpha)
-		b3 = find_with(self.r,"a",(12.5,2.5))
-		self.assertEquals(0.6,b3.falpha)
+		b3 = find_with(self,r,"a",(12.5,2.5))
+		self.assertEquals(0.25,b3.falpha)
 		
-	# TODO: test z values
+	def test_render_h_sections_z(self):
+		r = self.do_render(3,2,12,4,[],[4,8])
+		b1 = find_with(self,r,"b",(8.5,7.5))
+		self.assertEquals(-0.5,b1.z)
+		b2 = find_with(self,r,"b",(12.5,7.5))
+		self.assertEquals(-0.5,b2.z)
+		b3 = find_with(self,r,"a",(12.5,2.5))
+		self.assertEquals(-0.5,b3.z)
 	
 	def test_render_v_sections_returns_correct_shapes(self):
 		r = self.do_render(3,2,4,12,[4,8],[])
@@ -5562,14 +5571,23 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		b3 = find_with(self,r,"a",(3.5,11.5))
 		self.assertEquals(b3.fill,core.C_FOREGROUND)
 			
-	def test_render_v_sections_fill_colour(self):
+	def test_render_v_sections_fill_alpha(self):
 		r = self.do_render(3,2,4,12,[4,8],[])
 		b1 = find_with(self,r,"b",(8.5,7.5))
-		self.assertEquals(b1.falpha,0.6)
+		self.assertEquals(b1.falpha,0.25)
 		b2 = find_with(self,r,"b",(8.5,11.5))
 		self.assertEquals(b2.falpha,0.0)
 		b3 = find_with(self,r,"a",(3.5,11.5))
-		self.assertEquals(b3.falpha,0.6)
+		self.assertEquals(b3.falpha,0.25)
+		
+	def test_render_v_sections_z(self):
+		r = self.do_render(3,2,4,12,[4,8],[])
+		b1 = find_with(self,r,"b",(8.5,7.5))
+		self.assertEquals(-0.5,b1.z)
+		b2 = find_with(self,r,"b",(8.5,11.5))
+		self.assertEquals(-0.5,b2.z)
+		b3 = find_with(self,r,"a",(3.5,11.5))
+		self.assertEquals(-0.5,b3.z)
 			
 	def test_render_hv_sections_returns_correct_shapes(self):
 		r = self.do_render(3,2,12,13,[4,8],[4,8])
@@ -5582,7 +5600,102 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		b2 = find_with(self,r,"b",(8.5,11.5))
 		self.assertEquals(b2.a,(3.5,7.5))
 		b3 = find_with(self,r,"a",(3.5,11.5))
-		self.assertEquals(b3.b,(8.5,15.5))
-	
+		self.assertEquals(b3.b,(8.5,16.5))
+		b4 = find_with(self,r,"b",(12.5,7.5))
+		self.assertEquals(b4.a,(8.5,2.5))
+		b5 = find_with(self,r,"b",(12.5,11.5))
+		self.assertEquals(b5.a,(8.5,7.5))
+		b6 = find_with(self,r,"a",(8.5,11.5))
+		self.assertEquals(b6.b,(12.5,16.5))		
+		b7 = find_with(self,r,"b",(16.5,7.5))
+		self.assertEquals(b7.a,(12.5,2.5))
+		b8 = find_with(self,r,"b",(16.5,11.5))
+		self.assertEquals(b8.a,(12.5,7.5))
+		b9 = find_with(self,r,"a",(12.5,11.5))
+		self.assertEquals(b9.b,(16.5,16.5))
+			
+	def test_render_hv_sections_stroke_colour(self):
+		r = self.do_render(3,2,12,13,[4,8],[4,8])
+		b1 = find_with(self,r,"b",(8.5,7.5))
+		self.assertEquals(None,b1.stroke)
+		b2 = find_with(self,r,"b",(8.5,11.5))
+		self.assertEquals(None,b2.stroke)
+		b3 = find_with(self,r,"a",(3.5,11.5))
+		self.assertEquals(None,b3.stroke)
+		b4 = find_with(self,r,"b",(12.5,7.5))
+		self.assertEquals(None,b4.stroke)
+		b5 = find_with(self,r,"b",(12.5,11.5))
+		self.assertEquals(None,b5.stroke)
+		b6 = find_with(self,r,"a",(8.5,11.5))
+		self.assertEquals(None,b6.stroke)		
+		b7 = find_with(self,r,"b",(16.5,7.5))
+		self.assertEquals(None,b7.stroke)
+		b8 = find_with(self,r,"b",(16.5,11.5))
+		self.assertEquals(None,b8.stroke)
+		b9 = find_with(self,r,"a",(12.5,11.5))
+		self.assertEquals(None,b9.stroke)
+			
+	def test_render_hv_sections_fill_colour(self):
+		r = self.do_render(3,2,12,13,[4,8],[4,8])
+		b1 = find_with(self,r,"b",(8.5,7.5))
+		self.assertEquals(core.C_FOREGROUND,b1.fill)
+		b2 = find_with(self,r,"b",(8.5,11.5))
+		self.assertEquals(core.C_FOREGROUND,b2.fill)
+		b3 = find_with(self,r,"a",(3.5,11.5))
+		self.assertEquals(core.C_FOREGROUND,b3.fill)
+		b4 = find_with(self,r,"b",(12.5,7.5))
+		self.assertEquals(core.C_FOREGROUND,b4.fill)
+		b5 = find_with(self,r,"b",(12.5,11.5))
+		self.assertEquals(core.C_FOREGROUND,b5.fill)
+		b6 = find_with(self,r,"a",(8.5,11.5))
+		self.assertEquals(core.C_FOREGROUND,b6.fill)		
+		b7 = find_with(self,r,"b",(16.5,7.5))
+		self.assertEquals(core.C_FOREGROUND,b7.fill)
+		b8 = find_with(self,r,"b",(16.5,11.5))
+		self.assertEquals(core.C_FOREGROUND,b8.fill)
+		b9 = find_with(self,r,"a",(12.5,11.5))
+		self.assertEquals(core.C_FOREGROUND,b9.fill)
+			
+	def test_render_hv_sections_fill_alpha(self):
+		r = self.do_render(3,2,12,13,[4,8],[4,8])
+		b1 = find_with(self,r,"b",(8.5,7.5))
+		self.assertEquals(0.25,b1.falpha)
+		b2 = find_with(self,r,"b",(8.5,11.5))
+		self.assertEquals(0.125,b2.falpha)
+		b3 = find_with(self,r,"a",(3.5,11.5))
+		self.assertEquals(0.25,b3.falpha)
+		b4 = find_with(self,r,"b",(12.5,7.5))
+		self.assertEquals(0.125,b4.falpha)
+		b5 = find_with(self,r,"b",(12.5,11.5))
+		self.assertEquals(0.0,b5.falpha)
+		b6 = find_with(self,r,"a",(8.5,11.5))
+		self.assertEquals(0.125,b6.falpha)		
+		b7 = find_with(self,r,"b",(16.5,7.5))
+		self.assertEquals(0.25,b7.falpha)
+		b8 = find_with(self,r,"b",(16.5,11.5))
+		self.assertEquals(0.125,b8.falpha)
+		b9 = find_with(self,r,"a",(12.5,11.5))
+		self.assertEquals(0.25,b9.falpha)
+		
+	def test_render_hv_sections_z(self):
+		r = self.do_render(3,2,12,13,[4,8],[4,8])
+		b1 = find_with(self,r,"b",(8.5,7.5))
+		self.assertEquals(-0.5,b1.z)
+		b2 = find_with(self,r,"b",(8.5,11.5))
+		self.assertEquals(-0.5,b2.z)
+		b3 = find_with(self,r,"a",(3.5,11.5))
+		self.assertEquals(-0.5,b3.z)
+		b4 = find_with(self,r,"b",(12.5,7.5))
+		self.assertEquals(-0.5,b4.z)
+		b5 = find_with(self,r,"b",(12.5,11.5))
+		self.assertEquals(-0.5,b5.z)
+		b6 = find_with(self,r,"a",(8.5,11.5))
+		self.assertEquals(-0.5,b6.z)		
+		b7 = find_with(self,r,"b",(16.5,7.5))
+		self.assertEquals(-0.5,b7.z)
+		b8 = find_with(self,r,"b",(16.5,11.5))
+		self.assertEquals(-0.5,b8.z)
+		b9 = find_with(self,r,"a",(12.5,11.5))
+		self.assertEquals(-0.5,b9.z)
 			
 unittest.main()

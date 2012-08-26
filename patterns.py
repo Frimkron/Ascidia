@@ -214,16 +214,20 @@ class RectangularBoxPattern(Pattern):
 		Pattern.render(self)
 		retval = []
 		if len(self.vs)>0 or len(self.hs)>0:
+			if len(self.vs)>0 and len(self.hs)>0:
+				fills = [[0.25,0.125],[0.125,0.0]]
+			elif len(self.vs)>0:
+				fills = [[0.25,0.0]]
+			elif len(self.hs)>0:
+				fills = [[0.25],[0.0]]
 			secboundx = [self.tl[0]] + self.vs + [self.br[0]]
 			secboundy = [self.tl[1]] + self.hs + [self.br[1]]
 			for j in range(len(self.hs)+1):
 				for i in range(len(self.vs)+1):
-					fcolour = {
-						(0,0): "silver", (0,1): "white", (1,0): "lightblue", (1,1): "blue",
-					}[(j%2,i%2)]
+					falpha = fills[j%2][i%2]
 					retval.append( Rectangle(a=(secboundx[i]+0.5,secboundy[j]+0.5),
-						b=(secboundx[i+1]+0.5,secboundy[j+1]+0.5),z=-0.1,stroke=None,
-						salpha=0.0,w=1,stype=STROKE_SOLID,fill=C_FOREGROUND,falpha=1.0) )
+						b=(secboundx[i+1]+0.5,secboundy[j+1]+0.5),z=-0.5,stroke=None,
+						salpha=0.0,w=1,stype=STROKE_SOLID,fill=C_FOREGROUND,falpha=falpha) )
 		retval.append( Rectangle(a=(self.tl[0]+0.5,self.tl[1]+0.5),
 			b=(self.br[0]+0.5,self.br[1]+0.5),z=0,stroke=C_FOREGROUND,salpha=1.0,
 			w=1,stype=STROKE_SOLID,fill=None,falpha=0.0) )

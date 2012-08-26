@@ -966,3 +966,24 @@ Pattern doesnt know how large the image is.
 - Such a hack, but it'll work for the time being at least.
 
 Need to add stroke & fill alpha properties to all shapes
+
++---+---+---+---+  Only need 0, 0.5 and 0.25 shade levels
+|###|:::|###|:::|  for section fills
++---+---+---+---+    |
+|:::|   |:::|   | <--' 
++---+---+---+---+    
+|###|:::|###|:::| 
++---+---+---+---+
+|:::|   |:::|   |
++---+---+---+---+
+
+[!] If I use alpha'd rectangles for box background, nested
+	boxes backgrounds blend in an undesirable way. If I try
+	to use calculated fill colours, I have to have a way of
+	translating colour strings into their rgb values.
+- I could disallow colour names as input
+- I could add an additional, background-coloured rectangle
+  behind the box
+
+- Ok the blending actually isn't as bad as I thought. The colours
+  just get darker with each nested level. I can live with that.
