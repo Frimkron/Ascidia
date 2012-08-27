@@ -2,17 +2,23 @@
 
 """	
 TODO:
-	* Boxes (with separators)
-	* Parallelogram boxes
-	* Large diamonds
+	* Single , shouldn't be dotted diagonal
+	* Single ` shouldn't be dotted diagonal
+	* Single | shouldn't be vertical line
+	* Single - shouldn't be horizontal line
+	* Single / shouldn't be diagonal
+	* Single \ shouldn't be diagonal
+	* Single ; shouldn't be dotted vertical
+	* Parallelogram boxes (w/separators)
+	* Large diamonds (w/separators)
 	* Outline arrows "|<|--"
 	* Outline diamond connector "<>--"
 	* Filled diamond connector "<#>--"
-	* Large ellipses 
-	* Rounded corner boxes
-	* Slash-cornered boxes
+	* Large ellipses (w/separators)
+	* Rounded corner boxes (w/separators)
+	* Slash-cornered boxes (w/separators)
 	* Note/document (folded corner, cutoff)
-	* Cloud boxes
+	* Cloud boxes (w/separators)
 	* Tiny ellipse "o"
 	* Tiny box "[]"
 	* Small ellipse "( foo )"
@@ -27,11 +33,11 @@ TODO:
 	* Circle crows foot "|>O--"
 	* One crows foot "|>|--"
 	* Only one connector "-||--"
-	* 3d boxes
+	* 3d boxes (w/separators)
 	* Disallow alphas beside down arrows
 	* Stacked boxes
 	* Box/Cylinder shadows
-	* Hexagon boxes	
+	* Hexagon boxes	(w/separators)
 	* Terminal
 	* Diagonal arrowheads
 """

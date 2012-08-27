@@ -636,7 +636,7 @@ class TestSvgOutput(unittest.TestCase):
 		t = self.child_elements(self.do_output([ core.Text(pos=(3,4),z=1,text="!",
 			colour="red",alpha=1.0,size=1) ]).documentElement)[0]
 		self.assertEquals(1, len(t.childNodes))
-		self.assertEquals("!", t.childNodes[0].nodeValue)
+		self.assertEquals("!", t.childNodes[0].nodeValue.strip())
 		
 	def test_text_colour(self):
 		t = self.child_elements(self.do_output([ core.Text(pos=(3,4),z=1,text="!",
