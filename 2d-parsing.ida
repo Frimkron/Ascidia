@@ -1023,4 +1023,28 @@ so much one can do.
 ; | | | |  ;
 ;-|-|-|-|--;
 ; | | | |  ;
-+- - - - - +
++- - - - - +           +-----+
+                       |     |
+ core                  |     V
+  |                    ^   ptests
+  +--->---+--->---+    |     |               
+  |       |       |    |     |               
+  |       |       +->--+-->--+---->----+---->------+----->------+
+  |       V       |          |         |           |            |
+  |    patterns   ^          V         V           V            V
+  V       |       |       boxtests linetests connectortests icontests
+ main <---+--->---+          |         |           |            |
+  |               |          +--->-----+-->--+--<--+-----<------+
+  +------>--------+                          |
+                                             V
+                                          alltests
+
+core
+patterns
+main
+ptests
+boxtests
+linetests
+connectortests
+icontests
+alltests
