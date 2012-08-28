@@ -987,3 +987,40 @@ Need to add stroke & fill alpha properties to all shapes
 
 - Ok the blending actually isn't as bad as I thought. The colours
   just get darker with each nested level. I can live with that.
+
+[?] What would dashed circle boxes look like?
+
+ .----.   .- - .   .- - .
+(      ) (      ) :      :
+ '----'   '- - '   '- - '
+ 
+  .----.     .- - .
+ /      \   ,      `
+(        ) :        :
+ \      /   `      ,   
+  '----'     '- - '
+
+   .'.        .'.
+ .'   '.    .     .
+<       >  <       >
+ '.   .'    '     '
+   '.'        '.'
+   
+   +----+ +- - +  .----. .- - .
+  /    / ,    ,  /    / ,    ,
+ /    / ,    ,  /    / ,    ,
++----+ +- - +  '----' '- - '
+
+I think dashed circles and diamonds are a lost cause - there's only
+so much one can do.
+ ____    _ _ 
+/ MF \  , MF `
+\____/  `_ _ ,
+
++- - - - - +  Dashed boxes should use the same solid separators as solid
+; | | | |  ;  boxes. It's just messy, confusing and ambiguous otherwise.
+;-|-|-|-|--;
+; | | | |  ;
+;-|-|-|-|--;
+; | | | |  ;
++- - - - - +

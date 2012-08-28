@@ -5398,6 +5398,134 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,4,0,"  |-----|\n")
 		feed_input(p,5,0,"  | | | |\n")
 		feed_input(p,6,0,"  +-----+\n")
+
+	def test_allows_dashed_box(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - - - +\n")
+		feed_input(p,1,0,"  ;        ;\n")
+		feed_input(p,2,0,"  ;        ;\n")
+		feed_input(p,3,0,"  +- - - - +\n")
+		feed_input(p,4,0,"            ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,12," ",core.M_NONE))
+	
+	def test_expects_top_dash_continuation(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- -")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,6,"-",core.M_NONE))
+			
+	def test_expects_top_dash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,4," ",core.M_OCCUPIED))
+	
+	def test_top_expects_complete_dashes(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- -")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,6,"+",core.M_NONE))
+	
+	def test_expects_dashed_left_side(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"|",core.M_NONE))
+	
+	def test_expects_dashed_left_side_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,   "+- - +\n")
+		feed_input(p,1,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,";",core.M_OCCUPIED))
+	
+	def test_expects_dashed_right_side(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,7,"|",core.M_NONE))
+			
+	def test_expects_dashed_right_side_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,7,";",core.M_OCCUPIED))
+			
+	def test_expects_dashed_left_side_second_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ;\n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"|",core.M_NONE))
+			
+	def test_expects_dashed_left_side_second_line_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ;\n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,";",core.M_OCCUPIED))
+			
+	def test_expects_dashed_right_side_second_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ;\n")
+		feed_input(p,2,0,"  ;    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,7,"|",core.M_NONE))
+		
+	def test_expects_dashed_right_side_second_line_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ;\n")
+		feed_input(p,2,0,"  ;    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,7,";",core.M_OCCUPIED))
+			
+	def test_expects_dashed_bottom_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ;\n")
+		feed_input(p,2,0,"  +-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4,"-",core.M_NONE))
+	
+	def test_expects_dashed_bottom_line_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - +\n")
+		feed_input(p,1,0,"  ;    ;\n")
+		feed_input(p,2,0,"  +-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4," ",core.M_OCCUPIED))
+	
+	def test_expects_dashed_bottom_line_continuation(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - - - +\n")
+		feed_input(p,1,0,"  ;        ;\n")
+		feed_input(p,2,0,"  +- -")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,6,"-",core.M_NONE))
+			
+	def test_expects_dashed_bottom_line_continuation_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - - - +\n")
+		feed_input(p,1,0,"  ;        ;\n")
+		feed_input(p,2,0,"  +- -")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,6," ",core.M_OCCUPIED))
+	
+	def test_dashed_box_allows_separators(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+- - - - - - +\n")
+		feed_input(p,1,0,"  ;   |    |   ;\n")
+		feed_input(p,2,0,"  ;--------|---;\n")
+		feed_input(p,3,0,"  ;   |    |   ;\n")
+		feed_input(p,4,0,"  +- - - - - - +\n")
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -5425,11 +5553,11 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 				m = outmeta[j][i]
 				self.assertEquals(m, p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE)))
 		 
-	def do_render(self,x,y,w,h,hs=[],vs=[]):
+	def do_render(self,x,y,w,h,hs=[],vs=[],dash=False):
 		p = self.pclass()
-		feed_input(p,y,x,"+" + "-"*w + "+\n")
+		feed_input(p,y,x,"+" + (("- "*(w//2)) if dash else ("-"*w)) + "+\n")
 		for i in range(h):
-			feed_input(p,y+1+i,0," "*x + "|")
+			feed_input(p,y+1+i,0," "*x + (";" if dash else "|"))
 			for n in range(w):
 				chr = { 
 					(True,True): "-",
@@ -5438,8 +5566,8 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 				  	(False,False): " " 
 				}[(i in hs,n in vs)]
 				feed_input(p,y+1+i,x+1+n, chr)
-			feed_input(p,y+1+i,x+1+w, "|\n")
-		feed_input(p,y+1+h+0,0," "*x + "+" + "-"*w + "+\n")
+			feed_input(p,y+1+i,x+1+w, (";" if dash else "|")+"\n")
+		feed_input(p,y+1+h+0,0," "*x + "+" + (("- "*(w//2)) if dash else ("-"*w)) + "+\n")
 		feed_input(p,y+1+h+1,0," "*x + " " + " "*w + " ")
 		try:
 			p.test(main.CurrentChar(y+h+2,x+w+2," ",core.M_NONE))
@@ -5483,9 +5611,13 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		r = self.do_render(2,3,5,6)[0]
 		self.assertEquals(1,r.w)
 		
-	def test_render_stroke_style(self):
-		r = self.do_render(2,3,5,6)[0]
+	def test_render_stroke_style_solid(self):
+		r = self.do_render(2,3,6,6,dash=False)[0]
 		self.assertEquals(core.STROKE_SOLID,r.stype)
+		
+	def test_render_stroke_style_dashed(self):
+		r = self.do_render(2,3,6,6,dash=True)[0]
+		self.assertEquals(core.STROKE_DASHED,r.stype)
 		
 	def test_render_fill_colour(self):
 		r = self.do_render(2,3,5,6)[0]

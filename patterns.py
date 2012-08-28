@@ -98,6 +98,7 @@ class RectangularBoxPattern(Pattern):
 	br = None
 	hs = None
 	vs = None
+	dashed = False
 	
 	def matcher(self):
 		w,h = 0,0
@@ -112,8 +113,16 @@ class RectangularBoxPattern(Pattern):
 		
 		# top line 
 		self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
+		if self.curr.char == " ": 
+			# dashed box detection
+			self.dashed = True
+			self.curr = yield self.expect(" ",meta=M_OCCUPIED|M_BOX_START_S)
 		while self.curr.char != "+":
-			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
+			if self.dashed:
+				self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
+				self.curr = yield self.expect(" ",meta=M_OCCUPIED|M_BOX_START_S)
+			else:
+				self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
 		w = self.curr.col-self.tl[0]+1
 		
 		# top right corner
@@ -126,7 +135,7 @@ class RectangularBoxPattern(Pattern):
 			
 		# first content line left side
 		rowstart = self.curr.col,self.curr.row
-		self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
+		self.curr = yield self.expect(";" if self.dashed else "|",meta=M_OCCUPIED|M_BOX_START_E)
 
 		# first content line content
 		for n in range(w-2):
@@ -140,7 +149,7 @@ class RectangularBoxPattern(Pattern):
 			if self.curr.char == "\n": self.reject()
 			
 		# first content line right side
-		self.curr = yield self.expect("|",meta=M_OCCUPIED)
+		self.curr = yield self.expect(";" if self.dashed else "|",meta=M_OCCUPIED)
 		self.curr = yield M_BOX_AFTER_E
 			
 		# next line
@@ -152,7 +161,7 @@ class RectangularBoxPattern(Pattern):
 		
 			# left side
 			rowstart = self.curr.col,self.curr.row
-			self.curr = yield self.expect("|",meta=M_OCCUPIED|M_BOX_START_E)
+			self.curr = yield self.expect(";" if self.dashed else "|",meta=M_OCCUPIED|M_BOX_START_E)
 
 			# content			
 			if( not self.occupied() and self.curr.char == "-"
@@ -175,7 +184,7 @@ class RectangularBoxPattern(Pattern):
 					if self.curr.char == "\n": self.reject() 
 			
 			# right side
-			self.curr = yield self.expect("|",meta=M_OCCUPIED)
+			self.curr = yield self.expect(";" if self.dashed else "|",meta=M_OCCUPIED)
 			self.curr = yield M_BOX_AFTER_E
 			
 			# next line
@@ -187,8 +196,13 @@ class RectangularBoxPattern(Pattern):
 		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_E)
 		
 		# bottom line
-		for n in range(w-2):
-			self.curr = yield self.expect("-",meta=M_OCCUPIED)
+		if self.dashed:
+			for n in range((w-2)/2):
+				self.curr = yield self.expect("-",meta=M_OCCUPIED)
+				self.curr = yield self.expect(" ",meta=M_OCCUPIED)
+		else:
+			for n in range(w-2):
+				self.curr = yield self.expect("-",meta=M_OCCUPIED)
 			
 		# bottom right corner
 		self.br = (self.curr.col,self.curr.row)
@@ -230,7 +244,7 @@ class RectangularBoxPattern(Pattern):
 						salpha=0.0,w=1,stype=STROKE_SOLID,fill=C_FOREGROUND,falpha=falpha) )
 		retval.append( Rectangle(a=(self.tl[0]+0.5,self.tl[1]+0.5),
 			b=(self.br[0]+0.5,self.br[1]+0.5),z=0,stroke=C_FOREGROUND,salpha=1.0,
-			w=1,stype=STROKE_SOLID,fill=None,falpha=0.0) )
+			w=1,stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=0.0) )
 		return retval
 			
 			

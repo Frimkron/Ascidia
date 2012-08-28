@@ -2,15 +2,19 @@
 
 """	
 TODO:
-	* Boxes (with separators)
 	* Parallelogram boxes
 	* Large diamonds
 	* Outline arrows "|<|--"
 	* Outline diamond connector "<>--"
 	* Filled diamond connector "<#>--"
 	* Large ellipses 
+	* Image output
+	* Char size option (image w/h?)
+	* Char ratio option
+	* Secondary colour
 	* Rounded corner boxes
 	* Slash-cornered boxes
+	* Dashed round corner boxes
 	* Note/document (folded corner, cutoff)
 	* Cloud boxes
 	* Tiny ellipse "o"
@@ -33,6 +37,7 @@ TODO:
 	* Box/Cylinder shadows
 	* Hexagon boxes	
 	* Terminal
+	* Dashed Paralellogram boxes
 	* Diagonal arrowheads
 """
 
