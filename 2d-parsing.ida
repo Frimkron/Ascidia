@@ -1048,3 +1048,57 @@ linetests
 connectortests
 icontests
 alltests
+
+Literal markers?
+                   
+<%  This should     %>
+<% not be a pattern %>
+
+They're ugly but probably going to be necessary for practical reasons
+
+66 foobar 99
+
+66 please take   99  <-- *might* be assumed to 
+66 me litterally 99      be a box when multiple 
+66    ;) ;)      99      lines involved, but short
+66    ;) ;)      99      inline 66sections99 will be confusing
+
+In fact this is a totally dumb syntax:
+
++-------------------+
+| 66 | 51 | 42 | 99 | <-- this line makes the 
+|-------------------|     whole box pattern fail
+| 23 | 11 | 57 | 21 |
++-------------------+
+
+[!] I want to detect alpha character either side of lines, but this requires
+	checking the character *before* the pattern itself.
+	
+       [a][/][b][ ][ ...	
+...][ ][/][ ][ ][ ][ ...
+...][ ][ ]
+
+Every non-alpha character will spawn a line pattern check for 1 space.
+
+We much prefer patterns that have a definite start character.
+
+[*] Should text be parsed out first?
+- i.e. have a "word" pattern, which is a string of alpha characters, and which
+  sets WORD_START_E and WORD_AFTER_E meta flags.
+- this would have the side benefit of making the text output more efficient.
+
+ foo/bar     foo /bar     foo / bar    foo(); bar
+         N            N             Y              Y
+ 
+ foo/bar     foo/ bar     foo; bar     foo; bar    Y
+   /     Y            N             N     ;
+
+[?] What syntax already uses alpha characters?
+- down arrows
+- up crows feet
+- stick man
+- tiny ellipse
+- literals, obvs
+
+It's a possible. But checking the leading character is simpler to implement, 
+so I'll go for that (first, at least).

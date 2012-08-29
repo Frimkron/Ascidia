@@ -5,6 +5,10 @@ Pattern classes go here
 import math
 from core import *
 
+TEXT_CHARS = ( "".join([chr(x) for x in range(ord('0'),ord('9')+1)])
+				+ "".join([chr(x) for x in range(ord('A'),ord('Z')+1)])
+				+ "".join([chr(x) for x in range(ord('a'),ord('z')+1)]) )
+
 
 class LiteralPattern(Pattern):
 
@@ -555,18 +559,24 @@ class LinePattern(Pattern):
 	
 	def matcher(self):
 		self.curr = yield
+		text = False
+		if self.curr.char != self.startchars[0]:
+			if self.curr.char in TEXT_CHARS: text = True
+			self.curr = yield M_NONE
 		pos = self.curr.col,self.curr.row
 		self.startpos = pos
-		for i,startchar in enumerate(self.startchars):
+		self.curr = yield self.expect(self.startchars[0],meta=M_OCCUPIED|self.startmeta)
+		if self.curr.char in TEXT_CHARS: text = True
+		for i,startchar in enumerate(self.startchars[1:]):
+			for meta in self.await_pos(self.offset(self.xdir,self.ydir,pos)):
+				self.curr = yield meta
 			pos = self.curr.col,self.curr.row
-			self.curr = yield self.expect(startchar,
-				meta=M_OCCUPIED|(self.startmeta if i==0 else 0))
+			self.curr = yield self.expect(startchar,meta=M_OCCUPIED)
+		# TODO: working here
 		try:
 			breaknow = False
 			while not breaknow:
 				for i,midchar in enumerate(self.midchars):
-					for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-						self.curr = yield meta
 					if( self.curr.char != midchar or self.occupied() 
 							or self.curr.char == END_OF_INPUT ): 
 						if i==0: 
@@ -576,6 +586,8 @@ class LinePattern(Pattern):
 							self.reject()
 					pos = self.curr.col,self.curr.row
 					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
+					for meta in self.await_pos(self.offset(self.xdir,self.ydir,pos)):
+						self.curr = yield meta
 			self.endpos = pos
 			if self.curr.char != END_OF_INPUT: yield self.endmeta
 		except NoSuchPosition:

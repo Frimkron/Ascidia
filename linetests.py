@@ -99,7 +99,38 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 		feed_input(p,2,0,"/  \n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
+
+	def test_allows_length_one_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/\n")
+		feed_input(p,1,0,"  ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,2," ",core.M_NONE))
 			
+	def test_rejects_length_one_line_with_left_text(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "a/\n")
+		feed_input(p,1,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2," ",core.M_NONE))
+			
+	def test_rejects_length_one_line_with_right_text(self):
+		p = self.pclass()
+		feed_input(p,0,2,  " /a\n")
+		feed_input(p,1,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2," ",core.M_NONE))
+			
+	def test_allows_left_text_for_length_gt_one(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "a/\n")
+		feed_input(p,1,0,"  / \n")
+		
+	def test_allows_right_text_for_length_gt_one(self):
+		p = self.pclass()
+		feed_input(p,0,2,  " /a\n")
+		feed_input(p,1,0,"  /  \n")
+				
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((3,   "/  \n"),
