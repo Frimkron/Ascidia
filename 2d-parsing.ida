@@ -1109,3 +1109,7 @@ We much prefer patterns that have a definite start character.
 
 It's a possible. But checking the leading character is simpler to implement, 
 so I'll go for that (first, at least).
+
+[*] Could pass in current and previous characters as input
+- This would have to be previous *on same line*
+- Bit hacky?
