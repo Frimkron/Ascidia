@@ -3,21 +3,21 @@
 """	
 TODO:
 	* Tighten up single char line rules
-	* Parallelogram boxes
-	* Large diamonds
+	* Parallelogram boxes (w/separators)
+	* Large diamonds (w/separators)
 	* Outline arrows "|<|--"
 	* Outline diamond connector "<>--"
 	* Filled diamond connector "<#>--"
-	* Large ellipses 
+	* Large ellipses (w/separators)
 	* Image output
 	* Char size option (image w/h?)
 	* Char ratio option
 	* Secondary colour
-	* Rounded corner boxes
-	* Slash-cornered boxes
+	* Rounded corner boxes (w/separators)
+	* Slash-cornered boxes (w/separators)
 	* Dashed round corner boxes
 	* Note/document (folded corner, cutoff)
-	* Cloud boxes
+	* Cloud boxes (w/separators)
 	* Tiny ellipse "o"
 	* Tiny box "[]"
 	* Small ellipse "( foo )"
@@ -32,11 +32,11 @@ TODO:
 	* Circle crows foot "|>O--"
 	* One crows foot "|>|--"
 	* Only one connector "-||--"
-	* 3d boxes
+	* 3d boxes (w/separators)
 	* Disallow alphas beside down arrows
 	* Stacked boxes
 	* Box/Cylinder shadows
-	* Hexagon boxes	
+	* Hexagon boxes	(w/separators)
 	* Terminal
 	* Dashed Paralellogram boxes
 	* Diagonal arrowheads

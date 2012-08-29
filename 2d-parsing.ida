@@ -988,6 +988,13 @@ Need to add stroke & fill alpha properties to all shapes
 - Ok the blending actually isn't as bad as I thought. The colours
   just get darker with each nested level. I can live with that.
 
+- I think zs of nested boxes are fine too, seeing as the backgrounds are semi-transparent
+
+[!] Length-1 lines are accepted, but this means that punctuation in the middle of text is 
+	transformed into line segments. Can't limit lines to 2 or more length because twisty
+	lines with single-char segments are common. Corners are defined by lines, not the 
+	other way round.
+
 [?] What would dashed circle boxes look like?
 
  .----.   .- - .   .- - .
