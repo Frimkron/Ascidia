@@ -29,6 +29,12 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,0," ",core.M_NONE))
 			
+	def test_expects_start_forwardslash_after_text_char(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
+			
 	def test_expects_start_forwardslash_unoccupied(self):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
@@ -116,7 +122,7 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 			
 	def test_rejects_length_one_line_with_right_text(self):
 		p = self.pclass()
-		feed_input(p,0,2,  " /a\n")
+		feed_input(p,0,3,   "/a\n")
 		feed_input(p,1,0,"  ")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(1,2," ",core.M_NONE))
@@ -128,7 +134,7 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_allows_right_text_for_length_gt_one(self):
 		p = self.pclass()
-		feed_input(p,0,2,  " /a\n")
+		feed_input(p,0,3,   "/a\n")
 		feed_input(p,1,0,"  /  \n")
 				
 	def test_sets_correct_meta_flags(self):
@@ -217,6 +223,12 @@ class TestDownDiagLinePattern(unittest.TestCase,PatternTests):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,0," ",core.M_NONE))
+			
+	def test_expects_start_backslash_after_text_char(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
 			
 	def test_expects_start_backslash_unoccupied(self):
 		p = self.pclass()
@@ -377,6 +389,12 @@ class TestVertLinePattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,0," ",core.M_NONE))
 			
+	def test_expects_start_pipe_after_text_char(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,0," ",core.M_NONE))
+			
 	def test_expects_start_pipe_unoccupied(self):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
@@ -532,6 +550,12 @@ class TestHorizLinePattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,0," ",core.M_NONE))
 			
+	def test_expects_start_hyphen_after_text(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
+			
 	def test_expects_start_hyphen_unoccupied(self):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
@@ -639,6 +663,12 @@ class TestUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,0," ",core.M_NONE))
+				
+	def test_expects_start_comma_after_text_char(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
 				
 	def test_expects_start_comma_unoccupied(self):
 		p = self.pclass()
@@ -796,7 +826,13 @@ class TestDownDiagLinePattern(unittest.TestCase,PatternTests):
 	def test_expects_start_backtick(self):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,0," ",core.M_NONE))
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
+			
+	def test_expects_start_backtick_after_text_char(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
 			
 	def test_expects_start_backtick_unoccupied(self):
 		p = self.pclass()
@@ -957,6 +993,12 @@ class TestVertDashedLinePattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,0," ",core.M_NONE))
 			
+	def test_expects_start_semicolon_after_text_char(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
+			
 	def test_expects_start_semicolon_unoccupied(self):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
@@ -1111,6 +1153,12 @@ class TestHorizDashedLinePattern(unittest.TestCase,PatternTests):
 		p = self.pclass()
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,0," ",core.M_NONE))
+	
+	def test_expects_start_hyphen_after_text(self):
+		p = self.pclass()
+		feed_input(p,0,0,"a")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,1," ",core.M_NONE))
 	
 	def test_expects_start_hyphen_unoccupied(self):
 		p = self.pclass()

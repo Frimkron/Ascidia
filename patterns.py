@@ -560,7 +560,7 @@ class LinePattern(Pattern):
 	def matcher(self):
 		self.curr = yield
 		text = False
-		if self.curr.char != self.startchars[0]:
+		if self.curr.char != self.startchars[0] and self.curr.char in TEXT_CHARS:
 			if self.curr.char in TEXT_CHARS: text = True
 			self.curr = yield M_NONE
 		pos = self.curr.col,self.curr.row
@@ -572,11 +572,12 @@ class LinePattern(Pattern):
 				self.curr = yield meta
 			pos = self.curr.col,self.curr.row
 			self.curr = yield self.expect(startchar,meta=M_OCCUPIED)
-		# TODO: working here
 		try:
 			breaknow = False
 			while not breaknow:
 				for i,midchar in enumerate(self.midchars):
+					for meta in self.await_pos(self.offset(self.xdir,self.ydir,pos)):
+						self.curr = yield meta
 					if( self.curr.char != midchar or self.occupied() 
 							or self.curr.char == END_OF_INPUT ): 
 						if i==0: 
@@ -585,9 +586,7 @@ class LinePattern(Pattern):
 						else:
 							self.reject()
 					pos = self.curr.col,self.curr.row
-					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
-					for meta in self.await_pos(self.offset(self.xdir,self.ydir,pos)):
-						self.curr = yield meta
+					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)					
 			self.endpos = pos
 			if self.curr.char != END_OF_INPUT: yield self.endmeta
 		except NoSuchPosition:
