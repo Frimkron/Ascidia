@@ -1113,3 +1113,15 @@ so I'll go for that (first, at least).
 [*] Could pass in current and previous characters as input
 - This would have to be previous *on same line*
 - Bit hacky?
+
+[!] Context for character before doesn't work, because it's optional.
+
+ starting here fails
+    v
+   [a][/][ ]
+       ^
+  but starting here passes
+  
+[*] Introduce START_OF_INPUT in addition to END_OF_INPUT, and *require* 
+    proceeding character.
+- Actually, don't need START_OF_INPUT because we can test the position.
