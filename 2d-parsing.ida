@@ -1125,3 +1125,29 @@ so I'll go for that (first, at least).
 [*] Introduce START_OF_INPUT in addition to END_OF_INPUT, and *require* 
     proceeding character.
 - Actually, don't need START_OF_INPUT because we can test the position.
+
+[!] At left edge, context should be *optional*, not unexpected
+
+[/][ ][ ]
+ ^
+[a][/][ ]
+ ^
+[ ][a][/]
+    ^
+
+Position 0,0. Do we expect context, or the line itself? If only allow one or 
+the other, either the lines at position 0 or lines at position 1 are not 
+possible. If we allow both, the context restriction is relaxed for that position.
+
+[*] Could introduce START_OF_LINE. This could then act as the left context 
+	character for the left edge.
+- Seems like a lot of work just to make a particular pattern work. 
+- Won't help if a pattern ever needs ABOVE context and BELOW context
+- Mirrors "\n" character
+
+[S][/][ ][ ][E]
+ ^
+[S][a][/][ ][E]
+    ^
+[S][ ][a][/][E]
+       ^
