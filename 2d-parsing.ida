@@ -1151,3 +1151,18 @@ possible. If we allow both, the context restriction is relaxed for that position
     ^
 [S][ ][a][/][E]
        ^
+[?] Would the newline character suffice?
+- Would need START_OF_INPUT for first character's context
+- Would have to not apply context rule if context is newline, though a newline
+  isn't a text character anyway
+
+[?] How should separators for non-rectangular boxes work?
+
+    +---------+   .-----.      .'.      .------.
+   /| | | | |/   /| | | |\   .'| |'.   (| | | | )
+  /---------/   (---------) <-------> (----------)
+ /| | | | |/     \| | | |/   '.| |.'   (| | | | )
++---------+       '-----'      '.'      '------'
+
+- Ideally user would be able to start a separator partway down the box
+  - horizontal or vertical.

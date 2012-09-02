@@ -1489,6 +1489,161 @@ class TestParagmBoxPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,4,"\n",core.M_NONE))
 
+	def test_allows_h_separator(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  /---/\n")
+			
+	def test_expects_continuation_of_h_separator(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  /-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4," ",core.M_NONE))
+			
+	def test_expects_continuation_of_h_separator_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  /-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4,"-",core.M_OCCUPIED))
+			
+	def test_allows_non_separator_h_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  / --/\n")
+		
+	def test_allows_h_non_separator_start_if_occupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  /")
+		p.test(main.CurrentChar(2,3,"-",core.M_OCCUPIED))
+		feed_input(p,2,4,"--/\n")
+	
+	def test_doesnt_assume_h_separator_if_first_row(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /-- /\n")
+		
+	def test_doesnt_assume_h_separator_if_section_too_small(self):
+		p = self.pclass()
+		feed_input(p,0,6,      "+---+\n")
+		feed_input(p,1,0,"     /   /\n")
+		feed_input(p,2,0,"    /---/\n")
+		feed_input(p,3,0,"   /-- /\n")
+		
+	def test_allows_multiple_h_separators(self):
+		p = self.pclass()
+		feed_input(p,0,6,      "+---+\n")
+		feed_input(p,1,0,"     /   /\n")
+		feed_input(p,2,0,"    /---/\n")
+		feed_input(p,3,0,"   /   /\n")
+		feed_input(p,4,0,"  /---/\n")
+
+	def test_allows_v_separator(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   / |  /\n")
+		feed_input(p,2,0,"  /  | /\n")
+		feed_input(p,3,0," +----/\n")
+		
+	def test_expects_continuation_of_v_separator(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   / |  /\n")
+		feed_input(p,2,0,"  /  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5," ",core.M_NONE))
+			
+	def test_expects_continuation_of_v_separator_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   / |  /\n")
+		feed_input(p,2,0,"  /  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"|",core.M_OCCUPIED))
+	
+	def test_allows_non_separator_v_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+-----+\n")
+		feed_input(p,1,0,"   /     /\n")
+		feed_input(p,2,0,"  /  |  /\n")
+		feed_input(p,3,0," /   | /\n")
+		feed_input(p,4,0,"+-----+\n")
+	
+	def test_allows_v_non_separator_start_if_occupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   / ")
+		p.test(main.CurrentChar(1,5,"|",core.M_OCCUPIED))
+		feed_input(p,1,6," |\n")
+	
+	def test_allows_multiple_v_separators(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+------+\n")
+		feed_input(p,1,0,"   / | |  /\n")
+		feed_input(p,2,0,"  /  | | /\n")
+		feed_input(p,3,0," +------+\n")
+	
+	def test_doesnt_assume_v_separator_if_first_col(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   /|   /\n")
+		feed_input(p,2,0,"  / |  /\n")
+		feed_input(p,3,0," /    /\n")
+		
+	def test_doesnt_assume_v_separator_if_section_too_small(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+------+\n")
+		feed_input(p,1,0,"   / ||   /\n")
+		feed_input(p,2,0,"  /  ||  /\n")
+		feed_input(p,3,0," /   |  /\n")
+	
+	def test_allows_crossing_separators(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+-----+\n")
+		feed_input(p,1,0,"   / |   /\n")
+		feed_input(p,2,0,"  /-----/\n")
+		feed_input(p,3,0," /   | /\n")
+		feed_input(p,4,0,"+-----+\n")
+		
+	def test_expects_line_at_separator_intersection(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   / |  /\n")
+		feed_input(p,2,0,"  /--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"+",core.M_NONE))
+			
+	def test_expects_line_at_separator_intersection_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   / |  /\n")
+		feed_input(p,2,0,"  /--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"-",core.M_OCCUPIED))
+
+	def test_allows_vertical_line_at_separator_intersection(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   / |  /\n")
+		feed_input(p,2,0,"  /--|-/\n")
+
+	def test_allows_single_character_sections(self):
+		p = self.pclass()
+		feed_input(p,0,6,      "+---------+\n")
+		feed_input(p,1,0,"     / | | | | /\n")
+		feed_input(p,2,0,"    /---------/\n")
+		feed_input(p,3,0,"   / | | | | /\n")
+		feed_input(p,4,0,"  /---------/\n")
+		feed_input(p,5,0," / | | | | /\n")
+		feed_input(p,6,0,"+---------+\n")
+
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((5,     "+-----+ \n",),
