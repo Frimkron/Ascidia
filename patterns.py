@@ -250,6 +250,32 @@ class RectangularBoxPattern(Pattern):
 			b=(self.br[0]+0.5,self.br[1]+0.5),z=0,stroke=C_FOREGROUND,salpha=1.0,
 			w=1,stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=0.0) )
 		return retval
+
+
+class ParagmBoxPattern(Pattern):
+
+	tl = None
+	br = None
+	dashed = False
+	hs = None
+	vs = None
+
+	def match(self):
+		w,h = 0,0
+		self.hs,self.vs = [],[]
+		self.curr = yield
+		self.tl = (self.curr.col,self.curr.row)
+		rowstart = self.curr.col,self.curr.row
+		lastvs,lasths = self.tl
+		
+		# top left corner
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
+		
+		# TODO: wip
+		
+	def render(self):
+		Pattern.render(self)
+		return []
 			
 			
 class LineSqCornerPattern(Pattern):

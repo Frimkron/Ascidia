@@ -1257,5 +1257,264 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		self.assertEquals(-0.5,b9.z)
 
 
+class TestParagmBoxPattern(unittest.TestCase,PatternTests):
+	
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.ParagmBoxPattern
+		
+	def test_accepts_box(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+----+\n")
+		feed_input(p,1,0,"   /    / \n")
+		feed_input(p,2,0,"  /    /  \n")
+		feed_input(p,3,0," +----+   \n")
+		feed_input(p,4,0,"       ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,7," ",core.M_NONE))
+
+	def test_expects_start_plus(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,4," ",core.M_NONE))
+			
+	def test_expects_start_plus_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,4,"+",core.M_OCCUPIED))
+
+	def test_expects_top_line_hyphen(self):
+		p = self.pclass()
+		feed_input(p,0,4,"+")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,5,"+",core.M_NONE))
+			
+	def test_expects_top_line_hyphen_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,"+")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,5,"-",core.M_OCCUPIED))
+			
+	def test_expects_top_right_plus(self):
+		p = self.pclass()
+		feed_input(p,0,4,"+-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,6," ",core.M_NONE))
+			
+	def test_expects_top_right_plus_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,"+-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,6,"+",core.M_OCCUPIED))
+
+	def test_allows_long_top_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,"+----+")
+
+	def test_allows_rest_of_top_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,"+--+")
+		p.test(main.CurrentChar(0,8,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,9,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,10,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_second_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,"+--+\n")
+		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,2,"c",core.M_OCCUPIED))
+		
+	def test_expects_second_line_left_forwardslash(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+--+\n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3,"|",core.M_NONE))
+			
+	def test_expects_second_line_left_forwardslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+--+\n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,3,"/",core.M_OCCUPIED))
+
+	def test_allows_box_contents(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /")
+		p.test(main.CurrentChar(1,4,"x",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,5,"y",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,6,"z",core.M_OCCUPIED))
+
+	def test_rejects_short_content_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   / ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,5,"\n",core.M_NONE))
+
+	def test_expects_second_line_right_forwardslash(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,7," ",core.M_NONE))
+			
+	def test_expects_second_line_right_forwardslash(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,7,"/",core.M_OCCUPIED))
+
+	def test_allows_rest_of_content_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /")
+		p.test(main.CurrentChar(1,8,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,9,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,10,"\n",core.M_OCCUPIED))
+
+	def test_allows_start_of_third_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   / \n")
+		p.test(main.CurrentChar(2,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,1,"b",core.M_OCCUPIED))
+
+	def test_expects_bottom_left_plus(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"-",core.M_NONE))
+			
+	def test_expects_bottom_left_plus_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"+",core.M_OCCUPIED))
+
+	def test_expects_left_forwardslash_unoccupied_for_second_content_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"/",core.M_OCCUPIED))
+
+	def test_allows_second_content_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  /")
+		p.test(main.CurrentChar(2,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,4,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,5,"c",core.M_OCCUPIED))
+
+	def test_expects_right_forwardslash_for_second_content_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  /   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,6,"-",core.M_NONE))
+
+	def test_expects_right_forwardslash_unoccupied_for_second_content_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  /   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,6,"/",core.M_OCCUPIED))
+
+	def test_expects_bottom_line_hyphen(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  +")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,3," ",core.M_NONE))
+			
+	def test_expects_bottom_line_hyphen_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  +")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,3,"-",core.M_OCCUPIED))
+			
+	def test_expects_end_plus(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  +---")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,6,"-",core.M_NONE))
+			
+	def test_expects_end_plus_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  +---")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,6,"+",core.M_OCCUPIED))
+			
+	def test_allows_final_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  +---+ \n")
+		for i in range(7):
+			p.test(main.CurrentChar(3,i,"z",core.M_OCCUPIED))
+			
+	def test_allows_no_final_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  +---+ \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
+			
+	def test_allows_short_final_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "+---+\n")
+		feed_input(p,1,0,"   /   /\n")
+		feed_input(p,2,0,"  +---+ \n")
+		feed_input(p,3,0,"    ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,4,"\n",core.M_NONE))
+
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((5,     "+-----+ \n",),
+				 (0,"    /||---/  \n",),
+				 (0,"   /-----/   \n",),
+				 (0,"  /---| /    \n",),
+				 (0," +-----+     \n",),
+				 (0,"        ",       ),)
+		c = core.M_BOX_START_S | core.M_BOX_START_E | core.M_OCCUPIED
+		t = core.M_BOX_START_S | core.M_OCCUPIED
+		l = core.M_BOX_START_E | core.M_OCCUPIED
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		r = core.M_BOX_AFTER_E
+		b = core.M_BOX_AFTER_S
+		outmeta = (	(          c,t,t,t,t,t,t,r,n,),
+					(n,n,n,n,l,n,o,n,n,n,o,r,n,n,),
+					(n,n,n,l,o,o,o,o,o,o,r,n,n,n,),
+					(n,n,l,n,n,n,o,n,o,r,n,n,n,n,),
+					(n,l,o,o,o,o,o,o,r,n,n,n,n,n,),
+					(n,b,b,b,b,b,b,b,            ),)
+		for j,(startcol,line) in enumerate(input):
+			for i,char in enumerate(line):
+				m = outmeta[j][i]
+				self.assertEquals(m, p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE)))
+			
+
 if __name__ == "__main__":
 	unittest.main()
