@@ -222,7 +222,7 @@ class RectangularBoxPattern(Pattern):
 			# area below box
 			rowstart = self.curr.col,self.curr.row
 			for n in range(w):
-				if self.curr.char=="\n": break
+				if self.curr.char in ("\n",END_OF_INPUT): break
 				self.curr = yield M_BOX_AFTER_S
 				
 		except NoSuchPosition: pass
@@ -260,7 +260,7 @@ class ParagmBoxPattern(Pattern):
 	hs = None
 	vs = None
 
-	def match(self):
+	def matcher(self):
 		w,h = 0,0
 		self.hs,self.vs = [],[]
 		self.curr = yield
@@ -271,11 +271,81 @@ class ParagmBoxPattern(Pattern):
 		# top left corner
 		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
 		
-		# TODO: wip
+		# top line 
+		self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
+		while self.curr.char != "+":
+			self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
+		w = self.curr.col-self.tl[0]+1
+		
+		# top right corner
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_S)
+		self.curr = yield M_BOX_AFTER_E
+		
+		# next line
+		for meta in self.await_pos(self.offset(-1,1,rowstart)): 
+			self.curr = yield meta
+		
+		while True:	
+			# left side
+			rowstart = self.curr.col,self.curr.row
+			self.curr = yield self.expect("/",meta=M_OCCUPIED|M_BOX_START_E)
+
+			# content
+			for meta in self.await_pos(self.offset(w-1,0,rowstart)):
+				self.curr = yield meta
+				
+			# right side
+			self.curr = yield self.expect("/",meta=M_OCCUPIED)
+			self.curr = yield M_BOX_AFTER_E
+			
+			# next line
+			for meta in self.await_pos(self.offset(-1,1,rowstart)): 
+				self.curr = yield meta
+			
+			if self.curr.char == "+": break
+			
+		# bottom left corner		
+		rowstart = self.curr.col,self.curr.row
+		self.curr = yield self.expect("+",meta=M_OCCUPIED|M_BOX_START_E)
+		
+		# bottom line
+		for n in range(w-2):
+			self.curr = yield self.expect("-",meta=M_OCCUPIED)
+			
+		# bottom right corner
+		self.br = (self.curr.col,self.curr.row)
+		self.curr = yield self.expect("+",meta=M_OCCUPIED)
+		self.curr = yield M_BOX_AFTER_E
+		
+		# optional final line
+		try:
+			# next line
+			for meta in self.await_pos(self.offset(0,1,rowstart)):
+				self.curr = yield meta
+				
+			# area below box
+			rowstart = self.curr.col,self.curr.row
+			for n in range(w):
+				if self.curr.char in ("\n",END_OF_INPUT): break
+				self.curr = yield M_BOX_AFTER_S
+				
+		except NoSuchPosition: pass
+		return
 		
 	def render(self):
 		Pattern.render(self)
-		return []
+		h = self.br[1] - self.tl[1]
+		w = self.br[0]+(h-1) - self.tl[0]
+		return [
+			Line(a=(self.tl[0]+0.5,self.tl[1]+0.5),b=(self.tl[0]+w+1+0.5,self.tl[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.tl[0]+0.5,self.tl[1]+0.5),b=(self.br[0]-w-1+0.5,self.br[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.br[0]-w-1+0.5,self.br[1]+0.5),b=(self.br[0]+0.5,self.br[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.tl[0]+w+1+0.5,self.tl[1]+0.5),b=(self.br[0]+0.5,self.br[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+		]
 			
 			
 class LineSqCornerPattern(Pattern):
@@ -883,6 +953,7 @@ PATTERNS = [
 	StickManPattern,			
 	DbCylinderPattern,			
 	RectangularBoxPattern,					
+	ParagmBoxPattern,
 	#SmallCirclePattern,
 	#TinyCirclePattern,
 	HorizDashedLinePattern,		

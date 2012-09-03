@@ -1166,3 +1166,22 @@ possible. If we allow both, the context restriction is relaxed for that position
 
 - Ideally user would be able to start a separator partway down the box
   - horizontal or vertical.
+
+Going to leave out separators for other box types, for now. They're not
+that high on the priority list.
+
+But, one option would be to only allow separator lines on the repeated
+part of the box edge:
+  
+     vvvvvv           vvvvvv
+    +----------+     .------.         .'.
+   /-|----|---/ <   /-|----|-\  <   .'   '.
+  /  |    |  /  <  (  |    |  ) <  <       > ?  Meh.
+ /---|----| /   <   \-|----|-/  <   '.   .'
++----------+         '------'         '.'
+
+    (*)-----+
+    /      /
+   /      /
+  /      /
+ +-----(*)

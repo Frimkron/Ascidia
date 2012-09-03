@@ -669,6 +669,23 @@ class TestRectangularBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,3,0,"    ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,4,"\n",core.M_NONE))
+
+	def test_allowed_to_touch_left_edge(self):
+		p = self.pclass()
+		feed_input(p,0,0,"+---+\n")
+		feed_input(p,1,0,"|   |\n")
+		feed_input(p,2,0,"+---+\n")
+		feed_input(p,3,0,"     ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,5,"\n",core.M_NONE))
+			
+	def test_allowed_to_touch_bottom_left_corner(self):
+		p = self.pclass()
+		feed_input(p,0,0,"+---+\n")
+		feed_input(p,1,0,"|   |\n")
+		feed_input(p,2,0,"+---+\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
 	
 	def test_allows_h_separator(self):
 		p = self.pclass()
@@ -1353,6 +1370,7 @@ class TestParagmBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,1,0,"   / ")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(1,5,"\n",core.M_NONE))
+			p.test(main.CurrentChar(2,0," ",core.M_NONE))
 
 	def test_expects_second_line_right_forwardslash(self):
 		p = self.pclass()
@@ -1488,7 +1506,25 @@ class TestParagmBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,3,0,"    ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,4,"\n",core.M_NONE))
-
+			
+	def test_allowed_to_touch_left_edge(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+---+\n")
+		feed_input(p,1,0," /   /\n")
+		feed_input(p,2,0,"+---+\n")
+		feed_input(p,3,0,"     ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,5," ",core.M_NONE))
+	
+	def test_allowed_to_touch_bottom_left_corner(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+---+\n")
+		feed_input(p,1,0," /   /\n")
+		feed_input(p,2,0,"+---+\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
+	
+	"""	
 	def test_allows_h_separator(self):
 		p = self.pclass()
 		feed_input(p,0,4,    "+---+\n")
@@ -1643,13 +1679,13 @@ class TestParagmBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,4,0,"  /---------/\n")
 		feed_input(p,5,0," / | | | | /\n")
 		feed_input(p,6,0,"+---------+\n")
-
+	"""
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((5,     "+-----+ \n",),
-				 (0,"    /||---/  \n",),
-				 (0,"   /-----/   \n",),
-				 (0,"  /---| /    \n",),
+				 (0,"    /     /  \n",),
+				 (0,"   /     /   \n",),
+				 (0,"  /     /    \n",),
 				 (0," +-----+     \n",),
 				 (0,"        ",       ),)
 		c = core.M_BOX_START_S | core.M_BOX_START_E | core.M_OCCUPIED
@@ -1660,16 +1696,86 @@ class TestParagmBoxPattern(unittest.TestCase,PatternTests):
 		r = core.M_BOX_AFTER_E
 		b = core.M_BOX_AFTER_S
 		outmeta = (	(          c,t,t,t,t,t,t,r,n,),
-					(n,n,n,n,l,n,o,n,n,n,o,r,n,n,),
-					(n,n,n,l,o,o,o,o,o,o,r,n,n,n,),
-					(n,n,l,n,n,n,o,n,o,r,n,n,n,n,),
+					(n,n,n,n,l,n,n,n,n,n,o,r,n,n,),
+					(n,n,n,l,n,n,n,n,n,o,r,n,n,n,),
+					(n,n,l,n,n,n,n,n,o,r,n,n,n,n,),
 					(n,l,o,o,o,o,o,o,r,n,n,n,n,n,),
 					(n,b,b,b,b,b,b,b,            ),)
 		for j,(startcol,line) in enumerate(input):
 			for i,char in enumerate(line):
 				m = outmeta[j][i]
 				self.assertEquals(m, p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE)))
+
+	def do_render(self,x,y,w,h):
+		p = self.pclass()
+		feed_input(p,y,x,"+" + "-"*w + "+\n")
+		for j in range(h):
+			feed_input(p,y+1+j,0," "*(x-1-j) + "/" + " "*w + "/\n")
+		feed_input(p,y+h+1,0," "*(x-h-1) + "+" + "-"*w + "+\n")
+		feed_input(p,y+h+2,0," "*(x-h-1) + " "*(w+2))
+		try:
+			p.test(main.CurrentChar(y+h+2,x-h-1+w+2," ",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+		
+	def test_render_returns_correct_shapes(self):
+		r = self.do_render(10,12,6,5)
+		self.assertEquals(4,len(r))
+		self.assertEquals(4,len(filter(lambda x: isinstance(x,core.Line),r)))
 			
+	def test_render_coordinates(self):
+		r = self.do_render(10,12,6,5)
+		ts = find_with(self,r,"a",(10.5,12.5))
+		self.assertEquals((17.5,12.5),ts.b)
+		bs = find_with(self,r,"a",(4.5,18.5))
+		self.assertEquals((11.5,18.5),bs.b)
+		rs = find_with(self,r,"a",(17.5,12.5))
+		self.assertEquals((11.5,18.5),rs.b)
+		ls = find_with(self,r,"b",(4.5,18.5))
+		self.assertEquals((10.5,12.5),ls.a)
+		
+	def test_render_coordinates_position(self):
+		r = self.do_render(12,4,6,5)
+		ts = find_with(self,r,"a",(12.5,4.5))
+		self.assertEquals((19.5,4.5),ts.b)
+		bs = find_with(self,r,"a",(6.5,10.5))
+		self.assertEquals((13.5,10.5),bs.b)
+		rs = find_with(self,r,"a",(19.5,4.5))
+		self.assertEquals((13.5,10.5),rs.b)
+		ls = find_with(self,r,"b",(6.5,10.5))
+		self.assertEquals((12.5,4.5),ls.a)
+		
+	def test_render_coordinates_size(self):
+		r = self.do_render(10,12,8,2)
+		ts = find_with(self,r,"a",(10.5,12.5))
+		self.assertEquals((19.5,12.5),ts.b)
+		bs = find_with(self,r,"a",(7.5,15.5))
+		self.assertEquals((16.5,15.5),bs.b)
+		rs = find_with(self,r,"a",(19.5,12.5))
+		self.assertEquals((16.5,15.5),rs.b)
+		ls = find_with(self,r,"b",(7.5,15.5))
+		self.assertEquals((10.5,12.5),ls.a)
+		
+	def test_render_z(self):
+		for line in self.do_render(10,12,6,5):
+			self.assertEquals(0,line.z)
+
+	def test_render_stroke_colour(self):
+		for line in self.do_render(10,12,6,5):
+			self.assertEquals(core.C_FOREGROUND,line.stroke)
+
+	def test_render_stroke_alpha(self):
+		for line in self.do_render(10,12,6,5):
+			self.assertEquals(1.0,line.salpha)
+
+	def test_render_stroke_width(self):
+		for line in self.do_render(10,12,6,5):
+			self.assertEquals(1,line.w)
+
+	def test_render_stroke_style_solid(self):
+		for line in self.do_render(10,12,6,5):
+			self.assertEquals(core.STROKE_SOLID,line.stype)
+								
 
 if __name__ == "__main__":
 	unittest.main()
