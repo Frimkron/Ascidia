@@ -657,14 +657,13 @@ class LinePattern(Pattern):
 		self.curr = yield
 		text = False
 		length = 0
-		if self.curr.col > 0:
-			if self.curr.char in TEXT_CHARS: text = True
-			self.curr = yield M_NONE
+		if self.is_in(self.curr.char,TEXT_CHARS): text = True
+		self.curr = yield M_NONE
 		pos = self.curr.col,self.curr.row
 		self.startpos = pos
 		self.curr = yield self.expect(self.startchars[0],meta=M_OCCUPIED|self.startmeta)
 		length += 1
-		if self.curr.char in TEXT_CHARS: text = True
+		if self.is_in(self.curr.char,TEXT_CHARS): text = True
 		for startchar in self.startchars[1:]:
 			for meta in self.await_pos(self.offset(self.xdir,self.ydir,pos)):
 				self.curr = yield meta

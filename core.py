@@ -43,7 +43,17 @@ M_DASH_START_SW = (1<<18)
 M_LINE_AFTER_SW = (1<<19)
 M_DASH_AFTER_SW = (1<<20)
 
-END_OF_INPUT = "\x00"
+class NonChar(object):
+	def isalnum(self): return False
+	def isalpha(self): return False
+	def isdigit(self): return False
+	def islower(self): return False
+	def isspace(self): return False
+	def istitle(self): return False
+	def isupper(self): return False
+
+START_OF_INPUT = NonChar()
+END_OF_INPUT = NonChar()
 
 class PatternRejected(Exception): pass
 class PatternStateError(Exception): pass
@@ -73,7 +83,7 @@ class Pattern(object):
 		return self.curr.meta & M_OCCUPIED
 		
 	def expect(self,chars,meta=M_OCCUPIED):
-		if self.occupied() or not self.curr.char in chars:
+		if self.occupied() or not self.is_in(self.curr.char,chars):
 			self.reject()
 		else:
 			return meta		
@@ -89,6 +99,12 @@ class Pattern(object):
 					or self.curr.char == END_OF_INPUT ):
 				raise NoSuchPosition(pos)
 			yield M_NONE
+			
+	def is_in(self,c,chars):
+		try:
+			return c in chars
+		except TypeError:
+			return False
 			
 	def test(self,currentchar):
 		try:

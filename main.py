@@ -250,9 +250,11 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 
 def process_diagram(text,patternlist):
 
-	lines = [l+"\n" for l in text.splitlines()]
+	lines = []
+	lines.append( [core.START_OF_INPUT] )
+	lines.extend( [l+"\n" for l in text.splitlines()] )
 	lines.append( [core.END_OF_INPUT] )
-	height = len(lines)-1
+	height = len(lines)-2
 	width = max([len(x) for x in lines])-1
 
 	complete_matches = []
@@ -261,6 +263,7 @@ def process_diagram(text,patternlist):
 		print pclass.__name__
 		ongoing = MatchLookup()	
 		for j,line in enumerate(lines):
+			j -= 1
 			for i,char in enumerate(line):	
 				meta = complete_meta.get((j,i),core.M_NONE)
 				newp = pclass()

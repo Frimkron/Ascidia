@@ -712,7 +712,7 @@ class TestProcessDiagram(unittest.TestCase):
 			def render(self):
 				return [ r ]
 		result = self.remove_background(main.process_diagram("a",[SingleCharPattern]))
-		self.assertEquals(3,len(result))
+		self.assertEquals(4,len(result))
 		self.assertEquals(r,result[0])
 	
 	def test_doesnt_output_rejected_pattern(self):
@@ -735,7 +735,7 @@ class TestProcessDiagram(unittest.TestCase):
 			def render(self):
 				return [ r ]
 		result = self.remove_background(main.process_diagram("a",[MultiCharPattern]))
-		self.assertEquals(2, len(result))
+		self.assertEquals(3, len(result))
 		self.assertEquals(r,result[0])
 		self.assertEquals(r,result[1])
 		
@@ -781,12 +781,13 @@ class TestProcessDiagram(unittest.TestCase):
 			def render(self):	
 				return []
 		main.process_diagram("a\nb\n",[PosStoringPattern])
-		self.assertEquals(5,len(PosStoringPattern.insts))
-		self.assertEquals([(0,0),(1,0)],PosStoringPattern.insts[0].positions)
-		self.assertEquals([(1,0),(0,1)],PosStoringPattern.insts[1].positions)
-		self.assertEquals([(0,1),(1,1)],PosStoringPattern.insts[2].positions)
-		self.assertEquals([(1,1),(0,2)],PosStoringPattern.insts[3].positions)
-		self.assertEquals([(0,2)],PosStoringPattern.insts[4].positions)
+		self.assertEquals(6,len(PosStoringPattern.insts))
+		self.assertEquals([(0,-1),(0,0)],PosStoringPattern.insts[0].positions)
+		self.assertEquals([(0,0),(1,0)],PosStoringPattern.insts[1].positions)
+		self.assertEquals([(1,0),(0,1)],PosStoringPattern.insts[2].positions)
+		self.assertEquals([(0,1),(1,1)],PosStoringPattern.insts[3].positions)
+		self.assertEquals([(1,1),(0,2)],PosStoringPattern.insts[4].positions)
+		self.assertEquals([(0,2)],PosStoringPattern.insts[5].positions)
 		
 	def test_feeds_pattern_current_character(self):
 		class CharStoringPattern(object):
@@ -804,11 +805,12 @@ class TestProcessDiagram(unittest.TestCase):
 			def render(self):
 				return []
 		main.process_diagram("ab",[CharStoringPattern])
-		self.assertEquals(4,len(CharStoringPattern.insts))
-		self.assertEquals(["a","b"],CharStoringPattern.insts[0].chars)
-		self.assertEquals(["b","\n"],CharStoringPattern.insts[1].chars)
-		self.assertEquals(["\n",core.END_OF_INPUT],CharStoringPattern.insts[2].chars)
-		self.assertEquals([core.END_OF_INPUT],CharStoringPattern.insts[3].chars)
+		self.assertEquals(5,len(CharStoringPattern.insts))
+		self.assertEquals([core.START_OF_INPUT,"a"],CharStoringPattern.insts[0].chars)
+		self.assertEquals(["a","b"],CharStoringPattern.insts[1].chars)
+		self.assertEquals(["b","\n"],CharStoringPattern.insts[2].chars)
+		self.assertEquals(["\n",core.END_OF_INPUT],CharStoringPattern.insts[3].chars)
+		self.assertEquals([core.END_OF_INPUT],CharStoringPattern.insts[4].chars)
 	
 	def test_feeds_pattern_metadata_from_previous_patterns(self):
 		class MetaPattern(object):
@@ -834,11 +836,12 @@ class TestProcessDiagram(unittest.TestCase):
 			def render(self):
 				return []
 		main.process_diagram("ab",[MetaPattern,MetaStoringPattern])
-		self.assertEquals(4, len(MetaStoringPattern.insts))
+		self.assertEquals(5, len(MetaStoringPattern.insts))
 		self.assertEquals([core.M_BOX_START_E,core.M_BOX_START_E],MetaStoringPattern.insts[0].metas)
 		self.assertEquals([core.M_BOX_START_E,core.M_BOX_START_E],MetaStoringPattern.insts[1].metas)
-		self.assertEquals([core.M_BOX_START_E,core.M_NONE],MetaStoringPattern.insts[2].metas)
-		self.assertEquals([core.M_NONE],MetaStoringPattern.insts[3].metas)
+		self.assertEquals([core.M_BOX_START_E,core.M_BOX_START_E],MetaStoringPattern.insts[2].metas)
+		self.assertEquals([core.M_BOX_START_E,core.M_NONE],MetaStoringPattern.insts[3].metas)
+		self.assertEquals([core.M_NONE],MetaStoringPattern.insts[4].metas)
 		
 	def test_occupied_meta_disallows_overlapping_pattern_instances(self):
 		class OccupyingPattern(object):
@@ -866,7 +869,7 @@ class TestProcessDiagram(unittest.TestCase):
 				self.i += 1
 				return core.M_BOX_START_E
 			def render(self):
-				return []
+				return [r1]
 		class MetaMatchingPattern(object):
 			def test(self,curr):
 				if curr.meta == core.M_BOX_START_E: 
@@ -874,7 +877,7 @@ class TestProcessDiagram(unittest.TestCase):
 				else:
 					raise core.PatternRejected()
 			def render(self):
-				return []
+				return [r2]
 		result = self.remove_background(main.process_diagram("abc",
 				[FailingMetaPattern,MetaMatchingPattern]))
 		self.assertTrue( r1 not in result )

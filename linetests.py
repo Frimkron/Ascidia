@@ -149,6 +149,27 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(2,2," ",core.M_NONE))
 				
+	def test_allows_line_to_start_at_left_edge(self):
+		p = self.pclass()
+		feed_input(p,1,3,"\n")
+		feed_input(p,2,0,"/\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0," ",core.M_NONE))
+	
+	def test_allows_line_to_start_at_top_left_corner(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		feed_input(p,0,0,"/\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,0," ",core.M_NONE))
+	
+	def test_allows_line_to_start_at_bottom_left_corner(self):
+		p = self.pclass()
+		feed_input(p,3,3,"\n")
+		feed_input(p,4,0,"/\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(5,0,core.END_OF_INPUT,core.M_NONE))
+				
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((2,  " /  \n"),
