@@ -51,6 +51,12 @@ class TestLArrowheadPattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(0,2,"<",core.M_NONE))
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(0,3,"-",core.M_LINE_START_E|core.M_DASH_START_E))
+
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		except core.PatternRejected: pass
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -168,6 +174,12 @@ class TestRArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_allows_dashed_west_line(self):
 		p = self.pclass()
 		p.test(main.CurrentChar(0,2,">",core.M_LINE_AFTER_E|core.M_DASH_AFTER_E))
+	
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_LINE_AFTER_E))
+		except core.PatternRejected: pass
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -300,6 +312,12 @@ class TestUArrowheadPattern(unittest.TestCase,PatternTests):
 		feed_input(p,1,0,"  ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(1,2,"|",core.M_LINE_START_S|core.M_DASH_START_S))
+	
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		except core.PatternRejected: pass
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -451,6 +469,12 @@ class TestDArrowheadPattern(unittest.TestCase,PatternTests):
 		feed_input(p,1,0,"  ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(1,2," ",core.M_NONE))
+	
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		except core.PatternRejected: pass
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
