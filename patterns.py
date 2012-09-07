@@ -947,6 +947,16 @@ class StickManPattern(Pattern):
 			Line(a=self.offset(0.5,1.8,self.pos),b=self.offset(1.5,2.8,self.pos),z=0,
 				stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID), ]
 
+
+class DiamondBoxPattern(Pattern):
+
+	def matcher(self):
+		yield
+		
+	def render(self):
+		Pattern.render(self)
+		return []
+		
 		
 PATTERNS = [
 	StickManPattern,			

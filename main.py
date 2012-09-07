@@ -2,7 +2,6 @@
 
 """	
 TODO:
-	* Tighten up single char line rules
 	* Large diamonds
 	* Outline arrows "|<|--"
 	* Outline diamond connector "<>--"
