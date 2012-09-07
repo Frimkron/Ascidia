@@ -20,7 +20,7 @@ class LiteralPattern(Pattern):
 		self.pos = self.curr.col,self.curr.row
 		self.char = self.curr.char
 		if( not self.occupied() and not self.curr.char.isspace()
-				and self.curr.char != END_OF_INPUT ):
+				and not self.curr.char in (START_OF_INPUT,END_OF_INPUT) ):
 			yield M_OCCUPIED
 		else:
 			self.reject()
@@ -471,7 +471,7 @@ class ArrowheadPattern(Pattern):
 	def matcher(self):
 		self.curr = yield
 		self.pos = self.curr.col,self.curr.row
-		if self.occupied() or not self.curr.char in self.chars: self.reject()
+		if self.occupied() or not self.is_in(self.curr.char,self.chars): self.reject()
 		if self.flipped:
 			if self.curr.meta & self.boxmeta: self.tobox = True
 		else:
@@ -564,7 +564,7 @@ class CrowsFeetPattern(Pattern):
 	def matcher(self):
 		self.curr = yield
 		self.pos = self.curr.col,self.curr.row
-		if( self.occupied() or not self.curr.char in self.chars
+		if( self.occupied() or not self.is_in(self.curr.char,self.chars)
 				or not self.curr.meta & self.startmeta ): 
 			self.reject()
 		if not self.flipped and self.curr.meta & self.dashmeta: 

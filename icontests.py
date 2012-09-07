@@ -39,6 +39,11 @@ class TestLiteralPattern(unittest.TestCase,PatternTests):
 	def test_accepts_other_meta(self):
 		p = self.pclass()
 		p.test(main.CurrentChar(2,3,"a",core.M_BOX_START_E))
+
+	def test_rejects_if_start_of_input(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
 		
 	def test_rejects_if_end_of_input(self):
 		p = self.pclass()

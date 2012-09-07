@@ -1,4 +1,4 @@
-r#!/usr/bin/python2
+#!/usr/bin/python2
 
 import unittest
 import core

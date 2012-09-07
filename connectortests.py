@@ -609,6 +609,12 @@ class TestLCrowsFeetPattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(0,2,">",core.M_BOX_AFTER_E))
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(0,3," ",core.M_LINE_START_E|core.M_OCCUPIED))
+
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		except core.PatternRejected: pass
 			
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -723,6 +729,12 @@ class TestRCrowsFeetPattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(0,2,"<",core.M_LINE_AFTER_E))
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(0,3," ",core.M_BOX_START_E|core.M_OCCUPIED))
+			
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		except core.PatternRejected: pass
 			
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -865,6 +877,12 @@ class TestUCrowsFeetPattern(unittest.TestCase,PatternTests):
 		feed_input(p,1,0,"  ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(1,2," ",core.M_LINE_START_S|core.M_OCCUPIED))
+	
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		except core.PatternRejected: pass
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -1013,6 +1031,12 @@ class TestDCrowsFeetPattern(unittest.TestCase,PatternTests):
 		feed_input(p,1,0,"  ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(1,2," ",core.M_BOX_START_S|core.M_OCCUPIED))
+	
+	def test_doesnt_error_at_top_left_corner(self):
+		p = self.pclass()
+		try:
+			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
+		except core.PatternRejected: pass
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
