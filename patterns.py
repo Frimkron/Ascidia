@@ -950,8 +950,89 @@ class StickManPattern(Pattern):
 
 class DiamondBoxPattern(Pattern):
 
+	nth = None
+	wst = None
+
 	def matcher(self):
-		yield
+		self.curr = yield
+		
+		# top peak
+		self.nth = self.curr.col,self.curr.row
+		self.curr = yield self.expect(".",meta=M_OCCUPIED|M_BOX_START_E|M_BOX_START_S)
+		apeak = self.curr.char=="'"
+		if apeak:
+			self.nth = self.curr.col,self.curr.row
+			self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_S)
+			self.curr = yield self.expect(".",meta=M_OCCUPIED|M_BOX_START_S)
+		self.curr = yield M_BOX_AFTER_E
+		
+		# top slope
+		count = 1
+		while True:
+			for meta in self.await_pos(self.offset(-count*2-int(apeak),count,self.nth)):
+				self.curr = yield meta
+			if self.occupied() or not self.is_in(self.curr.char,".'"):
+				break
+			self.curr = yield self.expect(".",meta=M_OCCUPIED|M_BOX_START_E|M_BOX_START_S)
+			self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_S)
+			for meta in self.await_pos(self.offest((count-1)*2+1+int(apeak),count,self.nth)):
+				self.curr = yield meta
+			self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_S)
+			self.curr = yield self.expect(".",meta=M_OCCUPIED|M_BOX_START_S)
+			self.curr = yield M_BOX_AFTER_E
+			count += 1
+		
+		# middle
+		self.curr = yield M_NONE
+		for meta in self.await_pos(self.offset(1,0)):
+			self.curr = yield meta
+		self.wst = self.curr.col,self.curr.row
+		self.curr = yield self.expect("<",meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)	
+		for meta in self.await_pos(self.offset((count-1)*2+1+int(apeak),count,self.nth)):
+			self.curr = yield meta
+		self.curr = yield self.expect(">",meta=M_OCCUPIED|M_BOX_START_S)
+		self.curr = yield M_BOX_AFTER_E
+		
+		# bottom slope
+		size = count
+		for count in range(1,size):
+			for meta in self.await_pos(self.offset(-(size-count)*2-int(apeak)-1,size+count,self.nth)):
+				yield meta
+			self.curr = yield M_BOX_AFTER_S
+			for meta in self.await_pos(self.offset(1,0)):
+				yield meta
+			self.curr = yield self.expect("'",meta=M_OCCUPIED,M_BOX_START_E)
+			self.curr = yield self.expect(".",meta=M_OCCUPIED)
+			for meta in self.await_pos(self.offset((size-count-1)*2+1+int(apeak),size+count,self.nth)):
+				self.curr = yield meta
+			self.curr = yield self.expect(".",meta=M_OCCUPIED)
+			self.curr = yield self.expect("'",meta=M_OCCUPIED)
+			self.curr = yield M_BOX_AFTER_E | M_BOX_AFTER_S
+		
+		# bottom peak 	
+		for meta in self.await_pos(self.offset(-int(apeak)-1,size*2,self.nth):
+			self.curr = yield meta
+		self.curr = yield M_BOX_AFTER_S
+		for meta in self.await_pos(self.offset(1,0)):
+			yield meta
+		self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_E)
+		if apeak:
+			self.curr = yield self.expect(".",meta=M_OCCUPIED)
+			self.curr = yield self.expect("'",meta_M_OCCUPIED)
+		self.curr = yield M_BOX_AFTER_E | M_BOX_AFTER_S
+		
+		# optional final line
+		try:
+			if apeak:
+				for i in range(3):
+					for meta in self.await_pos(self.offset(-1+i,size*2+1,self.nth)):
+						self.curr = yield meta
+					self.curr = yield M_BOX_AFTER_S
+			else:
+				for meta in self.await_pos(self.offset(0,size*2+1,self.nth)):
+					self.curr = yield meta
+				self.curr = yield M_BOX_AFTER_S
+		except NoSuchPosition: pass
 		
 	def render(self):
 		Pattern.render(self)
@@ -961,6 +1042,7 @@ class DiamondBoxPattern(Pattern):
 PATTERNS = [
 	StickManPattern,			
 	DbCylinderPattern,			
+	DiamondBoxPattern,
 	RectangularBoxPattern,					
 	ParagmBoxPattern,
 	#SmallCirclePattern,

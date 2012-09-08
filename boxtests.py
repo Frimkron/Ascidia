@@ -2130,9 +2130,49 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,3,0,"      ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,6," ",core.M_NONE))
+
+	def test_allows_to_start_with_apos(self):
+		p = self.pclass()
+		feed_input(p,0,4,     ".'.   \n")
+		feed_input(p,1,0,"   .'   '. \n")
+		feed_input(p,2,0,"  <       >\n")
+		feed_input(p,3,0,"   '.   .' \n")
+		feed_input(p,4,0,"     '.'   \n")
+		feed_input(p,5,0,"       ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(5,7," ",core.M_NONE))
 		
-	# TODO: version startng with apos
-	
+	def test_sets_correct_meta_flags(self):
+		input = ((6,      ".      \n"),
+				 (0,"    .' '.    \n"),
+				 (0,"  .'     '.  \n"),
+				 (0," <         > \n"),
+				 (0,"  '.     .'  \n"),
+				 (0,"    '. .'    \n"),
+				 (0,"      '      \n"),
+				 (0,"       "        ),)     	
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		a = core.M_OCCUPIED | core.M_BOX_START_S | core.M_BOX_START_E
+		z = core.M_BOX_AFTER_E | core.M_BOX_AFTER_S
+		l = core.M_OCCUPIED | core.M_BOX_START_E
+		r = core.M_BOX_AFTER_E
+		t = core.M_BOX_START_S | core.M_OCCUPIED
+		b = core.M_BOX_AFTER_S
+		meta = ((            a,r,n,n,n,n,n,n,),
+			    (n,n,n,n,a,t,n,t,t,r,n,n,n,n,),
+			    (n,n,a,t,n,n,n,n,n,t,t,r,n,n,),
+			    (n,a,n,n,n,n,n,n,n,n,n,t,r,n,), # mid
+			    (n,b,l,o,n,n,n,n,n,o,o,z,n,n,),
+			    (n,n,b,b,l,o,n,o,o,z,b,n,n,n,),
+			    (n,n,n,n,b,b,o,z,b,n,n,n,n,n,),
+			    (n,n,n,n,n,n,b,              ),)
+		p = self.pclass()
+		for j,(linestart,line) in enumerate(input):
+			for i,char in enumerate(line):
+				m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
+				self.assertEquals(meta[j][i],m)
+				
 
 if __name__ == "__main__":
 	unittest.main()
