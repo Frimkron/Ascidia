@@ -969,13 +969,16 @@ class DiamondBoxPattern(Pattern):
 		# top slope
 		count = 1
 		while True:
-			for meta in self.await_pos(self.offset(-count*2-int(apeak),count,self.nth)):
-				self.curr = yield meta
-			if self.occupied() or not self.is_in(self.curr.char,".'"):
-				break
+			try:
+				for meta in self.await_pos(self.offset(-count*2-int(apeak),count,self.nth)):
+					self.curr = yield meta
+				if self.occupied() or self.curr.char != ".":
+					self.curr = yield M_NONE
+					break
+			except NoSuchPosition: break
 			self.curr = yield self.expect(".",meta=M_OCCUPIED|M_BOX_START_E|M_BOX_START_S)
 			self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_S)
-			for meta in self.await_pos(self.offest((count-1)*2+1+int(apeak),count,self.nth)):
+			for meta in self.await_pos(self.offset((count-1)*2+1+int(apeak),count,self.nth)):
 				self.curr = yield meta
 			self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_S)
 			self.curr = yield self.expect(".",meta=M_OCCUPIED|M_BOX_START_S)
@@ -983,8 +986,7 @@ class DiamondBoxPattern(Pattern):
 			count += 1
 		
 		# middle
-		self.curr = yield M_NONE
-		for meta in self.await_pos(self.offset(1,0)):
+		for meta in self.await_pos(self.offset(-count*2-int(apeak)+1,count,self.nth)):
 			self.curr = yield meta
 		self.wst = self.curr.col,self.curr.row
 		self.curr = yield self.expect("<",meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)	
@@ -996,30 +998,51 @@ class DiamondBoxPattern(Pattern):
 		# bottom slope
 		size = count
 		for count in range(1,size):
+			if count > 1:
+				for meta in self.await_pos(self.offset(-(size-count)*2-int(apeak)-2,size+count,self.nth)):
+					self.curr = yield meta
+				self.curr = yield M_BOX_AFTER_S
 			for meta in self.await_pos(self.offset(-(size-count)*2-int(apeak)-1,size+count,self.nth)):
-				yield meta
+				self.curr = yield meta
 			self.curr = yield M_BOX_AFTER_S
-			for meta in self.await_pos(self.offset(1,0)):
-				yield meta
-			self.curr = yield self.expect("'",meta=M_OCCUPIED,M_BOX_START_E)
+			for meta in self.await_pos(self.offset(-(size-count)*2-int(apeak),size+count,self.nth)):
+				self.curr = yield meta
+			self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_E)
 			self.curr = yield self.expect(".",meta=M_OCCUPIED)
 			for meta in self.await_pos(self.offset((size-count-1)*2+1+int(apeak),size+count,self.nth)):
 				self.curr = yield meta
 			self.curr = yield self.expect(".",meta=M_OCCUPIED)
 			self.curr = yield self.expect("'",meta=M_OCCUPIED)
+			for meta in self.await_pos(self.offset((size-count-1)*2+1+int(apeak)+2,size+count,self.nth)):
+				self.curr = yield meta
 			self.curr = yield M_BOX_AFTER_E | M_BOX_AFTER_S
+			if count > 1:
+				for meta in self.await_pos(self.offset((size-count-1)*2+1+int(apeak)+3,size+count,self.nth)):
+					self.curr = yield meta
+				self.curr = yield M_BOX_AFTER_S
+		count = size
 		
 		# bottom peak 	
-		for meta in self.await_pos(self.offset(-int(apeak)-1,size*2,self.nth):
+		if count > 1:
+			for meta in self.await_pos(self.offset(-int(apeak)-2,size*2,self.nth)):
+				self.curr = yield meta
+			self.curr = yield M_BOX_AFTER_S
+		for meta in self.await_pos(self.offset(-int(apeak)-1,size*2,self.nth)):
 			self.curr = yield meta
 		self.curr = yield M_BOX_AFTER_S
-		for meta in self.await_pos(self.offset(1,0)):
-			yield meta
+		for meta in self.await_pos(self.offset(-int(apeak),size*2,self.nth)):
+			self.curr = yield meta
 		self.curr = yield self.expect("'",meta=M_OCCUPIED|M_BOX_START_E)
 		if apeak:
 			self.curr = yield self.expect(".",meta=M_OCCUPIED)
-			self.curr = yield self.expect("'",meta_M_OCCUPIED)
+			self.curr = yield self.expect("'",meta=M_OCCUPIED)
+		for meta in self.await_pos(self.offset(int(apeak)+1,size*2,self.nth)):
+			self.curr = yield meta
 		self.curr = yield M_BOX_AFTER_E | M_BOX_AFTER_S
+		if count > 1:
+			for meta in self.await_pos(self.offset(int(apeak)+2,size*2,self.nth)):
+				self.curr = yield meta
+			self.curr = yield M_BOX_AFTER_S
 		
 		# optional final line
 		try:
@@ -1033,6 +1056,8 @@ class DiamondBoxPattern(Pattern):
 					self.curr = yield meta
 				self.curr = yield M_BOX_AFTER_S
 		except NoSuchPosition: pass
+		
+		return
 		
 	def render(self):
 		Pattern.render(self)

@@ -1784,6 +1784,8 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 		self.pclass = patterns.DiamondBoxPattern
 							
 	def test_accepts_box(self):
+		#import pdb
+		#pdb.set_trace()
 		p = self.pclass()
 		feed_input(p,0,4,    ".    \n")
 		feed_input(p,1,0,"  .' '.  \n")
@@ -1817,19 +1819,17 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
 		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
 		
-	def test_expects_left_side_period(self):
+	def test_doesnt_necessarily_expect_left_side_period(self):
 		p = self.pclass()
 		feed_input(p,0,4,     ".  \n")
 		feed_input(p,1,0,"  ")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(1,2,"'",core.M_NONE))
+		p.test(main.CurrentChar(1,2,"'",core.M_NONE))
 		
-	def test_expects_left_side_period_unoccupied(self):
+	def test_doesnt_necessarily_expect_left_side_period_unoccupied(self):
 		p = self.pclass()
 		feed_input(p,0,4,    ".  \n")
 		feed_input(p,1,0,"  ")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(1,2,".",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,2,".",core.M_OCCUPIED))
 		
 	def test_expects_left_side_apos(self):
 		p = self.pclass()
@@ -1890,7 +1890,7 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 	def test_allows_start_of_third_line(self):
 		p = self.pclass()
 		feed_input(p,0,5,     ".   \n")
-		feed_inupt(p,1,0,"   .' '. \n")
+		feed_input(p,1,0,"   .' '. \n")
 		p.test(main.CurrentChar(2,0,"a",core.M_OCCUPIED))
 		p.test(main.CurrentChar(2,1,"b",core.M_OCCUPIED))
 
@@ -2111,16 +2111,16 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 
 	def test_allows_larger_size(self):
 		p = self.pclass()
-		feed_input(p,0,5,     ".      \n")
-		feed_input(p,1,0,"   .' '.    \n")
-		feed_input(p,2,0," .'     '.  \n")
-		feed_input(p,3,0,"<         > \n")
-		feed_input(p,4,0," '.     .'  \n")
-		feed_input(p,5,0,"   '. .'    \n")
-		feed_input(p,6,0,"     '      \n")
-		feed_input(p,7,0,"      ")
+		feed_input(p,0,6,      ".      \n")
+		feed_input(p,1,0,"    .' '.    \n")
+		feed_input(p,2,0,"  .'     '.  \n")
+		feed_input(p,3,0," <         > \n")
+		feed_input(p,4,0,"  '.     .'  \n")
+		feed_input(p,5,0,"    '. .'    \n")
+		feed_input(p,6,0,"      '      \n")
+		feed_input(p,7,0,"       ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(7,6," ",core.M_NONE))
+			p.test(main.CurrentChar(7,7," ",core.M_NONE))
 			
 	def test_allows_small_size(self):
 		p = self.pclass()
@@ -2133,14 +2133,30 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 
 	def test_allows_to_start_with_apos(self):
 		p = self.pclass()
-		feed_input(p,0,4,     ".'.   \n")
-		feed_input(p,1,0,"   .'   '. \n")
-		feed_input(p,2,0,"  <       >\n")
-		feed_input(p,3,0,"   '.   .' \n")
-		feed_input(p,4,0,"     '.'   \n")
-		feed_input(p,5,0,"       ")
+		feed_input(p,0,4,    ".'.   \n")
+		feed_input(p,1,0,"  .'   '. \n")
+		feed_input(p,2,0," <       >\n")
+		feed_input(p,3,0,"  '.   .' \n")
+		feed_input(p,4,0,"    '.'   \n")
+		feed_input(p,5,0,"      ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(5,7," ",core.M_NONE))
+		
+	def test_allowed_to_touch_left_edge(self):
+		p = self.pclass()
+		feed_input(p,0,3,   ".    \n")
+		feed_input(p,1,0," .' '.  \n")
+		feed_input(p,2,0,"<     > \n")
+		feed_input(p,3,0," '. .'  \n")
+		feed_input(p,4,0,"   '    \n")
+
+	def test_allows_short_lines(self):
+		p = self.pclass()
+		feed_input(p,0,4,    ".\n")
+		feed_input(p,1,0,"  .' '.\n")
+		feed_input(p,2,0," <     >\n")
+		feed_input(p,3,0,"  '. .'\n")
+		feed_input(p,4,0,"    '\n")
 		
 	def test_sets_correct_meta_flags(self):
 		input = ((6,      ".      \n"),
@@ -2165,7 +2181,7 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 			    (n,a,n,n,n,n,n,n,n,n,n,t,r,n,), # mid
 			    (n,b,l,o,n,n,n,n,n,o,o,z,n,n,),
 			    (n,n,b,b,l,o,n,o,o,z,b,n,n,n,),
-			    (n,n,n,n,b,b,o,z,b,n,n,n,n,n,),
+			    (n,n,n,n,b,b,l,z,b,n,n,n,n,n,),
 			    (n,n,n,n,n,n,b,              ),)
 		p = self.pclass()
 		for j,(linestart,line) in enumerate(input):
