@@ -2152,11 +2152,29 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 
 	def test_allows_short_lines(self):
 		p = self.pclass()
-		feed_input(p,0,4,    ".\n")
-		feed_input(p,1,0,"  .' '.\n")
-		feed_input(p,2,0," <     >\n")
-		feed_input(p,3,0,"  '. .'\n")
-		feed_input(p,4,0,"    '\n")
+		feed_input(p,0,7,       ".\n")
+		feed_input(p,1,0,"     .' '.\n")
+		feed_input(p,2,0,"   .'     '.\n")
+		feed_input(p,3,0,"  <         >\n")
+		feed_input(p,4,0,"   '.     .'\n")
+		feed_input(p,5,0,"     '. .'\n")
+		feed_input(p,6,0,"       '\n")
+		feed_input(p,7,0,"        ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(7,8," ",core.M_NONE))
+		
+	def test_allows_short_lines_apos_peak(self):
+		p = self.pclass()
+		feed_input(p,0,6,      ".'.\n")
+		feed_input(p,1,0,"    .'   '.\n")
+		feed_input(p,2,0,"  .'       '.\n")
+		feed_input(p,3,0," <           >\n")
+		feed_input(p,4,0,"  '.       .'\n")
+		feed_input(p,5,0,"    '.   .'\n")
+		feed_input(p,6,0,"      '.'\n")
+		feed_input(p,7,0,"         ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(7,9," ",core.M_NONE))
 		
 	def test_sets_correct_meta_flags(self):
 		input = ((6,      ".      \n"),
@@ -2189,6 +2207,72 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 				m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
 				self.assertEquals(meta[j][i],m)
 				
+	def do_render(self,x,y,w):
+		p = self.pclass()
+		apeak = (w-3)%4 == 2
+		h = 3+2*((w-3-2*int(apeak))//4)
+		feed_input(p,y,x-int(apeak),".'. \n" if apeak else ". \n")
+		for i in range((h-3)//2):
+			feed_input(p,y+1+i,0,(x-int(apeak)-2*(i+1))*" " 
+				+ ".'" + " "*(i*4+1+2*int(apeak)) + "'. \n")
+		feed_input(p,y+(h+1)//2-1,0,(x-(w//2))*" " + "<" + " "*(w-2) + "> \n")
+		for i in range(((h-3)//2)-1,-1,-1):
+			feed_input(p,y+(h-3)//2+2+((h-3)//2-1-i),0,(x-int(apeak)-2*(i+1))*" "
+				+ "'." + " "*(i*4+1+2*int(apeak)) + ".' \n")
+		feed_input(p,y+h-1,0," "*(x-int(apeak)) + ("'.' \n" if apeak else "' \n"))
+		feed_input(p,y+h,0," "*(x+1+int(apeak)))
+		try:
+			p.test(main.CurrentChar(y+h,x+1+int(apeak)," ",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+		
+	def test_render_returns_correct_shapes(self):
+		r = self.do_render(10,12,7)
+		self.assertEquals(4, len(r))
+		self.assertEquals(4, len(filter(lambda x: isinstance(x,core.Line),r)))
+		
+	def test_render_position(self):
+		r = self.do_render(10,12,7)
+		nw = find_with(self,r,"b",(7.5,14.5))
+		self.assertEquals((10.5,12.5),nw.a)
+		ne = find_with(self,r,"b",(13.5,14.5))
+		self.assertEquals((10.5,12.5),ne.a)
+		sw = find_with(self,r,"a",(7.5,14.5))
+		self.assertEquals((10.5,16.5),sw.b)
+		se = find_with(self,r,"a",(13.5,14.5))
+		self.assertEquals((10.5,16.5),se.b)
+		
+	def test_render_size(self):
+		r = self.do_render(10,12,13)
+		nw = find_with(self,r,"b",(4.5,15.5))
+		self.assertEquals((10.5,12.5),nw.a)
+		ne = find_with(self,r,"b",(16.5,15.5))
+		self.assertEquals((10.5,12.5),ne.a)
+		sw = find_with(self,r,"a",(4.5,15.5))
+		self.assertEquals((10.5,18.5),sw.b)
+		se = find_with(self,r,"a",(16.5,15.5))
+		self.assertEquals((10.5,18.5),se.b)
+
+	def test_render_z(self):
+		for shape in self.do_render(10,12,7):
+			self.assertEquals(1, shape.z)
+			
+	def test_render_stroke(self):
+		for shape in self.do_render(10,12,7):
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
+			
+	def test_render_stroke_alpha(self):
+		for shape in self.do_render(10,12,7):
+			self.assertEquals(1.0,shape.salpha)
+			
+	def test_render_stroke_width(self):
+		for shape in self.do_render(10,12,7):
+			self.assertEquals(1, shape.w)
+			
+	def test_render_stroke_style_solid(self):
+		for shape in self.do_render(10,12,7):
+			self.assertEquals(core.STROKE_SOLID,shape.stype)
+
 
 if __name__ == "__main__":
 	unittest.main()

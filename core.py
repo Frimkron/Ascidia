@@ -2,6 +2,7 @@
 Main import stuff
 """
 
+import mrf.ascii
 from collections import namedtuple
 
 
@@ -71,6 +72,7 @@ class Pattern(object):
 		self.curr = None
 		self.gen = self.matcher()
 		self.gen.next()
+		#self.debug_canvas = mrf.ascii.Canvas()
 		
 	def matcher(self):
 		yield
@@ -108,6 +110,9 @@ class Pattern(object):
 			
 	def test(self,currentchar):
 		try:
+			#if currentchar.char != "\n":
+			#	self.debug_canvas.set(currentchar.col,currentchar.row,
+			#		currentchar.char if currentchar.char != " " else "*")
 			return self.gen.send(currentchar)
 		except StopIteration:
 			self.is_finished = True
@@ -119,4 +124,7 @@ class Pattern(object):
 		if not self.is_finished: 
 			raise PatternStateError("Pattern not matched")
 		return []
+		
+	#def debug(self):
+	#	self.debug_canvas.print_out()
 

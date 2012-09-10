@@ -2,7 +2,7 @@
 
 """	
 TODO:
-	* Large diamonds
+	* Lines to boxes
 	* Outline arrows "|<|--"
 	* Outline diamond connector "<>--"
 	* Filled diamond connector "<#>--"
