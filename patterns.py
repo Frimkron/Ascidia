@@ -652,6 +652,10 @@ class LinePattern(Pattern):
 	startmeta = None
 	endmeta = None
 	stroketype = None
+	boxstartmeta = None
+	boxendmeta = None
+	frombox = False
+	tobox = False
 	
 	def matcher(self):
 		self.curr = yield
@@ -661,6 +665,7 @@ class LinePattern(Pattern):
 		self.curr = yield M_NONE
 		pos = self.curr.col,self.curr.row
 		self.startpos = pos
+		if self.curr.meta & self.boxstartmeta: self.frombox = True
 		self.curr = yield self.expect(self.startchars[0],meta=M_OCCUPIED|self.startmeta)
 		length += 1
 		if self.is_in(self.curr.char,TEXT_CHARS): text = True
@@ -687,6 +692,7 @@ class LinePattern(Pattern):
 					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
 					length += 1
 			self.endpos = pos
+			if self.curr.meta & self.boxendmeta: self.tobox = True
 			if self.curr.char != END_OF_INPUT: yield self.endmeta
 		except NoSuchPosition:
 			self.endpos = pos
@@ -695,9 +701,11 @@ class LinePattern(Pattern):
 		
 	def render(self):
 		Pattern.render(self)
-		return [ Line(a=(self.startpos[0]+0.5+self.xdir*-0.5,self.startpos[1]+0.5+self.ydir*-0.5),
-				b=(self.endpos[0]+0.5+self.xdir*0.5,self.endpos[1]+0.5+self.ydir*0.5),
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=self.stroketype) ]
+		return [ Line(a=(self.startpos[0]+0.5+self.xdir*-0.5+self.xdir*int(self.frombox)*-0.5,
+						self.startpos[1]+0.5+self.ydir*-0.5+self.ydir*int(self.frombox)*-0.5),
+					b=(self.endpos[0]+0.5+self.xdir*0.5+self.xdir*int(self.tobox)*0.5,
+						self.endpos[1]+0.5+self.ydir*0.5+self.ydir*int(self.tobox)*0.5),
+					z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=self.stroketype) ]
 		
 
 
@@ -710,6 +718,8 @@ class UpDiagLinePattern(LinePattern):
 	startmeta = M_LINE_START_SW
 	endmeta = M_LINE_AFTER_SW
 	stroketype = STROKE_SOLID
+	boxstartmeta = M_NONE
+	boxendmeta = M_NONE
 
 
 class UpDiagDashedLinePattern(LinePattern):
@@ -721,6 +731,8 @@ class UpDiagDashedLinePattern(LinePattern):
 	startmeta = M_LINE_START_SW | M_DASH_START_SW
 	endmeta = M_LINE_AFTER_SW | M_DASH_AFTER_SW
 	stroketype = STROKE_DASHED
+	boxstartmeta = M_NONE
+	boxendmeta = M_NONE
 	
 		
 class DownDiagLinePattern(LinePattern):
@@ -732,6 +744,8 @@ class DownDiagLinePattern(LinePattern):
 	startmeta = M_LINE_START_SE
 	endmeta = M_LINE_AFTER_SE
 	stroketype = STROKE_SOLID
+	boxstartmeta = M_NONE
+	boxendmeta = M_NONE
 	
 		
 class DownDiagDashedLinePattern(LinePattern):
@@ -743,6 +757,8 @@ class DownDiagDashedLinePattern(LinePattern):
 	startmeta = M_LINE_START_SE | M_DASH_START_SE
 	endmeta = M_LINE_AFTER_SE | M_DASH_AFTER_SE
 	stroketype = STROKE_DASHED
+	boxstartmeta = M_NONE
+	boxendmeta = M_NONE
 	
 		
 class VertLinePattern(LinePattern):
@@ -754,6 +770,8 @@ class VertLinePattern(LinePattern):
 	startmeta = M_LINE_START_S
 	endmeta = M_LINE_AFTER_S
 	stroketype = STROKE_SOLID
+	boxstartmeta = M_BOX_AFTER_S
+	boxendmeta = M_BOX_START_S
 	
 	
 class VertDashedLinePattern(LinePattern):
@@ -765,6 +783,8 @@ class VertDashedLinePattern(LinePattern):
 	startmeta = M_LINE_START_S | M_DASH_START_S
 	endmeta = M_LINE_AFTER_S | M_DASH_AFTER_S
 	stroketype = STROKE_DASHED
+	boxstartmeta = M_BOX_AFTER_S
+	boxendmeta = M_BOX_START_S
 	
 	
 class HorizLinePattern(LinePattern):
@@ -776,6 +796,8 @@ class HorizLinePattern(LinePattern):
 	startmeta = M_LINE_START_E
 	endmeta = M_LINE_AFTER_E
 	stroketype = STROKE_SOLID
+	boxstartmeta = M_BOX_AFTER_E
+	boxendmeta = M_BOX_START_E
 
 
 class HorizDashedLinePattern(LinePattern):
@@ -787,6 +809,8 @@ class HorizDashedLinePattern(LinePattern):
 	startmeta = M_LINE_START_E | M_DASH_START_E
 	endmeta = M_LINE_AFTER_E | M_DASH_AFTER_E
 	stroketype = STROKE_DASHED
+	boxstartmeta = M_BOX_AFTER_E
+	boxendmeta = M_BOX_START_E
 
 
 class TinyCirclePattern(Pattern):

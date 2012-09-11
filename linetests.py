@@ -610,7 +610,7 @@ class TestVertLinePattern(unittest.TestCase,PatternTests):
 		feed_input(p,4,0,"|\n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(5,0,core.END_OF_INPUT,core.M_NONE))
-			
+		
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((2,  " |  \n"),
@@ -630,13 +630,14 @@ class TestVertLinePattern(unittest.TestCase,PatternTests):
 				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
 				self.assertEquals(meta[j][i],m)
 				
-	def do_render(self,x,y,l):
+	def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
 		p = self.pclass()
 		feed_input(p,y,x-1," ")
 		for i in range(l):
-			feed_input(p,y+i,x,"|\n")
+			p.test(main.CurrentChar(y+i,x,"|",smeta if i==0 else core.M_NONE))
+			p.test(main.CurrentChar(y+i,x+1,"\n",core.M_NONE))
 			feed_input(p,y+i+1,0," "*x)			
-		feed_input(p,y+l,x," ")
+		p.test(main.CurrentChar(y+l,x," ",emeta))
 		try:
 			p.test(main.CurrentChar(y+l,x+1," ",core.M_NONE))
 		except StopIteration: pass
@@ -661,6 +662,21 @@ class TestVertLinePattern(unittest.TestCase,PatternTests):
 		l = self.do_render(6,3,1)[0]
 		self.assertEquals((6.5,3),l.a)
 		self.assertEquals((6.5,4),l.b)
+
+	def test_render_coordinates_start_box(self):
+		l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S)[0]
+		self.assertEquals((4.5,1.5),l.a)
+		self.assertEquals((4.5,4),l.b)
+
+	def test_render_coordinates_end_box(self):
+		l = self.do_render(4,2,2,emeta=core.M_BOX_START_S)[0]
+		self.assertEquals((4.5,2),l.a)
+		self.assertEquals((4.5,4.5),l.b)
+
+	def test_render_coordinates_start_and_end_box(self):
+		l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S,emeta=core.M_BOX_START_S)[0]
+		self.assertEquals((4.5,1.5),l.a)
+		self.assertEquals((4.5,4.5),l.b)
 
 	def test_render_z(self):
 		l = self.do_render(3,3,3)[0]
@@ -796,10 +812,12 @@ class TestHorizLinePattern(unittest.TestCase,PatternTests):
 				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
 				self.assertEquals(meta[j][i],m)
 				
-	def do_render(self,x,y,l):
+	def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
 		p = self.pclass()
 		feed_input(p,y,x-1," ")
-		feed_input(p,y,x,"-"*l + " ")
+		p.test(main.CurrentChar(y,x,"-",smeta))
+		feed_input(p,y,x+1,"-"*(l-1))
+		p.test(main.CurrentChar(y,x+l," ",emeta))
 		try:
 			p.test(main.CurrentChar(y,x+l+1," ",core.M_NONE))
 		except StopIteration: pass
@@ -824,6 +842,21 @@ class TestHorizLinePattern(unittest.TestCase,PatternTests):
 		l = self.do_render(6,3,1)[0]
 		self.assertEquals((6,3.5),l.a)
 		self.assertEquals((7,3.5),l.b)
+
+	def test_render_coordinates_start_box(self):
+		l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_E)[0]
+		self.assertEquals((3.5,2.5),l.a)
+		self.assertEquals((6,2.5),l.b)
+
+	def test_render_coordinates_end_box(self):
+		l = self.do_render(4,2,2,emeta=core.M_BOX_START_E)[0]
+		self.assertEquals((4,2.5),l.a)
+		self.assertEquals((6.5,2.5),l.b)
+		
+	def test_render_coordinates_start_and_end_box(self):
+		l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_E,emeta=core.M_BOX_START_E)[0]
+		self.assertEquals((3.5,2.5),l.a)
+		self.assertEquals((6.5,2.5),l.b)
 
 	def test_render_z(self):
 		l = self.do_render(3,3,3)[0]
@@ -1472,13 +1505,14 @@ class TestVertDashedLinePattern(unittest.TestCase,PatternTests):
 				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
 				self.assertEquals(meta[j][i],m)
 				
-	def do_render(self,x,y,l):
+	def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
 		p = self.pclass()
 		feed_input(p,y,x-1," ")
 		for i in range(l):
-			feed_input(p,y+i,x,";\n")
+			p.test(main.CurrentChar(y+i,x,";",smeta if i==0 else core.M_NONE))
+			p.test(main.CurrentChar(y+i,x+1,"\n",core.M_NONE))
 			feed_input(p,y+i+1,0," "*x)			
-		feed_input(p,y+l,x," ")
+		p.test(main.CurrentChar(y+l,x," ",emeta))
 		try:
 			p.test(main.CurrentChar(y+l,x+1," ",core.M_NONE))
 		except StopIteration: pass
@@ -1503,6 +1537,21 @@ class TestVertDashedLinePattern(unittest.TestCase,PatternTests):
 		l = self.do_render(6,3,1)[0]
 		self.assertEquals((6.5,3),l.a)
 		self.assertEquals((6.5,4),l.b)
+
+	def test_render_coordinates_start_box(self):
+		l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S)[0]
+		self.assertEquals((4.5,1.5),l.a)
+		self.assertEquals((4.5,4),l.b)
+		
+	def test_render_coordinates_end_box(self):
+		l = self.do_render(4,2,2,emeta=core.M_BOX_START_S)[0]
+		self.assertEquals((4.5,2),l.a)
+		self.assertEquals((4.5,4.5),l.b)
+		
+	def test_render_coordinates_start_and_end_box(self):
+		l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S,emeta=core.M_BOX_START_S)[0]
+		self.assertEquals((4.5,1.5),l.a)
+		self.assertEquals((4.5,4.5),l.b)
 
 	def test_render_z(self):
 		l = self.do_render(3,3,3)[0]
@@ -1637,10 +1686,13 @@ class TestHorizDashedLinePattern(unittest.TestCase,PatternTests):
 				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
 				self.assertEquals(meta[j][i],m)
 	
-	def do_render(self,x,y,l):
+	def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
 		p = self.pclass()
 		feed_input(p,y,x-1," ")
-		feed_input(p,y,x,"- "*(l//2) + " ")
+		p.test(main.CurrentChar(y,x,"-",smeta))
+		p.test(main.CurrentChar(y,x+1," ",core.M_NONE))
+		feed_input(p,y,x+2,"- "*(l//2-1))
+		p.test(main.CurrentChar(y,x+l," ",emeta))
 		try:
 			p.test(main.CurrentChar(y,x+l+1," ",core.M_NONE))
 		except StopIteration: pass
@@ -1665,6 +1717,21 @@ class TestHorizDashedLinePattern(unittest.TestCase,PatternTests):
 		l = self.do_render(6,3,4)[0]
 		self.assertEquals((6,3.5),l.a)
 		self.assertEquals((10,3.5),l.b)
+
+	def test_render_coordinates_box_start(self):
+		l = self.do_render(4,2,6,smeta=core.M_BOX_AFTER_E)[0]
+		self.assertEquals((3.5,2.5),l.a)
+		self.assertEquals((10,2.5),l.b)
+		
+	def test_render_coordinates_box_end(self):
+		l = self.do_render(4,2,6,emeta=core.M_BOX_START_E)[0]
+		self.assertEquals((4,2.5),l.a)
+		self.assertEquals((10.5,2.5),l.b)
+		
+	def test_render_coordinates_box_start_and_end(self):
+		l = self.do_render(4,2,6,smeta=core.M_BOX_AFTER_E,emeta=core.M_BOX_START_E)[0]
+		self.assertEquals((3.5,2.5),l.a)
+		self.assertEquals((10.5,2.5),l.b)
 
 	def test_render_z(self):
 		l = self.do_render(3,3,4)[0]

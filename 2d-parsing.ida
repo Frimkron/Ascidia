@@ -1193,4 +1193,31 @@ part of the box edge:
 <         > .'       '.
            <           >
      
-     
+[?] Can we efficiently detect whether a line starts / ends at a box?
+  
+  meta    read on
+    v        v         ?
+[|][-][-][-][|]        v [|]    [-][-][-]
+                      [/][|]    [|] < meta
+   meta         [|][/][ ][|]    [|]
+[|] v           [|] < read on   [-][-]
+[|][\][ ]                        ^
+[|][ ][\][|]                   read on
+[|][ ][ ][|] < read on
+                           Lines with non-negative x and y
+[-][-][-][-]               directions are covered by meta flags
+[ ][\] < meta              We got away with it for arrowheads
+[ ][ ][\]                  because they only had 4 directions
+[-][-][-][-] < read on     
+
+[?] Do we even care about diagonal lines?
+- It's a nice-to-have, even for h/v lines
+
+[*] Just implement it for horizontal and vertical lines for now
+
+- SW line is still progressing forwards through the input, it's just
+  we need a couple of extra meta flags:
+  
+     [##][ e]    [-][#] [\]   Y[|]   Y[/] [#][-] [#] Y  [#]     [#]
+ [sw][ s][se]     Y      Y [#] [#] [#]     Y        [\] [|]Y [/]Y
+  ^       ^                 
