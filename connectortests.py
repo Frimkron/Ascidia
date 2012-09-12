@@ -1123,5 +1123,116 @@ class TestDCrowsFeetPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)	
 
 
+class TestUOutlineArrowheadPattern(unittest.TestCase,PatternTests):
+	
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.UOutlineArrowheadPattern
+		
+	def test_accepts_arrowhead(self):
+		p = self.pclass()
+		feed_input(p,3,4,    "/_\  \n")
+		feed_input(p,4,0,"     ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,5,"|",core.M_LINE_START_S))
+			
+	def test_expects_forwardslash(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,5,"?",core.M_NONE))
+			
+	def test_expects_fowardslash_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,5,"/",core.M_OCCUPIED))
+			
+	def test_expects_underscore(self):
+		p = self.pclass()
+		feed_input(p,4,5,"/")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,6,"\\",core.M_NONE))
+			
+	def test_expects_underscore_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,4,5,"/")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,6,"_",core.M_OCCUPIED))
+			
+	def test_expects_backslash(self):
+		p = self.pclass()
+		feed_input(p,4,5,"/_")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,7,"_",core.M_NONE))
+			
+	def test_expects_backslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,4,5,"/_")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,7,"\\",core.M_OCCUPIED))
+			
+	def test_allows_rest_of_first_line(self):
+		p = self.pclass()
+		feed_input(p,4,5,"/_\\")
+		p.test(main.CurrentChar(4,8,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,9,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,10,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_second_line(self):
+		p = self.pclass()
+		feed_input(p,4,2,"/_\\  \n")
+		p.test(main.CurrentChar(5,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(5,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(5,2,"c",core.M_OCCUPIED))
+		
+	def test_expects_line_meta(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "/_\\  \n")
+		feed_input(p,5,0,"    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,4,"|",core.M_NONE))
+			
+	def test_allows_dashed_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "/_\\  \n")
+		feed_input(p,5,0,"    ")
+		p.test(main.CurrentChar(5,4,";",core.M_LINE_START_S|core.M_DASH_START_S))
+		
+	def test_allows_any_character_for_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "/_\\  \n")
+		feed_input(p,5,0,"    ")
+		p.test(main.CurrentChar(5,4,"?",core.M_LINE_START_S))
+		
+	def test_allows_occupied_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "/_\\  \n")
+		feed_input(p,5,0,"    ")
+		p.test(main.CurrentChar(5,4,"|",core.M_LINE_START_S|core.M_OCCUPIED))
+
+	def test_allows_box_underside(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(4,3,"/",core.M_BOX_AFTER_S))
+		p.test(main.CurrentChar(4,4,"_",core.M_BOX_AFTER_S))
+		p.test(main.CurrentChar(4,5,"\\",core.M_BOX_AFTER_S))
+		p.test(main.CurrentChar(4,6," ",core.M_BOX_AFTER_S))
+		p.test(main.CurrentChar(4,7,"\n",core.M_BOX_AFTER_S))
+
+	def test_sets_correct_meta_flags(self):
+		input = ((3,   "/_\\  \n"),
+				 (0,"    ")      ),)
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		meta = ((      o,o,o,n,n,n,),
+			    (n,n,n,n,          ),)
+		for j,(linestart,line) in enumerate(input):
+			for i,char in enumerate(line):
+				m = meta[j][i]
+				self.assertEquals(m,p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE)))
+				
+	def test_render(self,x,y,dash):
+		p = self.pclass()
+		# TODO
+
+
 if __name__ == "__main__":
 	unittest.main()

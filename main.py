@@ -2,7 +2,6 @@
 
 """	
 TODO:
-	* Lines to boxes
 	* Outline arrows "|<|--"
 	* Outline diamond connector "<>--"
 	* Filled diamond connector "<#>--"
@@ -31,6 +30,7 @@ TODO:
 	* One crows foot "|>|--"
 	* Only one connector "-||--"
 	* 3d boxes
+	* Diagonal lines to boxes
 	* Pgram box separators
 	* Diamond box separators
 	* Circle box separators	

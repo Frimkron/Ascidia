@@ -1104,6 +1104,22 @@ class DiamondBoxPattern(Pattern):
 			Line(a=(self.top[0]+0.5+self.width//2,self.top[1]+0.5+h//2),
 				b=(self.top[0]+0.5,self.top[1]+0.5+h-1),
 				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID), ]
+
+
+class UOutlineArrowheadPattern(Pattern):
+	pass
+	
+	
+class DOutlineArrowheadPattern(Pattern):
+	pass
+	
+
+class LOutlineArrowheadPattern(Pattern):
+	pass
+	
+
+class ROutlineArrowheadPattern(Pattern):
+	pass
 		
 		
 PATTERNS = [
