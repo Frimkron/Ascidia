@@ -1107,7 +1107,40 @@ class DiamondBoxPattern(Pattern):
 
 
 class UOutlineArrowheadPattern(Pattern):
-	pass
+	
+	pos = None
+	tobox = False
+	dashed = False
+	
+	def matcher(self):
+		self.curr = yield
+		self.curr = yield self.expect("/")
+		if self.curr.meta & M_BOX_AFTER_S: self.tobox = True
+		self.pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect("_")
+		self.curr = yield self.expect("\\")
+		for meta in self.await_pos(self.offset(0,1,self.pos)):
+			self.curr = yield meta
+		if not (self.curr.meta & M_LINE_START_S): self.reject()
+		if self.curr.meta & M_DASH_START_S: self.dashed = True
+		return
+	
+	def render(self):
+		Pattern.render(self)
+		return [
+			Line(a=(self.pos[0]+0.5,self.pos[1]-0.5*self.tobox),
+				b=(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO-0.5*self.tobox),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.pos[0]+0.5,self.pos[1]-0.5*self.tobox),
+				b=(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO-0.5*self.tobox),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.pos[0],self.pos[1]+0.8/CHAR_H_RATIO-0.5*self.tobox),
+				b=(self.pos[0]+1.0,self.pos[1]+0.8/CHAR_H_RATIO-0.5*self.tobox),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.pos[0]+0.5,self.pos[1]+0.8/CHAR_H_RATIO-0.5*self.tobox),
+				b=(self.pos[0]+0.5,self.pos[1]+1.0),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID), ]
 	
 	
 class DOutlineArrowheadPattern(Pattern):
@@ -1147,6 +1180,7 @@ PATTERNS = [
 	RArrowheadPattern,			
 	DArrowheadPattern,			
 	UArrowheadPattern,			
+	UOutlineArrowheadPattern,
 	LCrowsFeetPattern,			
 	RCrowsFeetPattern,			
 	UCrowsFeetPattern,			

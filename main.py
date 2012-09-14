@@ -40,6 +40,7 @@ TODO:
 	* 3d box separators
 	* Disallow alphas beside down arrows
 	* Stacked boxes
+	* Open diagram format (which?)
 	* Box/Cylinder shadows
 	* Hexagon boxes
 	* Hexagon box separators

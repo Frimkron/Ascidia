@@ -1221,3 +1221,62 @@ part of the box edge:
      [##][ e]    [-][#] [\]   Y[|]   Y[/] [#][-] [#] Y  [#]     [#]
  [sw][ s][se]     Y      Y [#] [#] [#]     Y        [\] [|]Y [/]Y
   ^       ^                 
+
+[?] Downwards outline arrows?
+
+/_\          _|_   I think that's the best
+ |  <|-  -|> \ /   that can be done
+
+0.8
+--
+.'   | 0.5
+----
+'.
+
+[!] Damn. Outline arrowhead requires line metadata to attach to, but
+	characters it uses are interpreted as line segments first.
+
+^  The alternatives are terrible
+T 
+
+What if the arrowhead absorbed the line part. It could still set the 
+line metadata. Nope, would have to absorb the *whole* line.
+
+Line connectors are only going to need individual line-like characters 
+- i.e. they wont need any runs of lines like ---
+
+[?] Could short lines be parsed separately?
+
+Long lines
+Connectors  <-- but then connectors can only connect
+Short lines     to lines of length 2 or more.
+Corners
+
+|yes  |no  | no
+|>--| |>-| |>-.
+|     |    |  |
+
+[?] Can I disallow all length-1 lines?
+- That's pretty drastic
+
+<--.    <-. no
+   |yes   |
+   |      '-
+   '--
+
+[?] Could I remove the requirement for connectors to be attached to lines?
+- but then how would arrowheads be distinguished from crows feet. Also every
+  angle bracket would be affected.
+
+[*] Disallowing connectors on length-1 lines is the most pragmatic solution
+- Its still a pain, though:
+
+/_\    /_\    ^      ^      If I made a special case for <- arrows, would it
+ | yes  | no  | yes  | no   be any better? It would provide more flexibility
+ |            |             for the most common type of arrowhead, but it
+                            would be counter intuitive that the two types 
+                            work differently.
+Used by connectors: | - / \ 
+
+Everything is based on lines so they have to be parsed first, but they're so
+fundamental that they're found in other patterns!
