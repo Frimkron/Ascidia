@@ -1280,3 +1280,14 @@ Used by connectors: | - / \
 
 Everything is based on lines so they have to be parsed first, but they're so
 fundamental that they're found in other patterns!
+
+  |-----  --------------------
+  |<----  | ^/_\| * V V V ^ ^
+  |<|---  | | | =/_\| - 0 V #
+  |-||--  | | | | | | | | | V
+  |*<|--  | | | | | | | | | | 
+  |>----                                                                   
+  |>|---  The line characters used in the connector patterns *almost* all  V
+  |>O---  have some other characters either side of them, apart from:      -
+  |<>---  And checking the character above for context would be a killer.  |
+  |<#>--
