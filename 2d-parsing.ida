@@ -1291,3 +1291,5 @@ fundamental that they're found in other patterns!
   |>O---  have some other characters either side of them, apart from:      -
   |<>---  And checking the character above for context would be a killer.  |
   |<#>--
+
+- I'm just going to go with the length-1 line thing.

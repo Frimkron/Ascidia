@@ -9,7 +9,125 @@ import math
 from ptests import *
 
 
-class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
+class TestShortUpDiagLinePattern(unittest.TestCase,PatternTests):
+	
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.ShortUpDiagLinePattern
+		
+	def test_accepts_line(self):
+		p = self.pclass()
+		feed_input(p,0,2,  " /  \n")
+		feed_input(p,1,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			
+	def test_allows_occupied_left_context(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2," ",core.M_OCCUPIED))
+		
+	def test_rejects_alpha_as_left_context(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"b",core.M_NONE))
+			
+	def test_rejects_numeric_as_left_context(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"9",core.M_NONE))
+		
+	def test_expects_forwardslash(self):
+		p = self.pclass()
+		feed_input(p,0,2," ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			
+	def test_expects_forwardslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2," ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,3,"/",core.M_OCCUPIED))
+
+	def test_allows_occupied_right_context(self):
+		p = self.pclass()
+		feed_input(p,0,2," /")
+		with self.assetRaises(StopIteration):
+			p.test(main.CurrentChar(0,4," ",core.M_OCCUPIED))
+
+	def test_rejects_alpha_as_right_context(self):
+		p = self.pclass()
+		feed_input(p,0,2," /")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,4,"d",core.M_NONE))
+			
+	def test_rejects_numeric_as_right_context(self):
+		p = self.pclass()
+		feed_input(p,0,2," /")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,4,"5",core.M_NONE))
+
+	def test_allows_rest_of_first_line(self):
+		p = self.pclass()
+		feed_input(p,0,2," /")
+		p.test(main.CurrentChar(0,4,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,5,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,6,"\n",core.M_OCCUPIED))
+
+	def test_allows_start_of_second_line(self):
+		p = self.pclass()
+		feed_input(p,0,3," /  \n")
+		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,2,"c",core.M_OCCUPIED))
+
+	def test_allows_no_character_at_end_due_to_eoi(self):
+		p = self.pclass()
+		feed_input(p,0,3," /  \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,0,core.END_OF_INPUT,core.M_NONE))
+
+	def test_allows_no_character_at_end_due_to_short_line(self):
+		p = self.pclass()
+		feed_input(p,0,4,    "/  \n")
+		feed_input(p,1,0,"\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,0," ",core.M_NONE))
+
+	def test_allows_line_to_end_at_occupied_line(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "/\n")
+		feed_input(p,1,0,"  ")
+		p.test(main.CurrentChar(1,2,"/",core.M_OCCUPIED))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+
+	def test_allows_line_at_left_edge(self):
+		p = self.pclass()
+		feed_input(p,1,8,"\n")
+		feed_input(p,2,0,"/  \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0," ",core.M_NONE))
+
+	def test_allows_line_at_right_edge(self):
+		p = self.pclass()
+		feed_input(p,1,5,     " /\n")
+		feed_input(p,2,0,"      ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,6," ",core.M_NONE))
+
+	def test_allows_line_at_top_left_corner(self):
+		p = self.pclass()
+		feed_input(p,-1,0,core.START_OF_INPUT)
+		feed_input(p,0,0,"/  \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(1,0," ",core.M_NONE))
+			
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		# TODO		
+			
+
+class TestLongUpDiagLinePattern(unittest.TestCase,PatternTests):
 	
 	def __init__(self,*args,**kargs):
 		unittest.TestCase.__init__(self,*args,**kargs)
@@ -17,59 +135,53 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 		
 	def test_accepts_line(self):
 		p = self.pclass()
-		feed_input(p,0,2,  " /\n")
+		feed_input(p,0,3,   "/\n")
 		feed_input(p,1,0,"  / \n")
 		feed_input(p,2,0," /  \n")
 		feed_input(p,3,0," ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,1," ",core.M_NONE))
 
-	def test_ignores_initial_context_character(self):
+	def test_expects_start_forwardslash(self):
 		p = self.pclass()
-		p.test(main.CurrentChar(0,2," ",core.M_OCCUPIED))
-			
-	def test_expects_start_forwardslash_after_initial_context(self):
-		p = self.pclass()
-		feed_input(p,0,2," ")
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,3," ",core.M_NONE))
+			p.test(main.CurrentChar(0,2," ",core.M_NONE))
 
 	def test_expects_start_forwardslash_unoccupied(self):
 		p = self.pclass()
-		feed_input(p,0,2," ")
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,3,"/",core.M_OCCUPIED))
+			p.test(main.CurrentChar(0,2,"/",core.M_OCCUPIED))
 			
 	def test_allows_rest_of_start_line(self):
 		p = self.pclass()
-		feed_input(p,0,2," /")
-		p.test(main.CurrentChar(0,4,"a",core.M_OCCUPIED))
-		p.test(main.CurrentChar(0,5,"b",core.M_OCCUPIED))
-		p.test(main.CurrentChar(0,6,"\n",core.M_OCCUPIED))
+		feed_input(p,0,2,"/")
+		p.test(main.CurrentChar(0,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,4,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,5,"\n",core.M_OCCUPIED))
 		
 	def test_allows_start_of_next_line(self):
 		p = self.pclass()
-		feed_input(p,0,2," /\n")
+		feed_input(p,0,3,"/\n")
 		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
 		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
 		
 	def test_accepts_rest_of_next_line(self):
 		p = self.pclass()
-		feed_input(p,0,2,  " /\n")
+		feed_input(p,0,3,   "/\n")
 		feed_input(p,1,0,"  /")
 		p.test(main.CurrentChar(1,3,"a",core.M_OCCUPIED))
 		p.test(main.CurrentChar(1,4,"\n",core.M_OCCUPIED))
 		
 	def test_allows_no_character_at_end_due_to_eoi(self):
 		p = self.pclass()
-		feed_input(p,0,2,  " /  \n")
+		feed_input(p,0,3,   "/  \n")
 		feed_input(p,1,0,"  / \n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(2,0,core.END_OF_INPUT,core.M_NONE))
 			
 	def test_allows_no_character_at_end_due_to_short_line(self):
 		p = self.pclass()
-		feed_input(p,0,3,   " /  \n")
+		feed_input(p,0,4,    "/  \n")
 		feed_input(p,1,0,"   /   \n")
 		feed_input(p,2,0,"\n")
 		with self.assertRaises(StopIteration):
@@ -77,15 +189,16 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 			
 	def test_allows_line_to_end_at_occupied_line(self):
 		p = self.pclass()
-		feed_input(p,0,2,  " /\n")
-		feed_input(p,1,0,"  ")
-		p.test(main.CurrentChar(1,2,"/",core.M_OCCUPIED))
+		feed_input(p,0,3,   "/\n")
+		feed_input(p,1,0,"  / \n")
+		feed_input(p,2,0," ")
+		p.test(main.CurrentChar(2,1,"/",core.M_OCCUPIED))
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(1,3," ",core.M_NONE))
+			p.test(main.CurrentChar(2,2," ",core.M_NONE))
 			
 	def test_allows_line_to_end_at_left_edge(self):
 		p = self.pclass()
-		feed_input(p,0,1, " /\n")
+		feed_input(p,0,2,  "/\n")
 		feed_input(p,1,0," / \n")
 		feed_input(p,2,0,"/  \n")
 		with self.assertRaises(StopIteration):
@@ -93,70 +206,19 @@ class TestUpDiagLinePattern(unittest.TestCase,PatternTests):
 			
 	def test_allows_line_to_end_at_bottom_left_corner(self):
 		p = self.pclass()
-		feed_input(p,0,1, " /\n")
+		feed_input(p,0,2,  "/\n")
 		feed_input(p,1,0," / \n")
 		feed_input(p,2,0,"/  \n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
 
-	def test_allows_length_one_line(self):
+	def test_doesnt_allow_length_one_line(self):
 		p = self.pclass()
-		feed_input(p,0,1, " /\n")
-		feed_input(p,1,0,"  ")
+		feed_input(p,0,2,  "/\n")
+		feed_input(p,1,0," ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(1,2," ",core.M_NONE))
-			
-	def test_rejects_length_one_line_with_left_text(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "a/\n")
-		feed_input(p,1,0,"   ")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(1,3," ",core.M_NONE))
-			
-	def test_rejects_length_one_line_with_right_text(self):
-		p = self.pclass()
-		feed_input(p,0,2,  " /a\n")
-		feed_input(p,1,0,"   ")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(1,3," ",core.M_NONE))
-			
-	def test_allows_left_text_for_length_gt_one(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "a/\n")
-		feed_input(p,1,0,"  / \n")
-		feed_input(p,2,0,"  ")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(2,2," ",core.M_NONE))
-		
-	def test_allows_right_text_for_length_gt_one(self):
-		p = self.pclass()
-		feed_input(p,0,2,  " /a\n")
-		feed_input(p,1,0,"  /  \n")
-		feed_input(p,2,0,"  ")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(2,2," ",core.M_NONE))
-				
-	def test_allows_line_to_start_at_left_edge(self):
-		p = self.pclass()
-		feed_input(p,1,3,"\n")
-		feed_input(p,2,0,"/\n")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(3,0," ",core.M_NONE))
-	
-	def test_allows_line_to_start_at_top_left_corner(self):
-		p = self.pclass()
-		p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
-		feed_input(p,0,0,"/\n")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(1,0," ",core.M_NONE))
-	
-	def test_allows_line_to_start_at_bottom_left_corner(self):
-		p = self.pclass()
-		feed_input(p,3,3,"\n")
-		feed_input(p,4,0,"/\n")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(5,0,core.END_OF_INPUT,core.M_NONE))
-				
+			p.test(main.CurrentChar(1,1," ",core.M_NONE))
+
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((2,  " /  \n"),
