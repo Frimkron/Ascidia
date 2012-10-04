@@ -815,8 +815,20 @@ class DownDiagDashedLinePattern(LongLinePattern):
 	boxstartmeta = M_NONE
 	boxendmeta = M_NONE
 	
+	
+class ShortVerticalLinePattern(ShortLinePattern):
+
+	xdir = 0
+	ydir = 1
+	char = "|"
+	startmeta = M_LINE_START_S
+	endmeta = M_LINE_AFTER_S
+	stroketype = STROKE_SOLID
+	boxstartmeta = M_BOX_AFTER_S
+	boxendmeta = M_BOX_START_S
+	
 		
-class VertLinePattern(LongLinePattern):
+class LongVertLinePattern(LongLinePattern):
 
 	xdir = 0
 	ydir = 1
@@ -848,6 +860,18 @@ class HorizLinePattern(LongLinePattern):
 	ydir = 0
 	startchars = ["-"]
 	midchars = startchars
+	startmeta = M_LINE_START_E
+	endmeta = M_LINE_AFTER_E
+	stroketype = STROKE_SOLID
+	boxstartmeta = M_BOX_AFTER_E
+	boxendmeta = M_BOX_START_E
+
+
+class ShortHorizLinePattern(ShortLinePattern):
+	
+	xdir = 1
+	ydir = 0
+	char = "-"
 	startmeta = M_LINE_START_E
 	endmeta = M_LINE_AFTER_E
 	stroketype = STROKE_SOLID
