@@ -256,12 +256,19 @@ class TestLongUpDiagLinePattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
 
-	def test_doesnt_allow_length_one_line(self):
+	def test_rejects_length_one_line(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "/\n")
 		feed_input(p,1,0," ")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(1,1," ",core.M_NONE))
+
+	def test_rejects_length_one_line_with_early_end(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/\n")
+		feed_input(p,1,0,"\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,0," ",core.M_NONE))
 
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
@@ -534,12 +541,19 @@ class TestLongDownDiagLinePattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
 		p.test(main.CurrentChar(1,2,"c",core.M_OCCUPIED))
 		
-	def test_rejects_single_char_line(self):
+	def test_rejects_length_one_line(self):
 		p = self.pclass()
 		feed_input(p,0,3,   "\\\n")
 		feed_input(p,1,0,"    ")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(1,4," ",core.M_NONE))
+	
+	def test_rejects_length_one_line_with_early_end(self):
+		p = self.pclass()
+		feed_input(p,0,3,   "\\\n")
+		feed_input(p,1,0,"\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,0," ",core.M_NONE))
 	
 	def test_accepts_rest_of_next_line(self):
 		p = self.pclass()
@@ -605,12 +619,6 @@ class TestLongDownDiagLinePattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(2,3," ",core.M_NONE))
 			
-	def test_allows_line_to_start_at_bottom_left_corner(self):
-		p = self.pclass()
-		feed_input(p,4,0,"\\  \n")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(5,0,core.END_OF_INPUT,core.M_NONE))
-			
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((3,   "\\   \n"),
@@ -673,11 +681,11 @@ class TestLongDownDiagLinePattern(unittest.TestCase,PatternTests):
 		self.assertEquals(core.STROKE_SOLID,l.stype)	
 
 
-class TestShortVerticalLinePattern(unittest.TestCase,PatternTests):
+class TestShortVertLinePattern(unittest.TestCase,PatternTests):
 	
 	def __init__(self,*args,**kargs):
 		unittest.TestCase.__init__(self,*args,**kargs)
-		self.pclass = patterns.ShortVerticalLinePattern
+		self.pclass = patterns.ShortVertLinePattern
 		
 	def test_accepts_line(self):
 		p = self.pclass()
@@ -901,12 +909,19 @@ class TestLongVertLinePattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
 		p.test(main.CurrentChar(1,2,"c",core.M_OCCUPIED))
 		
-	def test_rejects_single_char_line(self):
+	def test_rejects_length_one_line(self):
 		p = self.pclass()
 		feed_input(p,0,2,  "|\n")
 		feed_input(p,1,0,"  ")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(1,2," ",core.M_NONE))
+	
+	def test_rejects_length_one_line_with_early_end(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "|\n")
+		feed_input(p,1,0,"\n")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,0," ",core.M_NONE))
 	
 	def test_accepts_rest_of_next_line(self):
 		p = self.pclass()
@@ -1206,120 +1221,73 @@ class TestShortHorizLinePattern(unittest.TestCase,PatternTests):
 		l = self.do_render(3,3)[0]
 		self.assertEquals(core.STROKE_SOLID,l.stype)	
 
-				
-"""					
-class TestHorizLinePattern(unittest.TestCase,PatternTests):
+								
+class TestLongHorizLinePattern(unittest.TestCase,PatternTests):
 	
 	def __init__(self,*args,**kargs):
 		unittest.TestCase.__init__(self,*args,**kargs)
-		self.pclass = patterns.HorizLinePattern
+		self.pclass = patterns.LongHorizLinePattern
 		
 	def test_accepts_line(self):
 		p = self.pclass()
-		feed_input(p,0,2,  " --- ")
+		feed_input(p,0,3,  "--- ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(0,5," ",core.M_NONE))
+			p.test(main.CurrentChar(0,7," ",core.M_NONE))
 			
-	def test_ignores_initial_context_character(self):
+	def test_expects_start_hyphen(self):
 		p = self.pclass()
-		p.test(main.CurrentChar(0,2," ",core.M_OCCUPIED))
-			
-	def test_expects_start_hyphen_after_initial_context(self):
-		p = self.pclass()
-		feed_input(p,0,2," ")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,3," ",core.M_NONE))
 
 	def test_expects_start_hyphen_unoccupied(self):
 		p = self.pclass()
-		feed_input(p,0,2," ")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(0,3,"-",core.M_OCCUPIED))
 			
-	def test_accepts_single_char_line(self):
+	def test_rejects_length_one_line(self):
 		p = self.pclass()
-		feed_input(p,0,2, " - ")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(0,5," ",core.M_NONE))
-			
-	def test_allows_no_character_at_end_due_to_short_line(self):
-		p = self.pclass()
-		feed_input(p,0,2,  " ---\n")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(1,0," ",core.M_NONE))
+		feed_input(p,0,2, "-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
 			
 	def test_allows_line_to_end_at_occupied_line(self):
 		p = self.pclass()
-		feed_input(p,0,1, " ---")
+		feed_input(p,0,2, "---")
 		p.test(main.CurrentChar(0,5,"-",core.M_OCCUPIED))
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(0,6," ",core.M_NONE))
 			
 	def test_allows_line_to_end_at_bottom_right(self):
 		p = self.pclass()
-		feed_input(p,2,2," ---\n")
+		feed_input(p,2,3,"---\n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
 					
-	def test_allows_length_one_line(self):
-		p = self.pclass()
-		feed_input(p,0,1, " - ")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(0,4," ",core.M_NONE))
-
-	def test_rejects_length_one_line_with_left_text(self):
-		p = self.pclass()
-		feed_input(p,0,2, "a- ")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,5," ",core.M_NONE))
-			
-	def test_rejects_length_one_line_with_right_text(self):
-		p = self.pclass()
-		feed_input(p,0,2,  " -a")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,5," ",core.M_NONE))
-			
-	def test_allows_left_text_for_length_gt_one(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "a-- ")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(0,6," ",core.M_NONE))
-		
-	def test_allows_right_text_for_length_gt_one(self):
-		p = self.pclass()
-		feed_input(p,0,2,  " --a")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(0,6," ",core.M_NONE))
-				
 	def test_allows_line_to_start_at_left_edge(self):
 		p = self.pclass()
-		feed_input(p,0,0,"\n")
-		feed_input(p,1,0,"- ")
+		feed_input(p,1,0,"-- ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(1,2," ",core.M_NONE))
+			p.test(main.CurrentChar(1,3," ",core.M_NONE))
 	
 	def test_allows_line_to_start_at_top_left_corner(self):
 		p = self.pclass()
-		p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
-		feed_input(p,0,0,"- ")
+		feed_input(p,0,0,"-- ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(0,2," ",core.M_NONE))
+			p.test(main.CurrentChar(0,3," ",core.M_NONE))
 	
 	def test_allows_line_to_start_at_bottom_left_corner(self):
 		p = self.pclass()
-		feed_input(p,3,3,"\n")
-		feed_input(p,4,0,"- ")
+		feed_input(p,4,0,"-- ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(4,2,core.END_OF_INPUT,core.M_NONE))
+			p.test(main.CurrentChar(4,3,"\n",core.M_NONE))
 					
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
-		input = ((2,  " --- "),)
+		input = ((3,  "--- "),)
 		s = core.M_OCCUPIED|core.M_LINE_START_E
 		o = core.M_OCCUPIED
-		n = core.M_NONE
 		a = core.M_LINE_AFTER_E
-		meta =  ((n,s,o,o,a,),)
+		meta =  ((s,o,o,a,),)
 		for j,(startcol,line) in enumerate(input):
 			for i,char in enumerate(line):
 				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
@@ -1327,7 +1295,6 @@ class TestHorizLinePattern(unittest.TestCase,PatternTests):
 				
 	def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
 		p = self.pclass()
-		feed_input(p,y,x-1," ")
 		p.test(main.CurrentChar(y,x,"-",smeta))
 		feed_input(p,y,x+1,"-"*(l-1))
 		p.test(main.CurrentChar(y,x+l," ",emeta))
@@ -1351,11 +1318,6 @@ class TestHorizLinePattern(unittest.TestCase,PatternTests):
 		self.assertEquals((5,1.5),l.a)
 		self.assertEquals((8,1.5),l.b)
 	
-	def test_render_coordinates_shorter(self):
-		l = self.do_render(6,3,1)[0]
-		self.assertEquals((6,3.5),l.a)
-		self.assertEquals((7,3.5),l.b)
-
 	def test_render_coordinates_start_box(self):
 		l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_E)[0]
 		self.assertEquals((3.5,2.5),l.a)
@@ -1387,7 +1349,7 @@ class TestHorizLinePattern(unittest.TestCase,PatternTests):
 		l = self.do_render(3,3,3)[0]
 		self.assertEquals(core.STROKE_SOLID,l.stype)	
 
-
+"""	
 class TestUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
 	
 	def __init__(self,*args,**kargs):

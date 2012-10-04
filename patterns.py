@@ -728,6 +728,7 @@ class LongLinePattern(Pattern):
 			if self.curr.meta & self.boxendmeta: self.tobox = True
 			if self.curr.char != END_OF_INPUT: yield self.endmeta
 		except NoSuchPosition:
+			if firsttime: self.reject()
 			self.endpos = pos
 		return
 		
@@ -816,7 +817,7 @@ class DownDiagDashedLinePattern(LongLinePattern):
 	boxendmeta = M_NONE
 	
 	
-class ShortVerticalLinePattern(ShortLinePattern):
+class ShortVertLinePattern(ShortLinePattern):
 
 	xdir = 0
 	ydir = 1
@@ -854,7 +855,7 @@ class VertDashedLinePattern(LongLinePattern):
 	boxendmeta = M_BOX_START_S
 	
 	
-class HorizLinePattern(LongLinePattern):
+class LongHorizLinePattern(LongLinePattern):
 
 	xdir = 1
 	ydir = 0
@@ -1243,13 +1244,18 @@ PATTERNS = [
 	#SmallCirclePattern,
 	#TinyCirclePattern,
 	#HorizDashedLinePattern,		
-	#HorizLinePattern,			
-	#VertLinePattern,			
+	LongHorizLinePattern,			
+	LongVertLinePattern,			
 	#VertDashedLinePattern,		
-	#UpDiagLinePattern,			
+	LongUpDiagLinePattern,			
 	#UpDiagDashedLinePattern,	
-	#DownDiagLinePattern,		
+	LongDownDiagLinePattern,		
 	#DownDiagDashedLinePattern,	
+	UOutlineArrowheadPattern,
+	ShortHorizLinePattern,
+	ShortVertLinePattern,
+	ShortUpDiagLinePattern,
+	ShortDownDiagLinePattern,
 	LineSqCornerPattern,		
 	LineRdCornerPattern,		
 	LJumpPattern,				
@@ -1259,7 +1265,6 @@ PATTERNS = [
 	RArrowheadPattern,			
 	DArrowheadPattern,			
 	UArrowheadPattern,			
-	UOutlineArrowheadPattern,
 	LCrowsFeetPattern,			
 	RCrowsFeetPattern,			
 	UCrowsFeetPattern,			
