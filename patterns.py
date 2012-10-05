@@ -726,12 +726,12 @@ class LongLinePattern(Pattern):
 					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
 					length += 1
 			self.endpos = pos
+			if length < 2: self.reject()
 			if self.curr.meta & self.boxendmeta: self.tobox = True
 			if self.curr.char != END_OF_INPUT: yield self.endmeta
 		except NoSuchPosition:
 			self.endpos = pos
-			
-		if length < 2: self.reject()
+			if length < 2: self.reject()
 		return
 		
 	def render(self):
@@ -1281,18 +1281,21 @@ PATTERNS = [
 	ParagmBoxPattern,
 	#SmallCirclePattern,
 	#TinyCirclePattern,
-	#HorizDashedLinePattern,		
-	LongHorizLinePattern,			
+	LongHorizDashedLinePattern,		
+	LongHorizLinePattern,
+	LongVertDashedLinePattern,
 	LongVertLinePattern,			
-	#VertDashedLinePattern,		
-	LongUpDiagLinePattern,			
-	#UpDiagDashedLinePattern,	
+	LongUpDiagDashedLinePattern,
+	LongUpDiagLinePattern,
+	LongDownDiagDashedLinePattern,
 	LongDownDiagLinePattern,		
-	#DownDiagDashedLinePattern,	
 	UOutlineArrowheadPattern,
 	ShortHorizLinePattern,
+	ShortVertDashedLinePattern,
 	ShortVertLinePattern,
+	ShortUpDiagDashedLinePattern,
 	ShortUpDiagLinePattern,
+	ShortDownDiagDashedLinePattern,
 	ShortDownDiagLinePattern,
 	LineSqCornerPattern,		
 	LineRdCornerPattern,		
