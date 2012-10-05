@@ -697,39 +697,41 @@ class LongLinePattern(Pattern):
 	tobox = False
 	
 	def matcher(self):
+		length = 0
 		self.curr = yield
 		pos = self.curr.col,self.curr.row
 		self.startpos = pos
 		if self.curr.meta & self.boxstartmeta: self.frombox = True
 		self.curr = yield self.expect(self.startchars[0],meta=M_OCCUPIED|self.startmeta)
+		length += 1
 		for startchar in self.startchars[1:]:
 			for meta in self.await_pos(self.offset(self.xdir,self.ydir,pos)):
 				self.curr = yield meta
 			pos = self.curr.col,self.curr.row
 			self.curr = yield self.expect(startchar,meta=M_OCCUPIED)
+			length += 1
 		try:
 			breaknow = False
-			firsttime = True
 			while not breaknow:
 				for i,midchar in enumerate(self.midchars):
 					for meta in self.await_pos(self.offset(self.xdir,self.ydir,pos)):
 						self.curr = yield meta
-					if( self.curr.char != midchar or self.occupied() 
-							or self.curr.char == END_OF_INPUT ): 
-						if i==0 and not firsttime: 
+					if self.curr.char != midchar or self.occupied(): 
+						if i==0: 
 							breaknow = True
 							break
 						else:
 							self.reject()
 					pos = self.curr.col,self.curr.row
 					self.curr = yield self.expect(midchar,meta=M_OCCUPIED)
-				firsttime = False
+					length += 1
 			self.endpos = pos
 			if self.curr.meta & self.boxendmeta: self.tobox = True
 			if self.curr.char != END_OF_INPUT: yield self.endmeta
 		except NoSuchPosition:
-			if firsttime: self.reject()
 			self.endpos = pos
+			
+		if length < 2: self.reject()
 		return
 		
 	def render(self):
@@ -766,7 +768,19 @@ class LongUpDiagLinePattern(LongLinePattern):
 	boxendmeta = M_NONE
 
 
-class UpDiagDashedLinePattern(LongLinePattern):
+class ShortUpDiagDashedLinePattern(ShortLinePattern):
+	
+	xdir = -1
+	ydir = 1
+	char = ","
+	startmeta = M_LINE_START_SW | M_DASH_START_SW
+	endmeta = M_LINE_AFTER_SW | M_DASH_AFTER_SW
+	stroketype = STROKE_DASHED
+	boxstartmeta = M_NONE
+	boxendmeta = M_NONE
+
+
+class LongUpDiagDashedLinePattern(LongLinePattern):
 	
 	xdir = -1
 	ydir = 1
@@ -803,8 +817,20 @@ class LongDownDiagLinePattern(LongLinePattern):
 	boxstartmeta = M_NONE
 	boxendmeta = M_NONE
 	
+	
+class ShortDownDiagDashedLinePattern(ShortLinePattern):
+	
+	xdir = 1
+	ydir = 1
+	char = "`"
+	startmeta = M_LINE_START_SE | M_DASH_START_SE
+	endmeta = M_LINE_AFTER_SE | M_DASH_AFTER_SE
+	stroketype = STROKE_DASHED
+	boxstartmeta = M_NONE
+	boxendmeta = M_NONE
 		
-class DownDiagDashedLinePattern(LongLinePattern):
+		
+class LongDownDiagDashedLinePattern(LongLinePattern):
 	
 	xdir = 1
 	ydir = 1
@@ -840,9 +866,21 @@ class LongVertLinePattern(LongLinePattern):
 	stroketype = STROKE_SOLID
 	boxstartmeta = M_BOX_AFTER_S
 	boxendmeta = M_BOX_START_S
+
+
+class ShortVertDashedLinePattern(ShortLinePattern):
 	
+	xdir = 0
+	ydir = 1
+	char = ";"
+	startmeta = M_LINE_START_S | M_DASH_START_S
+	endmeta = M_LINE_AFTER_S | M_DASH_AFTER_S
+	stroketype = STROKE_DASHED
+	boxstartmeta = M_BOX_AFTER_S
+	boxendmeta = M_BOX_START_S
+
 	
-class VertDashedLinePattern(LongLinePattern):
+class LongVertDashedLinePattern(LongLinePattern):
 
 	xdir = 0
 	ydir = 1
@@ -880,7 +918,7 @@ class ShortHorizLinePattern(ShortLinePattern):
 	boxendmeta = M_BOX_START_E
 
 
-class HorizDashedLinePattern(LongLinePattern):
+class LongHorizDashedLinePattern(LongLinePattern):
 	
 	xdir = 1
 	ydir = 0
