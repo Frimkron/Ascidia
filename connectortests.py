@@ -1311,6 +1311,282 @@ class TestUOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 		r.remove(st)
 		for shape in r:
 			self.assertEquals(core.STROKE_SOLID,shape.stype)
+
+
+class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
+	
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.DOutlineArrowheadPattern
+		
+	def test_accepts_arrowhead(self):  
+		p = self.pclass()
+		feed_input(p,3,4,    "_|_  \n")
+		feed_input(p,4,0,"    \\")
+		p.test(main.CurrentChar(4,5," ",core.M_LINE_AFTER_S))
+		feed_input(p,4,6,      "/  \n")
+		feed_input(p,5,0,"     ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(5,5," ",core.M_NONE))
+			
+	def test_expects_left_underscore(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,5,"?",core.M_NONE))
+			
+	def test_expects_left_underscore_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,5,"_",core.M_OCCUPIED))
+			
+	def test_allows_occupied_line(self):
+		p = self.pclass()
+		feed_input(p,4,5,"_")
+		p.test(main.CurrentChar(4,6,"|",core.M_OCCUPIED))
+			
+	def test_expects_right_underscore(self):
+		p = self.pclass()
+		feed_input(p,4,5,"_|")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,7,"|",core.M_OCCUPIED))
+			
+	def test_expects_right_underscore_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,4,5,"_|")
+		with self.assertRaise(core.PatternRejected):
+			p.test(main.CurrentChar(4,7,"_",core.M_OCCUPIED))
+			
+	def test_allows_rest_of_first_line(self):
+		p = self.pclass()
+		feed_input(p,4,5,"_|_")
+		p.test(main.CurrentChar(4,8,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,9,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,10,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_second_line(self):
+		p = self.pclass()
+		feed_input(p,4,2,"_|_  \n")
+		p.test(main.CurrentChar(5,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(5,1,"b",core.M_OCCUPIED))
+		
+	def test_expects_backslash(self):
+		p = self.pclass()
+		feed_input(p,4,2,  "_|_  \n")
+		feed_input(p,5,0,"  ")
+		with self.assertRaise(core.PatternRejected):
+			p.test(main.CurrentChar(5,2,"?"))
+			
+	def test_expects_backslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,4,2,  "_|_  \n")
+		feed_input(p,5,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,2,"\\",core.M_OCCUPIED))
+		
+	def test_expects_central_space(self):
+		p = self.pclass()
+		feed_input(p,4,2,  "_|_  \n")
+		feed_input(p,5,0,"  \\")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,3,"/",core.M_LINE_AFTER_S))
+			
+	def test_expects_central_space_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,4,2,  "_|_  \n")
+		feed_input(p,5,0,"  \\")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,3," ",core.M_LINE_AFTER_S | core.M_OCCUPIED))
+		
+	def test_expects_central_space_line_meta(self):
+		p = self.pclass()
+		feed_input(p,4,2,  "_|_  \n")
+		feed_input(p,5,0,"  \\")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,3," ",core.M_NONE))
+		
+	def test_allows_dashed_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "_;_  \n")
+		feed_input(p,5,0,"   \\")
+		p.test(main.CurrentChar(5,4," ",core.M_LINE_AFTER_S|core.M_DASH_AFTER_S))
+		
+	def test_allows_any_character_for_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "_?_  \n")
+	
+	def test_expects_forwardslash(self):
+		p = self.pclass()
+		feed_inupt(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,    \\")
+		p.test(main.CurrentChar(5,4," ",ore.M_LINE_AFTER_S))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,5," ",core.M_NONE))
+			
+	def test_expects_forwardslash_unoccupied(self):
+		p = self.pclass()
+		feed_inupt(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,    \\")
+		p.test(main.CurrentChar(5,4," ",ore.M_LINE_AFTER_S))
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,5,"/",core.M_OCCUPIED))
+			
+	def test_allows_rest_of_second_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,"   \\")
+		p.test(main.CurrentChar(5,4," ",core.M_LINE_AFTER_S))
+		feed_input(p,5,5,     "/")
+		p.test(main.CurrentChar(5,6,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(5,7,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(5,8,"\n",core.M_OCCUPIED))
+		
+	def test_allows_occupied_third_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,"   \\")
+		p.test(main.CurrentChar(5,4," ",core.M_LINE_AFTER_S))
+		feed_input(p,5,5,     "/  \n")
+		p.test(main.CurrentChar(6,0," ",core.M_OCCUPIED))
+		p.test(main.CurrentChar(6,1," ",core.M_OCCUPIED))
+		p.test(main.CurrentChar(6,2," ",core.M_OCCUPIED))
+		p.test(main.CurrentChar(6,3," ",core.M_OCCUPIED))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(6,4," ",core.M_OCCUPIED))
+
+	def test_allows_box_top_meta(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,"   \\")
+		p.test(main.CurrentChar(5,4," ",core.M_LINE_AFTER_S))
+		feed_input(p,5,5,     "/  \n")
+		p.test(main.CurrentChar(6,0," ",core.M_BOX_START_S))
+		p.test(main.CurrentChar(6,1," ",core.M_BOX_START_S))
+		p.test(main.CurrentChar(6,2," ",core.M_BOX_START_S))
+		p.test(main.CurrentChar(6,3," ",core.M_BOX_START_S))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(6,4," ",core.M_BOX_START_S))
+
+	def test_allow_no_final_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,"   \\")
+		p.test(main.CurrentChar(5,4," ",core.M_LINE_AFTER_S))
+		feed_inut(p,5,5,      "/  \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(6,0,core.END_OF_INPUT,core.M_NONE))
+			
+	def test_short_final_line(self):
+		p = self.pclass()
+		feed_input(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,"   \\")
+		p.test(main.CurrentChar(5,4," ",core.M_LINE_AFTER_S))
+		feed_input(p,5,5,      "/  \n")
+		feed_input(p,6,0,"   \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(7,0," ",core.M_NONE))
+		
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((3,   "_|_  \n" ),
+				 (0,"   \\ /  \n"),
+				 (0,"    "       ),)
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		l = core.M_OCCUPIED | core.M_LINE_AFTER_S
+		imeta = ((      n,o,n,n,n,n,),
+				 (n,n,n,n,l,n,n,n,n,),
+				 (n,n,n,n,          ),)
+		ometa = ((      o,o,o,n,n,n,),
+			     (n,n,n,o,o,o,n,n,n,),
+			     (n,n,n,n,          ),)
+		for j,(linestart,line) in enumerate(input):
+			for i,char in enumerate(line):
+				im = imeta[j][i]
+				om = ometa[j][i]
+				self.assertEquals(om,p.test(main.CurrentChar(j,linestart+i,char,im)))
+				
+	def do_render(self,x,y,dash=False,tobox=False):
+		p = self.pclass()
+		feed_input(p,y,x-1,"_|_\n")
+		feed_input(p,y+1," "*(x-1) + "\\")
+		p.test(main.CurrentChar(y+1,x," ",core.M_LINE_AFTER_S 
+			| (core.M_DASH_AFTER_S if dash else core.M_NONE)))
+		feed_input(p,y+1,x+1,"/ \n")
+		feed_input(p,y+2," "*x)
+		try:
+			p.test(main.CurrentChar(y+2,x," ",
+				core.M_BOX_START_S if tobox else core.M_NONE))
+		except StopIteration: pass
+		return p.render()
+		
+	def test_render_returns_correct_shapes(self):
+		r = self.do_render(4,6)
+		self.assertEquals(4,len(r))
+		self.assertEquals(4,len(filter(lambda x: isinstance(x,core.Line),r)))
+		
+	# TODO: alter coordinate tests
+		
+	def test_render_coordinates(self):
+		r = self.do_render(4,6)
+		ls = find_with(self,r,"b",(5,6.4))
+		self.assertEquals((5.5,6),ls.a)
+		rs = find_with(self,r,"b",(6,6.4))
+		self.assertEquals((5.5,6),rs.a)
+		bt = find_with(self,r,"a",(5,6.4))
+		self.assertEquals((6,6.4),bt.b)
+		st = find_with(self,r,"a",(5.5,6.4))
+		self.assertEquals((5.5,7),st.b)
+		
+	def test_render_coordinates_position(self):
+		r = self.do_render(8,2)
+		ls = find_with(self,r,"b",(9,2.4))
+		self.assertEquals((9.5,2),ls.a)
+		rs = find_with(self,r,"b",(10,2.4))
+		self.assertEquals((9.5,2),ls.a)
+		bt = find_with(self,r,"a",(9,2.4))
+		self.assertEquals((10,2.4),bt.b)
+		st = find_with(self,r,"a",(9.5,2.4))
+		self.assertEquals((9.5,3),st.b)
+		
+	def test_render_coordinates_to_box(self):
+		r = self.do_render(4,6,tobox=True)
+		ls = find_with(self,r,"b",(5,5.9))
+		self.assertEquals((5.5,5.5),ls.a)
+		rs = find_with(self,r,"b",(6,5.9))
+		self.assertEquals((5.5,5.5),ls.a)
+		bt = find_with(self,r,"a",(5,5.9))
+		self.assertEquals((6,5.9),bt.b)
+		st = find_with(self,r,"a",(5.5,5.9))
+		self.assertEquals((5.5,7),st.b)
+
+	def test_render_z(self):
+		for shape in self.do_render(4,6):
+			self.assertEquals(1,shape.z)
+			
+	def test_render_stroke(self):
+		for shape in self.do_render(4,6):
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
+			
+	def test_render_stroke_alpha(self):
+		for shape in self.do_render(4,6):
+			self.assertEquals(1.0,shape.salpha)
+			
+	def test_render_stroke_width(self):
+		for shape in self.do_render(4,6):
+			self.assertEquals(1,shape.w)
+
+	def test_render_stroke_style_solid(self):
+		for shape in self.do_render(4,6):
+			self.assertEquals(core.STROKE_SOLID,shape.stype)
+	
+	# TODO
+	def test_render_stroke_style_dashed(self):
+		r = list(self.do_render(4,6,dash=True))
+		st = find_with(self,r,"a",(5.5,6.4))
+		self.assertEquals(core.STROKE_DASHED,st.stype)
+		r.remove(st)
+		for shape in r:
+			self.assertEquals(core.STROKE_SOLID,shape.stype)
 			
 
 if __name__ == "__main__":
