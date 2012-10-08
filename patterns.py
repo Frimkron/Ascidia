@@ -1262,7 +1262,32 @@ class UOutlineArrowheadPattern(Pattern):
 	
 	
 class DOutlineArrowheadPattern(Pattern):
-	pass
+	
+	pos = None
+	tobox = False
+	dashed = False
+	
+	def matcher(self):
+		self.curr = yield
+		self.curr = yield self.expect("_")
+		mpos = self.curr.col,self.curr.row
+		for meta in self.await_pos(self.offset(1,0,mpos)):
+			self.curr = yield meta
+		self.curr = yield self.expect("_")
+		for meta in self.await_pos(self.offset(-1,1,mpos)):
+			self.curr = yield meta
+		self.curr = yield self.expect("\\")
+		if not (self.curr.meta & M_LINE_AFTER_S): self.reject()
+		if self.curr.meta & M_DASH_AFTER_S: self.dashed = True
+		self.pos = self.curr.col,self.curr.row
+		self.curr = yield self.expect(" ")
+		self.curr = yield self.expect("/")
+		try:
+			for meta in self.await_pos(self.offset(0,2,mpos)):
+				self.curr = yield meta
+			if self.curr.meta & M_BOX_START_S: self.tobox = True
+		except NoSuchPosition: pass		
+		return
 	
 
 class LOutlineArrowheadPattern(Pattern):

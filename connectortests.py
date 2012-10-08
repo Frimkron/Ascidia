@@ -1416,16 +1416,16 @@ class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 	
 	def test_expects_forwardslash(self):
 		p = self.pclass()
-		feed_inupt(p,4,3,   "_|_  \n")
-		feed_input(p,5,0,    \\")
+		feed_input(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,"   \\")
 		p.test(main.CurrentChar(5,4," ",ore.M_LINE_AFTER_S))
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(5,5," ",core.M_NONE))
 			
 	def test_expects_forwardslash_unoccupied(self):
 		p = self.pclass()
-		feed_inupt(p,4,3,   "_|_  \n")
-		feed_input(p,5,0,    \\")
+		feed_input(p,4,3,   "_|_  \n")
+		feed_input(p,5,0,"   \\")
 		p.test(main.CurrentChar(5,4," ",ore.M_LINE_AFTER_S))
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(5,5,"/",core.M_OCCUPIED))
@@ -1471,7 +1471,7 @@ class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 		feed_input(p,4,3,   "_|_  \n")
 		feed_input(p,5,0,"   \\")
 		p.test(main.CurrentChar(5,4," ",core.M_LINE_AFTER_S))
-		feed_inut(p,5,5,      "/  \n")
+		feed_input(p,5,5,      "/  \n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(6,0,core.END_OF_INPUT,core.M_NONE))
 			
@@ -1507,14 +1507,14 @@ class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 				
 	def do_render(self,x,y,dash=False,tobox=False):
 		p = self.pclass()
-		feed_input(p,y,x-1,"_|_\n")
-		feed_input(p,y+1," "*(x-1) + "\\")
-		p.test(main.CurrentChar(y+1,x," ",core.M_LINE_AFTER_S 
+		feed_input(p,y-1,x-1,"_|_\n")
+		feed_input(p,y,0," "*(x-1) + "\\")
+		p.test(main.CurrentChar(y,x," ",core.M_LINE_AFTER_S 
 			| (core.M_DASH_AFTER_S if dash else core.M_NONE)))
-		feed_input(p,y+1,x+1,"/ \n")
-		feed_input(p,y+2," "*x)
+		feed_input(p,y,x+1,"/ \n")
+		feed_input(p,y+1,0," "*x)
 		try:
-			p.test(main.CurrentChar(y+2,x," ",
+			p.test(main.CurrentChar(y+1,x," ",
 				core.M_BOX_START_S if tobox else core.M_NONE))
 		except StopIteration: pass
 		return p.render()
@@ -1524,40 +1524,38 @@ class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 		self.assertEquals(4,len(r))
 		self.assertEquals(4,len(filter(lambda x: isinstance(x,core.Line),r)))
 		
-	# TODO: alter coordinate tests
-		
 	def test_render_coordinates(self):
 		r = self.do_render(4,6)
-		ls = find_with(self,r,"b",(5,6.4))
-		self.assertEquals((5.5,6),ls.a)
-		rs = find_with(self,r,"b",(6,6.4))
-		self.assertEquals((5.5,6),rs.a)
-		bt = find_with(self,r,"a",(5,6.4))
-		self.assertEquals((6,6.4),bt.b)
-		st = find_with(self,r,"a",(5.5,6.4))
-		self.assertEquals((5.5,7),st.b)
+		ls = find_with(self,r,"b",(4,6.6))
+		self.assertEquals((4.5,7),ls.a)
+		rs = find_with(self,r,"b",(5,6.6))
+		self.assertEquals((4.5,7),ls.a)
+		bt = find_with(self,r,"a",(4,6.6))
+		self.assertEquals((5,6.6),bt.b)
+		st = find_with(self,r,"a",(4.5,6.6))
+		self.assertEquals((4.5,6),st.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(8,2)
-		ls = find_with(self,r,"b",(9,2.4))
-		self.assertEquals((9.5,2),ls.a)
-		rs = find_with(self,r,"b",(10,2.4))
-		self.assertEquals((9.5,2),ls.a)
-		bt = find_with(self,r,"a",(9,2.4))
-		self.assertEquals((10,2.4),bt.b)
-		st = find_with(self,r,"a",(9.5,2.4))
-		self.assertEquals((9.5,3),st.b)
+		ls = find_with(self,r,"b",(8,2.6))
+		self.assertEquals((8.5,3),ls.a)
+		rs = find_with(self,r,"a",(9,2.6))
+		self.assertEquals((8.5,3),ls.a)
+		bt = find_with(self,r,"a",(8,2.6))
+		self.assertEquals((9,2.6),bt.b)
+		st = find_with(self,r,"a",(8.5,2.6))
+		self.assertEquals((8.5,2),st.b)
 		
 	def test_render_coordinates_to_box(self):
 		r = self.do_render(4,6,tobox=True)
-		ls = find_with(self,r,"b",(5,5.9))
-		self.assertEquals((5.5,5.5),ls.a)
-		rs = find_with(self,r,"b",(6,5.9))
-		self.assertEquals((5.5,5.5),ls.a)
-		bt = find_with(self,r,"a",(5,5.9))
-		self.assertEquals((6,5.9),bt.b)
-		st = find_with(self,r,"a",(5.5,5.9))
-		self.assertEquals((5.5,7),st.b)
+		ls = find_with(self,r,"b",(4,7.1))
+		self.assertEquals((4.5,7.5),ls.a)
+		rs = find_with(self,r,"b",(5,7.1))
+		self.assertEquals((4.5,7.5),ls.a)
+		bt = find_with(self,r,"a",(4,7.1))
+		self.assertEquals((5,7.1),bt.b)
+		st = find_with(self,r,"a",(4.5,7.1))
+		self.assertEquals((4.5,6),st.b)
 
 	def test_render_z(self):
 		for shape in self.do_render(4,6):
@@ -1579,10 +1577,9 @@ class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 		for shape in self.do_render(4,6):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)
 	
-	# TODO
 	def test_render_stroke_style_dashed(self):
 		r = list(self.do_render(4,6,dash=True))
-		st = find_with(self,r,"a",(5.5,6.4))
+		st = find_with(self,r,"a",(4.5,6.6))
 		self.assertEquals(core.STROKE_DASHED,st.stype)
 		r.remove(st)
 		for shape in r:
