@@ -1241,37 +1241,27 @@ class ConnectorPattern(Pattern):
 		self.curr = yield
 		
 		if not self.flipped:
-			chrlist = self.chars
 			self.pos = self.curr.col,self.curr.row
 			if self.curr.meta & self.boxmeta: self.tobox = True
 		else:
-			chrlist = reversed(self.chars)
 			if not (self.curr.meta & self.linemeta): self.reject()
 			if self.curr.meta & self.dashmeta: self.dashed = True
-			for meta in self.await_pos(self.offset(self.xdir,self.ydir)):
-				self.curr = yield meta
 				
-		self.curr = yield self.expect(chrlist[0])
-		for char in chrlist[1:-1]:
+		self.curr = yield self.expect(self.chars[0])
+		for char in self.chars[1:]:
 			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 				self.curr = yield meta
 			self.curr = yield self.expect(char)
 			
 		for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 			self.curr = yield meta	
-			
-		if self.flipped:
-			self.pos = self.curr.col,self.curr.row
-			if self.curr.meta & self.boxmeta: self.tobox = True
-			
-		if len(chrlist) > 1:
-			self.curr = yield self.expect(chrlist[-1])
-			
+						
 		if not self.flipped:
-			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-				self.curr = yield meta
 			if not (self.curr.meta & self.linemeta): self.reject()
 			if self.curr.meta & self.dashmeta: self.dashed = True
+		else:
+			self.pos = self.curr.col-self.xdir,self.curr.row-self.ydir
+			if self.curr.meta & self.boxmeta: self.tobox = True
 		
 		return
 	
@@ -1359,19 +1349,56 @@ class DOutlineArrowheadPattern(Pattern):
 				stype=STROKE_DASHED if self.dashed else STROKE_SOLID), ]
 	
 
-class LOutlineArrowheadPattern(ConnectorPattern):
+class HorizOutlineArrowheadPattern(ConnectorPattern):
 	
+	def render(self):
+		Pattern.render(self)
+		xd = self.xdir * (1 if self.flipped else -1)
+		yd = self.ydir * (1 if self.flipped else -1)
+		return [
+			Line(a=(self.pos[0]+0.5+0.5*xd+0.5*xd*self.tobox, 
+					self.pos[1]+0.5+0.5*yd+0.5*yd*self.tobox),
+				b=(self.pos[0]+0.5+0.5*xd-0.8*xd-0.5*yd+0.5*xd*self.tobox, 
+					self.pos[1]+0.5+0.5*yd-0.8*yd/CHAR_H_RATIO-0.5*xd/CHAR_H_RATIO+0.5*yd*self.tobox),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.pos[0]+0.5+0.5*xd+0.5*xd*self.tobox, 
+					self.pos[1]+0.5+0.5*yd+0.5*yd*self.tobox),
+				b=(self.pos[0]+0.5+0.5*xd-0.8*xd+0.5*yd+0.5*xd*self.tobox, 
+					self.pos[1]+0.5+0.5*yd-0.8*yd/CHAR_H_RATIO+0.5*xd/CHAR_H_RATIO+0.5*yd*self.tobox),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.pos[0]+0.5+0.5*xd-0.8*xd-0.5*yd+0.5*xd*self.tobox, 
+					self.pos[1]+0.5+0.5*yd-0.8*yd/CHAR_H_RATIO-0.5*xd/CHAR_H_RATIO+0.5*yd*self.tobox),
+				b=(self.pos[0]+0.5+0.5*xd-0.8*xd+0.5*yd+0.5*xd*self.tobox, 
+					self.pos[1]+0.5+0.5*yd-0.8*yd/CHAR_H_RATIO+0.5*xd/CHAR_H_RATIO+0.5*yd*self.tobox),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=(self.pos[0]+0.5+0.5*xd-0.8*xd+0.5*xd*self.tobox,
+					self.pos[1]+0.5+0.5*yd-0.8*yd/CHAR_H_RATIO+0.5*yd*self.tobox),
+				b=(self.pos[0]+0.5-1.5*xd,
+					self.pos[1]+0.5-1.5*yd),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID),	]
+
+
+class LOutlineArrowheadPattern(HorizOutlineArrowheadPattern):
+	
+	chars = ["<","|"]
 	xdir = 1
 	ydir = 0
-	chars = ["<","|"]
 	flipped = False
 	linemeta = M_LINE_START_E
 	dashmeta = M_DASH_START_E
 	boxmeta = M_BOX_AFTER_E
 	
 
-class ROutlineArrowheadPattern(ConnectorPattern):
-	pass
+class ROutlineArrowheadPattern(HorizOutlineArrowheadPattern):
+	
+	chars = ["|",">"]
+	xdir = 1
+	ydir = 0
+	flipped = True
+	linemeta = M_LINE_AFTER_E
+	dashmeta = M_DASH_AFTER_E
+	boxmeta = M_BOX_START_E
 		
 		
 PATTERNS = [
@@ -1392,6 +1419,8 @@ PATTERNS = [
 	LongDownDiagLinePattern,		
 	UOutlineArrowheadPattern,
 	DOutlineArrowheadPattern,
+	LOutlineArrowheadPattern,
+	ROutlineArrowheadPattern,
 	ShortHorizLinePattern,
 	ShortVertDashedLinePattern,
 	ShortVertLinePattern,
