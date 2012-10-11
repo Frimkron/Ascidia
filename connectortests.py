@@ -1872,5 +1872,148 @@ class TestROutlineArrowheadPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)	
 
 
+class TestUOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
+
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.UOutlineDiamondConnectorPattern
+		
+	def test_accepts_diamond(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3,   "  \n")
+		feed_input(p,1,0,"   v \n")
+		feed_input(p,2,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,3,"|",core.M_LINE_START_S))
+
+	def test_expects_caret(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"?",core.M_BOX_AFTER_S))
+
+	def test_expects_caret_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S|core.M_OCCUPIED))
+			
+	def test_expects_box_meta(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,2,"^",core.M_NONE))
+			
+	def test_allows_rest_of_first_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		p.test(main.CurrentChar(0,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,4,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,5,"\n",core.M_OCCUPIED))
+
+	def test_allows_start_of_seccond_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		p.test(main.CurrentChar(1,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,1,"b",core.M_OCCUPIED))
+		
+	def test_expects_v(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"x",core.M_NONE))
+			
+	def test_expects_v_unoccupied(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,2,"v",core.M_OCCUPIED))
+	
+	def test_allows_uppercase_v(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  V")
+	
+	def test_allows_rest_of_second_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  v")
+		p.test(main.CurrentChar(1,3,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,4,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,5,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_third_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  v \n")
+		p.test(main.CurrentChar(2,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,1,"b",core.M_OCCUPIED))
+		
+	def test_expects_line_meta(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  v \n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"|",core.M_NONE))
+			
+	def test_allows_occupied_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  v \n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,2,"|",core.M_OCCUPIED|core.M_LINE_START_S))
+		
+	def test_allows_dashed_line(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  v \n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,2,";",core.M_DASH_START_S|core.M_LINE_START_S))
+
+	def test_allows_any_line_character(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
+		feed_input(p,0,3," \n")
+		feed_input(p,1,0,"  v \n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(2,2,"?",core.M_LINE_START_S))
+			
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((3,   "^  \n"),
+				 (0,"   v  \n"),
+				 (0,"   "     ),)
+		b = core.M_BOX_AFTER_S
+		o = core.M_OCCUPIED
+		n = core.M_NONE
+		inmeta = ((      b,n,n,n,),
+				  (n,n,n,n,n,n,n,),
+				  (n,n,n,        ),)
+		outmeta = ((      o,n,n,n,),
+				   (n,n,n,o,n,n,n,),
+				   (n,n,n,        ),)
+		for j,(linestart,line) in enumerate(input):
+			for i,char in enumerate(line):
+				im = inmeta[j][i]
+				om = outmeta[j][i]
+				self.assertEquals(om, p.test(main.CurrentChar(j,linestart+i,char,im)))
+				   
+	# TODO: ConnectorPattern currently has *optional* box meta, because outline
+	# arrowhead was the first implementor - needs to change
+				   
+
 if __name__ == "__main__":
 	unittest.main()

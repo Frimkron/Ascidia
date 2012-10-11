@@ -1399,6 +1399,17 @@ class ROutlineArrowheadPattern(HorizOutlineArrowheadPattern):
 	linemeta = M_LINE_AFTER_E
 	dashmeta = M_DASH_AFTER_E
 	boxmeta = M_BOX_START_E
+
+
+class UOutlineDiamondConnectorPattern(ConnectorPattern):
+	
+	chars = ["^","vV"]
+	xdir = 0
+	ydir = 1
+	flipped = False
+	linemeta = M_LINE_START_S
+	dashmeta = M_DASH_START_S
+	boxmeta = M_BOX_AFTER_S
 		
 		
 PATTERNS = [
