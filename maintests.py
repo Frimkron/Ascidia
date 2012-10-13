@@ -555,7 +555,96 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals("green", ch[0].getAttribute("stroke"))
 		self.assertEquals("red", ch[1].getAttribute("stroke"))
 		self.assertEquals("blue", ch[2].getAttribute("stroke"))
+
+	def test_handles_polygon(self):
+		ch = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="orange",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="red",
+			falpha=1.0) ]).documentElement)
+		self.assertEquals(1, len(ch))
+		self.assertEquals("polygon", ch[0].tagName)
 		
+	def test_polygon_coordinates(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="orange",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="red",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals("12,48 12,72 24,48", p.getAttribute("points"))
+		
+	def test_polygon_stroke_colour(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="orange",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="red",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals("orange", p.getAttribute("stroke"))
+		
+	def test_polygon_special_stroke_colour(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+				z=1,stroke=core.C_FOREGROUND,salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="red",
+				falpha=1.0) ],
+			main.OutputPrefs("darkblue","purple")).documentElement)[0]
+		self.assertEquals("darkblue", p.getAttribute("stroke"))
+		
+	def test_polygon_no_stroke(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke=None,salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="red",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals("none", p.getAttribute("stroke"))
+		
+	def test_polygon_stroke_alpha(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="orange",salpha=0.75,w=2,stype=core.STROKE_SOLID,fill="red",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals(0.75, float(p.getAttribute("stroke-opacity")))
+	
+	def test_polygon_stroke_width(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID, fill="red",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals(5, float(p.getAttribute("stroke-width")))
+		
+	def test_polygon_stroke_solid(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID, fill="red",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals("", p.getAttribute("stroke-dasharray"))
+		
+	def test_polygon_stroke_dashed(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_DASHED,fill="red",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals("8,8", p.getAttribute("stroke-dasharray"))
+		
+	def test_polygon_fill_colour(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="yellow",
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals("yellow", p.getAttribute("fill"))
+		
+	def test_polygon_special_fill_colour(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+				z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill=core.C_FOREGROUND,
+				falpha=1.0) ],
+			main.OutputPrefs("lime","magenta") ).documentElement)[0]
+		self.assertEquals("lime", p.getAttribute("fill"))
+		
+	def test_polygon_no_fill(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+			z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill=None,
+			falpha=1.0) ]).documentElement)[0]
+		self.assertEquals("none", p.getAttribute("fill"))
+		
+	def test_polygon_z(self):
+		ch = self.child_elements(self.do_output([ 
+			core.Polygon(points=((1,2),(1,3),(2,2)),z=1,stroke="purple",salpha=1.0,
+				w=2,stype=core.STROKE_SOLID,fill="red",falpha=1.0),
+			core.Polygon(points=((1,2),(1,3),(2,2)),z=3,stroke="green",salpha=1.0,
+				w=3,stype=core.STROKE_DASHED,fill="red",falpha=1.0),
+			core.Polygon(points=((1,2),(1,3),(2,2)),z=2,stroke="wheat",salpha=1.0,
+				w=1,stype=core.STROKE_SOLID,fill="red",falpha=1.0), 
+		]).documentElement)
+		self.assertEquals(3, len(ch))
+		self.assertEquals("purple", ch[0].getAttribute("stroke"))
+		self.assertEquals("wheat", ch[1].getAttribute("stroke"))
+		self.assertEquals("green", ch[2].getAttribute("stroke"))
+	
 	def test_handles_quadcurve(self):
 		ch = self.child_elements(self.do_output([ core.QuadCurve(a=(1,2),b=(3,5),
 			c=(4,3),z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID) ]).documentElement)

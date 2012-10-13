@@ -1236,13 +1236,15 @@ class ConnectorPattern(Pattern):
 	linemeta = None
 	dashmeta = None
 	boxmeta = None
+	boxrequired = True
 	
 	def matcher(self):
 		self.curr = yield
 		
 		if not self.flipped:
 			self.pos = self.curr.col,self.curr.row
-			if self.curr.meta & self.boxmeta: self.tobox = True
+			self.tobox = bool(self.curr.meta & self.boxmeta)
+			if self.boxrequired and not self.tobox: self.reject()
 		else:
 			if not (self.curr.meta & self.linemeta): self.reject()
 			if self.curr.meta & self.dashmeta: self.dashed = True
@@ -1261,7 +1263,8 @@ class ConnectorPattern(Pattern):
 			if self.curr.meta & self.dashmeta: self.dashed = True
 		else:
 			self.pos = self.curr.col-self.xdir,self.curr.row-self.ydir
-			if self.curr.meta & self.boxmeta: self.tobox = True
+			self.tobox = bool(self.curr.meta & self.boxmeta)
+			if self.boxrequired and not self.tobox: self.reject()
 		
 		return
 	
@@ -1350,6 +1353,8 @@ class DOutlineArrowheadPattern(Pattern):
 	
 
 class HorizOutlineArrowheadPattern(ConnectorPattern):
+
+	boxrequired = False
 	
 	def render(self):
 		Pattern.render(self)
@@ -1401,7 +1406,30 @@ class ROutlineArrowheadPattern(HorizOutlineArrowheadPattern):
 	boxmeta = M_BOX_START_E
 
 
-class UOutlineDiamondConnectorPattern(ConnectorPattern):
+class DiamondConnectorPattern(ConnectorPattern):
+	
+	filled = False
+	boxrequired = True
+	
+	def render(self):	
+		ConnectorPattern.render(self)
+		xd = self.xdir * (1 if self.flipped else -1)
+		yd = self.ydir * (1 if self.flipped else -1)
+		return [
+			Polygon(points=(
+					(self.pos[0]+0.5+1.0*xd, self.pos[1]+0.5+1.0*yd),
+					(self.pos[0]+0.5+1.0*xd-1.0*xd-0.5*yd, self.pos[1]+0.5+1.0*yd-1.0*yd/CHAR_H_RATIO-0.5*xd/CHAR_H_RATIO),
+					(self.pos[0]+0.5+1.0*xd-2.0*xd, self.pos[1]+0.5+1.0*yd-2.0*yd/CHAR_H_RATIO),
+					(self.pos[0]+0.5+1.0*xd-1.0*xd+0.5*yd, self.pos[1]+0.5+1.0*yd-1.0*yd/CHAR_H_RATIO+0.5*xd/CHAR_H_RATIO), ),
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID,
+				fill=C_FOREGROUND if self.filled else None,falpha=1.0),
+			Line(a=(self.pos[0]+0.5+0.5*xd-1.25*xd, self.pos[1]+0.5+0.5*yd-1.25*yd/CHAR_H_RATIO),
+				b=(self.pos[0]+0.5-1.5*xd, self.pos[1]+0.5-1.5*yd),
+				z=1,stroke="orange",salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+
+
+class UOutlineDiamondConnectorPattern(DiamondConnectorPattern):
 	
 	chars = ["^","vV"]
 	xdir = 0
@@ -1410,6 +1438,7 @@ class UOutlineDiamondConnectorPattern(ConnectorPattern):
 	linemeta = M_LINE_START_S
 	dashmeta = M_DASH_START_S
 	boxmeta = M_BOX_AFTER_S
+	filled = False
 		
 		
 PATTERNS = [
@@ -1451,7 +1480,8 @@ PATTERNS = [
 	LCrowsFeetPattern,			
 	RCrowsFeetPattern,			
 	UCrowsFeetPattern,			
-	DCrowsFeetPattern,			
+	DCrowsFeetPattern,
+	UOutlineDiamondConnectorPattern,
 	LiteralPattern
 ]
 

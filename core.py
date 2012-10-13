@@ -14,6 +14,7 @@ Ellipse = namedtuple("Ellipse", "a b z stroke salpha w stype fill falpha")
 Arc = namedtuple("Arc","a b z start end stroke salpha w stype fill falpha")
 Text = namedtuple("Text","pos z text colour alpha size")
 QuadCurve = namedtuple("QuadCurve","a b c z stroke salpha w stype")
+Polygon = namedtuple("Polygon","points z stroke salpha w stype fill falpha")
 
 STROKE_SOLID = object()
 STROKE_DASHED = object()

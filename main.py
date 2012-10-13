@@ -46,6 +46,7 @@ TODO:
 	* Terminal
 	* Dashed Paralellogram boxes
 	* Diagonal arrowheads
+	* Sketch rendering (random distortion, cursive font)
 """
 
 import sys
@@ -88,7 +89,7 @@ class SvgOutput(object):
 		root.setAttribute("version","1.1")
 		for item in sorted(items,key=lambda i: i.z):
 			hname = "_do_%s" % type(item).__name__
-			getattr(self,hname,lambda i,d,p: None)(item,doc,root,prefs)
+			getattr(self,hname,lambda i,d,r,p: None)(item,doc,root,prefs)
 		doc.writexml(stream,addindent="\t",newl="\n")
 			
 	def _colour(self,colour,prefs):
@@ -182,6 +183,13 @@ class SvgOutput(object):
 		el.setAttribute("fill","none")
 		parent.appendChild(el)
 		
+	def _do_Polygon(self,polygon,doc,parent,prefs):
+		el = doc.createElement("polygon")
+		el.setAttribute("points",
+			" ".join(["%s,%s" % (self._x(p[0]),self._y(p[1])) for p in polygon.points]))
+		self._style_attrs(polygon,el,prefs)
+		parent.appendChild(el)
+
 	def _do_Text(self,text,doc,parent,prefs):
 		el = doc.createElement("text")
 		el.setAttribute("x",self._x(text.pos[0]))

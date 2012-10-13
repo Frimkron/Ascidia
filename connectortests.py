@@ -1882,10 +1882,10 @@ class TestUOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 		p = self.pclass()
 		p.test(main.CurrentChar(0,2,"^",core.M_BOX_AFTER_S))
 		feed_input(p,0,3,   "  \n")
-		feed_input(p,1,0,"   v \n")
-		feed_input(p,2,0,"   ")
+		feed_input(p,1,0,"  v \n")
+		feed_input(p,2,0,"  ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(2,3,"|",core.M_LINE_START_S))
+			p.test(main.CurrentChar(2,2,"|",core.M_LINE_START_S))
 
 	def test_expects_caret(self):
 		p = self.pclass()
@@ -2011,9 +2011,27 @@ class TestUOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 				om = outmeta[j][i]
 				self.assertEquals(om, p.test(main.CurrentChar(j,linestart+i,char,im)))
 				   
-	# TODO: ConnectorPattern currently has *optional* box meta, because outline
-	# arrowhead was the first implementor - needs to change
-				   
+	def do_render(self,x,y,dash=False):
+		p = self.pclass()
+		p.test(main.CurrentChar(y,x,"^",core.M_BOX_AFTER_S))
+		feed_input(p,y,x+1," \n")
+		feed_input(p,y+1,0," "*x + "v \n")
+		feed_input(p,y+2,0," "*x)
+		try:
+			p.test(main.CurrentChar(y+2,x,"|",core.M_LINE_START_S 
+				| (core.M_DASH_START_S if dash else core.M_NONE) ))
+		except StopIteration: pass
+		return p.render()
+		
+	def test_render_returns_correct_shapes(self):
+		r = self.do_render(4,3)
+		self.assertEquals(2,len(r))
+		self.assertEquals(1,len(filter(lambda x: isinstance(x,core.Line),r)))
+		self.assertEquals(1,len(filter(lambda x: isinstance(x,core.Polygon),r)))
+
+	def test_render_coordinates(self):
+		r = self.do_render(4,3)
+		# TODO
 
 if __name__ == "__main__":
 	unittest.main()
