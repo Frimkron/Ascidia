@@ -47,6 +47,7 @@ TODO:
 	* Dashed Paralellogram boxes
 	* Diagonal arrowheads
 	* Sketch rendering (random distortion, cursive font)
+	* Diagonal jumps (X? r?)
 """
 
 import sys

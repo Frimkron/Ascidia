@@ -1423,9 +1423,9 @@ class DiamondConnectorPattern(ConnectorPattern):
 					(self.pos[0]+0.5+1.0*xd-1.0*xd+0.5*yd, self.pos[1]+0.5+1.0*yd-1.0*yd/CHAR_H_RATIO+0.5*xd/CHAR_H_RATIO), ),
 				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID,
 				fill=C_FOREGROUND if self.filled else None,falpha=1.0),
-			Line(a=(self.pos[0]+0.5+0.5*xd-1.25*xd, self.pos[1]+0.5+0.5*yd-1.25*yd/CHAR_H_RATIO),
+			Line(a=(self.pos[0]+0.5+1.0*xd-2.0*xd, self.pos[1]+0.5+1.0*yd-2.0*yd/CHAR_H_RATIO),
 				b=(self.pos[0]+0.5-1.5*xd, self.pos[1]+0.5-1.5*yd),
-				z=1,stroke="orange",salpha=1.0,w=1,
+				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,
 				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
 
@@ -1438,6 +1438,30 @@ class UOutlineDiamondConnectorPattern(DiamondConnectorPattern):
 	linemeta = M_LINE_START_S
 	dashmeta = M_DASH_START_S
 	boxmeta = M_BOX_AFTER_S
+	filled = False
+		
+		
+class DOutlineDiamondConnectorPattern(DiamondConnectorPattern):
+	
+	chars = ["^","vV"]
+	xdir = 0
+	ydir = 1
+	flipped = True
+	linemeta = M_LINE_AFTER_S
+	dashmeta = M_DASH_AFTER_S
+	boxmeta = M_BOX_START_S
+	filled = False
+	
+	
+class LOutlineDiamondConnectorPattern(DiamondConnectorPattern):
+	
+	chars = ["<",">"]
+	xdir = 1
+	ydir = 0
+	flipped = False
+	linemeta = M_LINE_START_E
+	dashmeta = M_DASH_START_E
+	boxmeta = M_BOX_AFTER_E
 	filled = False
 		
 		
@@ -1482,6 +1506,7 @@ PATTERNS = [
 	UCrowsFeetPattern,			
 	DCrowsFeetPattern,
 	UOutlineDiamondConnectorPattern,
+	DOutlineDiamondConnectorPattern,
 	LiteralPattern
 ]
 
