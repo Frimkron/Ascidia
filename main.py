@@ -2,7 +2,6 @@
 
 """	
 TODO:
-	* Outline diamond connector "<>--"
 	* Filled diamond connector "<#>--"
 	* Large ellipses
 	* Image output (cairo?)

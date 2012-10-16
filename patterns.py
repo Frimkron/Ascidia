@@ -1465,6 +1465,18 @@ class LOutlineDiamondConnectorPattern(DiamondConnectorPattern):
 	filled = False
 		
 		
+class ROutlineDiamondConnectorPattern(DiamondConnectorPattern):
+
+	chars = ["<",">"]
+	xdir = 1
+	ydir = 0
+	flipped = True
+	linemeta = M_LINE_AFTER_E
+	dashmeta = M_DASH_AFTER_E
+	boxmeta = M_BOX_START_E
+	filled = False
+		
+		
 PATTERNS = [
 	StickManPattern,			
 	DbCylinderPattern,			
@@ -1507,6 +1519,8 @@ PATTERNS = [
 	DCrowsFeetPattern,
 	UOutlineDiamondConnectorPattern,
 	DOutlineDiamondConnectorPattern,
+	LOutlineDiamondConnectorPattern,
+	ROutlineDiamondConnectorPattern,
 	LiteralPattern
 ]
 
