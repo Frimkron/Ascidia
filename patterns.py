@@ -1421,10 +1421,10 @@ class DiamondConnectorPattern(ConnectorPattern):
 					(self.pos[0]+0.5+1.0*xd-1.0*xd-0.5*yd, self.pos[1]+0.5+1.0*yd-1.0*yd/CHAR_H_RATIO-0.5*xd/CHAR_H_RATIO),
 					(self.pos[0]+0.5+1.0*xd-2.0*xd, self.pos[1]+0.5+1.0*yd-2.0*yd/CHAR_H_RATIO),
 					(self.pos[0]+0.5+1.0*xd-1.0*xd+0.5*yd, self.pos[1]+0.5+1.0*yd-1.0*yd/CHAR_H_RATIO+0.5*xd/CHAR_H_RATIO), ),
-				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID,
-				fill=C_FOREGROUND if self.filled else None,falpha=1.0),
+				z=1,stroke=None if self.filled else C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_SOLID,fill=C_FOREGROUND if self.filled else None,falpha=1.0),
 			Line(a=(self.pos[0]+0.5+1.0*xd-2.0*xd, self.pos[1]+0.5+1.0*yd-2.0*yd/CHAR_H_RATIO),
-				b=(self.pos[0]+0.5-1.5*xd, self.pos[1]+0.5-1.5*yd),
+				b=(self.pos[0]+0.5+1.0*xd-0.5*xd-len(self.chars)*xd, self.pos[1]+0.5+1.0*yd-0.5*yd-len(self.chars)*yd),
 				z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,
 				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
 
@@ -1475,6 +1475,22 @@ class ROutlineDiamondConnectorPattern(DiamondConnectorPattern):
 	dashmeta = M_DASH_AFTER_E
 	boxmeta = M_BOX_START_E
 	filled = False
+		
+		
+class UDiamondConnectorPattern(DiamondConnectorPattern):
+	
+	chars = ["^","#","vV"]
+	xdir = 0
+	ydir = 1
+	flipped = False
+	linemeta = M_LINE_START_S
+	dashmeta = M_DASH_START_S
+	boxmeta = M_BOX_AFTER_S
+	filled = True
+	
+
+class DDiamondConnectorPattern(DiamondConnectorPattern):
+	pass
 		
 		
 PATTERNS = [
