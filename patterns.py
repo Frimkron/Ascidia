@@ -1490,7 +1490,15 @@ class UDiamondConnectorPattern(DiamondConnectorPattern):
 	
 
 class DDiamondConnectorPattern(DiamondConnectorPattern):
-	pass
+	
+	chars = ["^","#","vV"]
+	xdir = 0
+	ydir = 1
+	flipped = True
+	linemeta = M_LINE_AFTER_S
+	dashmeta = M_DASH_AFTER_S
+	boxmeta = M_BOX_START_S
+	filled = True
 		
 		
 PATTERNS = [
@@ -1537,6 +1545,8 @@ PATTERNS = [
 	DOutlineDiamondConnectorPattern,
 	LOutlineDiamondConnectorPattern,
 	ROutlineDiamondConnectorPattern,
+	UDiamondConnectorPattern,
+	DDiamondConnectorPattern,
 	LiteralPattern
 ]
 
