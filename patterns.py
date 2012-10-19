@@ -454,193 +454,7 @@ class LineRdCornerPattern(Pattern):
 					stype=STROKE_DASHED if end[2] and oth[2] else STROKE_SOLID) )		
 		return retval
 
-
-class ArrowheadPattern(Pattern):
-
-	pos = None
-	tobox = False
-	dashed = False
-	chars = None
-	linemeta = None
-	boxmeta = None
-	dashmeta = None
-	flipped = False
-	xdir = None
-	ydir = None
-	
-	def matcher(self):
-		self.curr = yield
-		self.pos = self.curr.col,self.curr.row
-		if self.occupied() or not self.is_in(self.curr.char,self.chars): self.reject()
-		if self.flipped:
-			if self.curr.meta & self.boxmeta: self.tobox = True
-		else:
-			if not self.curr.meta & self.linemeta: self.reject()
-			if self.curr.meta & self.dashmeta: self.dashed = True
-		self.curr = yield M_OCCUPIED
-		try:
-			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-				self.curr = yield meta
-			if self.flipped:
-				if not self.curr.meta & self.linemeta: self.reject()
-				if self.curr.meta & self.dashmeta: self.dashed = True
-			else:
-				if self.curr.meta & self.boxmeta: self.tobox = True	
-		except NoSuchPosition:
-			if self.flipped: raise
-		return
 		
-	def render(self):
-		Pattern.render(self)
-		flip = -1 if self.flipped else 1
-		centre = (self.pos[0]+0.5,self.pos[1]+0.5)
-		spos = (centre[0]-0.5*self.xdir*flip,centre[1]-0.5*self.ydir*flip)
-		apos2 = (centre[0]+(0.5+0.5*self.tobox)*self.xdir*flip,centre[1]+(0.5+0.5*self.tobox)*self.ydir*flip)
-		apos1 = (apos2[0]-0.8*self.xdir*flip-0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO-0.5*self.xdir*flip/CHAR_H_RATIO)
-		apos3 = (apos2[0]-0.8*self.xdir*flip+0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO+0.5*self.xdir*flip/CHAR_H_RATIO)
-		return [
-			Line(a=apos1,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=apos3,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=spos,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
-				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
-		
-
-class LArrowheadPattern(ArrowheadPattern):
-
-	chars = "<"
-	linemeta = M_LINE_START_E
-	boxmeta = M_BOX_AFTER_E
-	dashmeta = M_DASH_START_E
-	xdir = 1
-	ydir = 0
-	flipped = True
-	
-		
-class RArrowheadPattern(ArrowheadPattern):
-	
-	chars = ">"
-	linemeta = M_LINE_AFTER_E
-	boxmeta = M_BOX_START_E
-	dashmeta = M_DASH_AFTER_E
-	xdir = 1
-	ydir = 0
-	flipped = False
-	
-
-class DArrowheadPattern(ArrowheadPattern):
-
-	chars = "Vv"
-	linemeta = M_LINE_AFTER_S
-	boxmeta = M_BOX_START_S
-	dashmeta = M_DASH_AFTER_S
-	xdir = 0
-	ydir = 1
-	flipped = False
-	# TODO: disallow word context
-
-
-class UArrowheadPattern(ArrowheadPattern):
-	
-	chars = "^"
-	linemeta = M_LINE_START_S
-	boxmeta = M_BOX_AFTER_S
-	dashmeta = M_DASH_START_S
-	xdir = 0
-	ydir = 1
-	flipped = True
-
-	
-class CrowsFeetPattern(Pattern):
-
-	pos = None
-	xdir = 0
-	ydir = 0
-	chars = None
-	startmeta = None
-	endmeta = None
-	flipped = True
-	dashed = False
-
-	def matcher(self):
-		self.curr = yield
-		self.pos = self.curr.col,self.curr.row
-		if( self.occupied() or not self.is_in(self.curr.char,self.chars)
-				or not self.curr.meta & self.startmeta ): 
-			self.reject()
-		if not self.flipped and self.curr.meta & self.dashmeta: 
-			self.dashed = True
-		self.curr = yield M_OCCUPIED
-		for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-			self.curr = yield meta
-		if not self.curr.meta & self.endmeta: self.reject()
-		if self.flipped and self.curr.meta & self.dashmeta:
-			self.dashed = True
-		return
-		
-	def render(self):
-		Pattern.render(self)
-		
-		flip = -1 if self.flipped else 1
-		centre = ( self.pos[0]+0.5, self.pos[1]+0.5 )
-		spos = ( centre[0]-self.xdir*0.5*flip, centre[1]-self.ydir*0.5*flip )
-		fpos1 = ( centre[0]+self.xdir*1.0*flip - 0.6*(not self.xdir),
-					centre[1]+self.ydir*1.0*flip - 0.6*(not self.ydir)/CHAR_H_RATIO )
-		fpos2 = ( centre[0]+self.xdir*1.0*flip, centre[1]+self.ydir*1.0*flip )
-		fpos3 = ( centre[0]+self.xdir*1.0*flip + 0.6*(not self.xdir), 
-					centre[1]+self.ydir*1.0*flip + 0.6*(not self.ydir)/CHAR_H_RATIO )
-		fpos0 = ( fpos2[0]-self.xdir*1.0*flip, fpos2[1]-self.ydir*1.0*flip/CHAR_H_RATIO )
-		return [ 
-			Line(a=fpos0,b=fpos1,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=fpos0,b=fpos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=fpos0,b=fpos3,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=spos,b=fpos0,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
-				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
-
-	
-class LCrowsFeetPattern(CrowsFeetPattern):
-
-	xdir = 1
-	ydir = 0
-	chars = ">"
-	flipped = True
-	startmeta = M_BOX_AFTER_E
-	endmeta = M_LINE_START_E
-	dashmeta = M_DASH_START_E
-
-
-class RCrowsFeetPattern(CrowsFeetPattern):
-	
-	xdir = 1
-	ydir = 0
-	chars = "<"
-	flipped = False
-	startmeta = M_LINE_AFTER_E
-	endmeta = M_BOX_START_E
-	dashmeta = M_DASH_AFTER_E
-	
-	
-class UCrowsFeetPattern(CrowsFeetPattern):
-
-	xdir = 0
-	ydir = 1
-	chars = "Vv"
-	flipped = True
-	startmeta = M_BOX_AFTER_S
-	endmeta = M_LINE_START_S
-	dashmeta = M_DASH_START_S
-	
-	
-class DCrowsFeetPattern(CrowsFeetPattern):
-
-	xdir = 0
-	ydir = 1
-	chars = "^"
-	flipped = False
-	startmeta = M_LINE_AFTER_S
-	endmeta = M_BOX_START_S
-	dashmeta = M_DASH_AFTER_S
-
-
 class ShortLinePattern(Pattern):
 	
 	xdir = 0
@@ -1267,6 +1081,138 @@ class ConnectorPattern(Pattern):
 			if self.boxrequired and not self.tobox: self.reject()
 		
 		return
+
+
+class ArrowheadPattern(ConnectorPattern):
+
+	boxrequired = False
+	
+	def render(self):
+		Pattern.render(self)
+		flip = 1 if self.flipped else -1
+		centre = (self.pos[0]+0.5,self.pos[1]+0.5)
+		spos = (centre[0]-0.5*self.xdir*flip,centre[1]-0.5*self.ydir*flip)
+		apos2 = (centre[0]+(0.5+0.5*self.tobox)*self.xdir*flip,centre[1]+(0.5+0.5*self.tobox)*self.ydir*flip)
+		apos1 = (apos2[0]-0.8*self.xdir*flip-0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO-0.5*self.xdir*flip/CHAR_H_RATIO)
+		apos3 = (apos2[0]-0.8*self.xdir*flip+0.5*self.ydir*flip,apos2[1]-0.8*self.ydir*flip/CHAR_H_RATIO+0.5*self.xdir*flip/CHAR_H_RATIO)
+		return [
+			Line(a=apos1,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=apos3,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=spos,b=apos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]	
+
+
+class LArrowheadPattern(ArrowheadPattern):
+
+	xdir = 1
+	ydir = 0
+	chars = ["<"]
+	flipped = False
+	linemeta = M_LINE_START_E
+	dashmeta = M_DASH_START_E
+	boxmeta = M_BOX_AFTER_E
+	
+		
+class RArrowheadPattern(ArrowheadPattern):
+	
+	xdir = 1
+	ydir = 0
+	chars = [">"]
+	flipped = True
+	linemeta = M_LINE_AFTER_E
+	dashmeta = M_DASH_AFTER_E
+	boxmeta = M_BOX_START_E
+	
+
+class DArrowheadPattern(ArrowheadPattern):
+
+	xdir = 0
+	ydir = 1
+	chars = ["Vv"]
+	flipped = True
+	linemeta = M_LINE_AFTER_S
+	dashmeta = M_DASH_AFTER_S
+	boxmeta = M_BOX_START_S
+	# TODO: disallow word context
+
+
+class UArrowheadPattern(ArrowheadPattern):
+	
+	xdir = 0
+	ydir = 1
+	chars = ["^"]
+	flipped = False
+	linemeta = M_LINE_START_S
+	dashmeta = M_DASH_START_S
+	boxmeta = M_BOX_AFTER_S
+
+
+class CrowsFeetPattern(ConnectorPattern):
+
+	boxrequired = True
+
+	def render(self):
+		Pattern.render(self)
+		
+		flip = 1 if self.flipped else -1
+		centre = ( self.pos[0]+0.5, self.pos[1]+0.5 )
+		spos = ( centre[0]-self.xdir*0.5*flip, centre[1]-self.ydir*0.5*flip )
+		fpos1 = ( centre[0]+self.xdir*1.0*flip - 0.6*(not self.xdir),
+					centre[1]+self.ydir*1.0*flip - 0.6*(not self.ydir)/CHAR_H_RATIO )
+		fpos2 = ( centre[0]+self.xdir*1.0*flip, centre[1]+self.ydir*1.0*flip )
+		fpos3 = ( centre[0]+self.xdir*1.0*flip + 0.6*(not self.xdir), 
+					centre[1]+self.ydir*1.0*flip + 0.6*(not self.ydir)/CHAR_H_RATIO )
+		fpos0 = ( fpos2[0]-self.xdir*1.0*flip, fpos2[1]-self.ydir*1.0*flip/CHAR_H_RATIO )
+		return [ 
+			Line(a=fpos0,b=fpos1,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=fpos0,b=fpos2,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=fpos0,b=fpos3,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
+			Line(a=spos,b=fpos0,z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID) ]
+
+
+class LCrowsFeetPattern(CrowsFeetPattern):
+
+	xdir = 1
+	ydir = 0
+	chars = [">"]
+	flipped = False
+	linemeta = M_LINE_START_E
+	dashmeta = M_DASH_START_E
+	boxmeta = M_BOX_AFTER_E
+
+
+class RCrowsFeetPattern(CrowsFeetPattern):
+	
+	xdir = 1
+	ydir = 0
+	chars = ["<"]
+	flipped = True
+	linemeta = M_LINE_AFTER_E
+	dashmeta = M_DASH_AFTER_E
+	boxmeta = M_BOX_START_E
+	
+	
+class UCrowsFeetPattern(CrowsFeetPattern):
+
+	xdir = 0
+	ydir = 1
+	chars = ["Vv"]
+	flipped = False
+	linemeta = M_LINE_START_S
+	dashmeta = M_DASH_START_S
+	boxmeta = M_BOX_AFTER_S
+	
+	
+class DCrowsFeetPattern(CrowsFeetPattern):
+
+	xdir = 0
+	ydir = 1
+	chars = ["^"]
+	flipped = True
+	linemeta = M_LINE_AFTER_S
+	dashmeta = M_DASH_AFTER_S
+	boxmeta = M_BOX_START_S
 	
 
 class UOutlineArrowheadPattern(Pattern):
@@ -1499,7 +1445,31 @@ class DDiamondConnectorPattern(DiamondConnectorPattern):
 	dashmeta = M_DASH_AFTER_S
 	boxmeta = M_BOX_START_S
 	filled = True
-		
+
+
+class LDiamondConnectorPattern(DiamondConnectorPattern):
+	
+	chars = ["<","#",">"]
+	xdir = 1
+	ydir = 0
+	flipped = False
+	linemeta = M_LINE_START_E
+	dashmeta = M_DASH_START_E
+	boxmeta = M_BOX_AFTER_E
+	filled = True
+	
+
+class RDiamondConnectorPattern(DiamondConnectorPattern):
+	
+	chars = ["<","#",">"]
+	xdir = 1
+	ydir = 0
+	flipped = True
+	linemeta = M_LINE_AFTER_E
+	dashmeta = M_DASH_AFTER_E
+	boxmeta = M_BOX_START_E
+	filled = True
+			
 		
 PATTERNS = [
 	StickManPattern,			
@@ -1547,6 +1517,8 @@ PATTERNS = [
 	ROutlineDiamondConnectorPattern,
 	UDiamondConnectorPattern,
 	DDiamondConnectorPattern,
+	LDiamondConnectorPattern,
+	RDiamondConnectorPattern,
 	LiteralPattern
 ]
 
