@@ -2,12 +2,10 @@
 
 """	
 TODO:
-	* Filled diamond connector "<#>--"
 	* Large ellipses
 	* Image output (cairo?)
 	* Char size option (image w/h?)
 	* Char ratio option
-	* Secondary colour
 	* Rounded corner boxes
 	* Slash-cornered boxes
 	* Dashed round corner boxes
@@ -47,6 +45,8 @@ TODO:
 	* Diagonal arrowheads
 	* Sketch rendering (random distortion, cursive font)
 	* Diagonal jumps (X? r?)
+	* Secondary colour (why?)
+	
 """
 
 import sys

@@ -705,10 +705,10 @@ I should make the same metadata change to boxes too, to facilitate
 upward arrow patterns.
 
  vv   vv   NF meta/char, meta
--<|  |>-    F meta/char, meta
-
+-<|  |>-    F meta/char, meta 
+                               
  vv   vv   NF meta/char, meta
-->|  |<-    F meta/char, meta
+->|  |<-    F meta/char, meta   
 
 - For general-purpose boxes such as tables and things, connected boxes should
   be properly recognised. Or rather, the box pattern should reject connected lines
@@ -784,13 +784,13 @@ Diagram types:
     - Circled filled circle     (#)-->((#))                    '---------'   \         /
                                  |      ^                                     '-------'
                                  |      |
-                                 '------'  
-Box connectors:
-  |-----  --------------------
-  |<----  | ^/_\| * V V V ^ ^
-  |<|---  | | | =/_\| - 0 V #
-  |-||--  | | | | | | | | | V
-  |*<|--  | | | | | | | | | | 
+                                 '------'   .----.     ; :
+Box connectors:                            /      \    ; :
+  |-----  --------------------   ^        ;        ;   ; :
+  |<----  | ^/_\| * V V V ^ ^    |        |        |   ; :
+  |<|---  | | | =/_\| - 0 V #    ;        ;        v   V V
+  |-||--  | | | | | | | | | V     \      /
+  |*<|--  | | | | | | | | | |      '----'
   |>----
   |>|---
   |>O---
@@ -1297,5 +1297,101 @@ fundamental that they're found in other patterns!
 [!] Length-1 dashed lines?
 - Don't exist.
 
-[<][|][ ]
-[|][>][ ]
+[<][|][ ]                                                              --------+
+[|][>][ ]                                                                       \
+                                                            .-----.              \
+Circle vs Hex boxes: .------.                 .-----.     .'       '.             \
+          .---.     /        \      .----.   /       \   /           \             +----
+( sml )  (     )   (  large   )    /  ?   \ |    ?    | |      ?      |           /
+          '---'     \        /     \      /  \       /  |             |          /
+                     '------'       '----'    '-----'    \           /          /
+                      ______                              '.       .'+---------+      
+          ____       /      \     +----+                    '-----' /           \
+         /    \     / large  \   /      \   ___       __           /             \
+         \____/     \        /  +   ??   + | ? | ?_  /??\         /               \
+   +                 \______/    \      /  |___| <_> \__/    ----+                 +----
+  / \                             +----+                          \               /
+ /   \   +---+ ____  .---.              ___    ___     ___     ___ \             /
++     + /   / /   / <     >   .----.   /   \  /   \   /   \   /   \ \           /
+ \   / +---+ /___/   '---'  .'      '. \___/ <     > {     } +     + +---------+
+  \ /                      <          >       \___/   \___/   \___/ /           \
+   +  I'm actually starting '.      .' +--+   +---+     +-+        /             \
+      to warm to the + corner '----'  <    > /     \   /   \      /               \
+      variant of the hex box.          +--+  \     /  + hex +    +                 +
+ It's consistent with the + corner idea, but...---+    \   /      \               /
+                                                        +-+   
+It's ugly, it imposes a significant minimum size, and there's no specific
+need for it to be consistent with the way straight lines are implemented.
+Then again, it does allow connectors to be vertically centered.
+
+[!] A disadvantage of using + connectors for any type of box is that boxes may be parsed
+out of larger structures which aren't intended to contain them. This is actually a 
+problem with square boxes, e.g.
+
++------+------+------+------+  A, C, I and K become boxes.
+| A |  | B |  | C |  | D |  |  But we can't put restrictions on what the corners
+|------|------|------|------|  are allowed to connect to, because the corners are
+|   |  |   |  |   |  |   |  |  the natural place to put connectors in the case of
++------+------+------+------+  hexagonal boxes.
+| E |  | F |  | G |  | H |  |         <-----.            <----+         ____
+|------|------|------|------|   ______      |          _____   \___    /    \
+|   |  |   |  |   |  |   |  |  | A    |   ______      /     \  /   \  /      \---->
++------+------+------+------+  |better|  /     / .'.  |     | |     | \      /
+| I |  | J |  | K |  | L |  |  |  box?| /     / <   > |     | |     |  \____/
+|------|------|------|------|  |______|/_____/   '.'  \_____/  \___/
+|   |  |   |  |   |  |   |  |      |
++------+------+------+------+      '---->
+
+[?] Is the only way to separate boxes properly from more general line structures to 
+have their patterns not be composed of lines by the same rules?
+
+[?] Is it not possible to parse boxes out more tentitively?
+
+  +---+        Box or structure?                  +----+ A box, with box semantics,
+ /     \       When does a box with things        |    | or just an enclosed line, like
++       +----> meeting it become a more general   |    | this would be?   +-+
+ \     /       structure of lines that should     +----+  |               | |
+  +---+        be left alone?                             '-->  +---------+ +
+                                                                 \         / 
+                                                                  +-------+
+What would happen if overlapping pattern instances cancelled each 
+other out instead of the first one being accepted?
+
++--+--+  Then simple lines wouldn't be possibe: -------
+|  |  |
++--+--+
+
+:     :     :     :   ;   ;   ;   ;
+ '. .' '. .' '. .'     \ / \ / \ /
+   :     :     :        ;   ;   ;
+ .' '. .' '. .' '.     / \ / \ / \
+:     :     :     :   ;   ;   ;   ;
+
+[*] What if using + corners as connectors was discouraged, and invalidated the box?
+    Could use the hex box variant without + corners. Nobody's going to want to attach
+    connectors to square box corners anyway.
+                
+                  +----+      _____
+       |   |     /  A   \    /  A  \--->
++---+  +---+--  +  hex   +  /  hex  \      ^   
+| Y |  | N |     \ line /   \  box  /      |
++---+  +---+--    +----+     \_____/       +
+                  |    |           \      /
+                  V    +-->         +----+
+                  
+[!] Underscores suck a bit for boxes, because lines at the top leave a big gap:
+
+   +----->
+   |
+ _____
+/     \
+
+[!] People WILL use square box corners to attach things, especially diagonally:
+
++---+
+|   | box A
++---+
+     \
+      +---+
+      |   | box B
+      +---+
