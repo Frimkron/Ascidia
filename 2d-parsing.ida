@@ -1307,18 +1307,18 @@ Circle vs Hex boxes: .------.                 .-----.     .'       '.           
                      '------'       '----'    '-----'    \           /          /
                       ______                              '.       .'+---------+      
           ____       /      \     +----+                    '-----' /           \
-         /    \     / large  \   /      \   ___       __           /             \
-         \____/     \        /  +   ??   + | ? | ?_  /??\         /               \
-   +                 \______/    \      /  |___| <_> \__/    ----+                 +----
-  / \                             +----+                          \               /
+         /    \     / large  \   /      \   ___       __           /  ___        \
+         \____/     \        /  +   ??   + | ? | ?_  /??\         /  /   \  .---. \
+   +                 \______/    \      /  |___| <_> \__/    ----+  |     ||     | +----
+  / \                             +----+                          \  \___/  '---' /
  /   \   +---+ ____  .---.              ___    ___     ___     ___ \             /
 +     + /   / /   / <     >   .----.   /   \  /   \   /   \   /   \ \           /
  \   / +---+ /___/   '---'  .'      '. \___/ <     > {     } +     + +---------+
-  \ /                      <          >       \___/   \___/   \___/ /           \
-   +  I'm actually starting '.      .' +--+   +---+     +-+        /             \
-      to warm to the + corner '----'  <    > /     \   /   \      /               \
-      variant of the hex box.          +--+  \     /  + hex +    +                 +
- It's consistent with the + corner idea, but...---+    \   /      \               /
+  \ /                      <          >       \___/   \___/   \___/ / ____      \
+   +  I'm actually starting '.      .' +--+   +---+     +-+        / /    \      \
+      to warm to the + corner '----'  <    > /     \   /   \      / |      |      \
+      variant of the hex box.          +--+  \     /  + hex +    +  |      |       +
+ It's consistent with the + corner idea, but...---+    \   /      \  \____/       /
                                                         +-+   
 It's ugly, it imposes a significant minimum size, and there's no specific
 need for it to be consistent with the way straight lines are implemented.
@@ -1395,3 +1395,28 @@ other out instead of the first one being accepted?
       +---+
       |   | box B
       +---+
+
+- For now, ignore the boxes-within-structures issue, and use + cornered hexagon box.
+                                                                      .------.
+Circles, then: ___     .---.            .----.     _____     ___     /        \
+       .--.   /   \   /     \   .--.   /      \   /     \   /   \   /          \
+( 1 ) ( 2  ) (  3  ) (   4   ) | 5  | |   6    | |   7   | |  8  | |     9      |
+       '--'   \___/   \     /   '--'   \      /  |       |  \___/  |            |
+                       '---'            '----'    \_____/           \          /
+     .-----.       .--------.                                        \        /
+   .'       '.    /          \   .-----.     .---.                    '------'
+  /           \  |            | |       |  .'     '.
+ |     10      | |     11     | |       | |         |
+ |             | |            | |       |  '.     .'        
+  \           /  |            |  '-----'     '---'     
+   '.       .'    \          /
+     '-----'       '--------'
+
+                .--.   .--.
+    [.][-]+     |  |  |    |
+  [.']*         '--'   '--'
+ [/]*            box  circle
+[|]+
+ [\]*
+  ['.]*
+    ['][-]+

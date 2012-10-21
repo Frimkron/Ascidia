@@ -2274,5 +2274,216 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)
 
 
+class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
+
+	def __init__(self,*args,**kargs):
+		unittest.TestCase.__init__(self,*args,**kargs)
+		self.pclass = patterns.EllipticalBoxPattern
+		
+	def test_accepts_small_ellipse(self):
+		p = self.pclass()
+		feed_input(p,1,2,  ".-.  \n")
+		feed_input(p,2,0," |   | \n")
+		feed_input(p,3,0,"  '-'  \n")
+		feed_input(p,4,0,"    ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,4," ",core.M_NONE))
+			
+	def test_expects_top_left_period(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,5,"?",core.M_NONE))
+			
+	def test_expects_top_left_period_unoccupied(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,5,".",core.M_OCCUPIED))
+
+	def test_expects_top_hyphen(self):
+		p = self.pclass()
+		feed_input(p,1,5,".")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,6,".",core.M_NONE))
+			
+	def test_expects_top_hyphen_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,".")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,6,"-",core.M_OCCUPIED))
+
+	def test_expects_top_right_period(self):
+		p = self.pclass()
+		feed_input(p,1,5,".-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,7,"?",core.M_NONE))
+	
+	def test_expects_top_right_period_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,".-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,7,".",core.M_OCCUPIED))
+
+	def test_allows_rest_of_top_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,".-.")
+		p.test(main.CurrentChar(1,8,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,9,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(1,10,"\n",core.M_OCCUPIED))
+
+	def test_allows_start_of_second_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,".-.  \n")
+		p.test(main.CurrentChar(2,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,2,"c",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,3,"d",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,4,"e",core.M_OCCUPIED))
+
+	def test_expects_left_pipe(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4,"?",core.M_NONE))
+			
+	def test_expects_left_pipe_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4,"|",core.M_OCCUPIED))
+			
+	def test_allows_middle_context(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |")
+		p.test(main.CurrentChar(2,5,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,6,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,7,"c",core.M_OCCUPIED))
+
+	def test_expects_right_pipe(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,8,"'",core.M_NONE))
+			
+	def test_expects_right_pipe_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,8,"|",core.M_OCCUPIED))
+			
+	def test_allows_rest_of_third_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   |")
+		p.test(main.CurrentChar(2,9,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,10,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(2,11,"\n",core.M_OCCUPIED))
+		
+	def test_allows_start_of_fourth_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		p.test(main.CurrentChar(3,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(3,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(3,2,"c",core.M_OCCUPIED))
+		p.test(main.CurrentChar(3,3,"d",core.M_OCCUPIED))
+		p.test(main.CurrentChar(3,4,"e",core.M_OCCUPIED))
+		
+	def test_expects_bottom_left_apos(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,5,"Q",core.M_NONE))
+			
+	def test_expects_bottom_left_apos_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,5,"'",core.M_OCCUPIED))
+			
+	def test_expects_bottom_hyphen(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,6,"'",core.M_NONE))
+			
+	def test_expects_bottom_hyphen_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,6,"-",core.M_OCCUPIED))
+			
+	def test_expects_bottom_right_apos(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,7,"|",core.M_NONE))
+			
+	def test_expects_bottom_right_apos_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,7,"'",core.M_OCCUPIED))
+	
+	def test_allows_rest_of_fourth_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '-'")
+		p.test(main.CurrentChar(3,8,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(3,9,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(3,10,"\n",core.M_OCCUPIED))
+		
+	def test_allows_final_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '-'  \n")
+		p.test(main.CurrentChar(4,0,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,1,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,2,"c",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,3,"d",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,4,"e",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,5,"f",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,6,"g",core.M_OCCUPIED))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,7,"h",core.OCCUPIED))
+
+	def test_sets_correct_meta_flags(self):
+		p = self.pclass()
+		input = ((2,  ".-.  \n"),
+				 (0," |   | \n"),
+				 (0,"  '-'  \n"),
+				 (0,"    "     ),)
+		n = core.M_NONE
+		o = core.M_OCCUPIED
+		t = core.M_BOX_START_S | core.M_OCCUPIED
+		a = core.M_BOX_START_S | core.M_BOX_START_E | core.M_OCCUPIED
+		l = core.M_BOX_START_E | core.M_OCCUPIED
+		r = core.M_BOX_AFTER_E
+		b = core.M_BOX_AFTER_S
+		z = core.M_BOX_AFTER_E | core.M_BOX_AFTER_S
+		meta = ((    a,t,t,r,n,n,),
+				(n,a,n,n,n,t,r,n,),
+				(
+
+		
+
 if __name__ == "__main__":
 	unittest.main()
