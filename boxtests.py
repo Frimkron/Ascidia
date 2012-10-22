@@ -2285,9 +2285,9 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,1,2,  ".-.  \n")
 		feed_input(p,2,0," |   | \n")
 		feed_input(p,3,0,"  '-'  \n")
-		feed_input(p,4,0,"    ")
+		feed_input(p,4,0,"     ")
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(4,4," ",core.M_NONE))
+			p.test(main.CurrentChar(4,5," ",core.M_NONE))
 			
 	def test_expects_top_left_period(self):
 		p = self.pclass()
@@ -2337,7 +2337,6 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(2,1,"b",core.M_OCCUPIED))
 		p.test(main.CurrentChar(2,2,"c",core.M_OCCUPIED))
 		p.test(main.CurrentChar(2,3,"d",core.M_OCCUPIED))
-		p.test(main.CurrentChar(2,4,"e",core.M_OCCUPIED))
 
 	def test_expects_left_pipe(self):
 		p = self.pclass()
@@ -2353,13 +2352,20 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(2,4,"|",core.M_OCCUPIED))
 			
-	def test_allows_middle_context(self):
+	def test_allows_middle_content(self):
 		p = self.pclass()
 		feed_input(p,1,5,     ".-.  \n")
 		feed_input(p,2,0,"    |")
 		p.test(main.CurrentChar(2,5,"a",core.M_OCCUPIED))
 		p.test(main.CurrentChar(2,6,"b",core.M_OCCUPIED))
 		p.test(main.CurrentChar(2,7,"c",core.M_OCCUPIED))
+
+	def test_rejects_short_content_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    | \n")
+		with self.assertRaises(core.PatternRejected):
+			feed_input(p,3,0," ")
 
 	def test_expects_right_pipe(self):
 		p = self.pclass()
@@ -2462,15 +2468,78 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		p.test(main.CurrentChar(4,4,"e",core.M_OCCUPIED))
 		p.test(main.CurrentChar(4,5,"f",core.M_OCCUPIED))
 		p.test(main.CurrentChar(4,6,"g",core.M_OCCUPIED))
+		p.test(main.CurrentChar(4,7,"h",core.M_OCCUPIED))
 		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(4,7,"h",core.OCCUPIED))
+			p.test(main.CurrentChar(4,8,"i",core.M_OCCUPIED))
+
+	def test_allows_missing_final_line_due_to_eoi(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '-'  \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,0,core.END_OF_INPUT,core.M_NONE))
+
+	def test_allows_missing_final_line_due_to_short_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '-'  \n")
+		feed_input(p,4,0,"\n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(5,0," ",core.M_NONE))
+			
+	def test_allows_partial_final_line(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"     '-'  \n")
+		feed_input(p,4,0,"      \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(5,0," ",core.M_NONE))
+
+	def test_allows_wide_ellipse(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".----.  \n")
+		feed_input(p,2,0,"    |      | \n")
+		feed_input(p,3,0,"     '----'  \n")
+		feed_input(p,4,0,"           ")
+		with self.assertRaises(StopIteration):
+			feed_input(p,4,11," ")
+			
+	def test_middle_width_must_match_top(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".----.  \n")
+		feed_input(p,2,0,"    |      ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,11," ",core.M_NONE))
+
+	def test_bottom_width_must_match_top(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".----.  \n")
+		feed_input(p,2,0,"    |      | \n")
+		feed_input(p,3,0,"     '----")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,10,"-",core.M_NONE))
+
+	def test_allows_tall_ellipse(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.  \n")
+		feed_input(p,2,0,"    |   | \n")
+		feed_input(p,3,0,"    |   | \n")
+		feed_input(p,4,0,"    |   | \n")
+		feed_input(p,5,0,"     '-'  \n")
+		feed_input(p,6,0,"        ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(6,8," ",core.M_NONE))
 
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
-		input = ((2,  ".-.  \n"),
-				 (0," |   | \n"),
-				 (0,"  '-'  \n"),
-				 (0,"    "     ),)
+		input = ((2,  ".---.  \n"),
+				 (0," |     | \n"),
+				 (0," |     | \n"),
+				 (0,"  '---'  \n"),
+				 (0,"       "    ),)
 		n = core.M_NONE
 		o = core.M_OCCUPIED
 		t = core.M_BOX_START_S | core.M_OCCUPIED
@@ -2479,10 +2548,81 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		r = core.M_BOX_AFTER_E
 		b = core.M_BOX_AFTER_S
 		z = core.M_BOX_AFTER_E | core.M_BOX_AFTER_S
-		meta = ((    a,t,t,r,n,n,),
-				(n,a,n,n,n,t,r,n,),
-				(
+		meta = ((    a,t,t,t,t,r,n,n,),
+				(n,a,n,n,n,n,n,t,r,n,),
+				(n,l,n,n,n,n,n,o,r,n,),
+				(n,b,l,o,o,o,o,z,n,n,),
+				(n,n,b,b,b,b,b       ),)
+		for j,(linestart,line) in enumerate(input):
+			for i,char in enumerate(line):
+				#print i,j
+				self.assertEquals(meta[j][i], 
+					p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE)))
+					
+	def do_render(self,x,y,w,h):
+		p = self.pclass()
+		feed_input(p,y,x,"." + "-"*(w-4) + ". \n")
+		for i in range(h-2):
+			feed_input(p,y+1+i,0," "*(x-1) + "|" + " "*(w-2) + "| \n")
+		feed_input(p,y+(h-1),0," "*x + "'" + "-"*(w-4) + "' \n")
+		feed_input(p,y+h,0," "*x + " "*(w-2))
+		try:
+			p.test(main.CurrentChar(y+h,x+(w-2)," ",core.M_NONE))
+		except StopIteration: pass
+		return p.render()
 
+	def test_render_returns_correct_shapes(self):
+		r = self.do_render(5,4,6,5)
+		self.assertEquals(1,len(r))
+		self.assertTrue( isinstance(r[0],core.Ellipse) )
+		
+	def test_render_coordinates(self):    
+		e = self.do_render(5,4,6,5)[0]    
+		self.assertEquals((4.5,4.5),e.a)
+		self.assertEquals((9.5,8.5),e.b)
+		
+	def test_render_coordinates_position(self):
+		e = self.do_render(11,20,6,5)[0]
+		self.assertEquals((10.5,20.5),e.a)
+		self.assertEquals((15.5,24.5),e.b)
+		
+	def test_render_coordinates_width(self):
+		e = self.do_render(5,4,10,5)[0]
+		self.assertEquals((4.5,4.5),e.a)
+		self.assertEquals((13.5,8.5),e.b)
+		
+	def test_render_coordinates_height(self):
+		e = self.do_render(5,4,6,3)[0]
+		self.assertEquals((4.5,4.5),e.a)
+		self.assertEquals((9.5,6.5),e.b)
+		
+	def test_render_z(self):
+		e = self.do_render(5,4,6,5)[0]
+		self.assertEquals(1,e.z)
+		
+	def test_render_stroke_colour(self):
+		e = self.do_render(5,4,6,5)[0]
+		self.assertEquals(core.C_FOREGROUND,e.stroke)
+		
+	def test_render_stroke_alpha(self):
+		e = self.do_render(5,4,6,5)[0]
+		self.assertEquals(1.0,e.salpha)
+		
+	def test_render_stroke_width(self):
+		e = self.do_render(5,4,6,5)[0]
+		self.assertEquals(1,e.w)
+		
+	def test_render_stroke_style(self):
+		e = self.do_render(5,4,6,5)[0]
+		self.assertEquals(core.STROKE_SOLID,e.stype)
+		
+	def test_render_fill_colour(self):
+		e = self.do_render(5,4,6,5)[0]
+		self.assertEquals(None,e.fill)
+		
+	def test_render_fill_alpha(self):
+		e = self.do_render(5,4,6,5)[0]
+		self.assertEquals(1.0,e.falpha)
 		
 
 if __name__ == "__main__":

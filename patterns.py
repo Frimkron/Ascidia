@@ -350,7 +350,67 @@ class ParagmBoxPattern(Pattern):
 
 class EllipticalBoxPattern(Pattern):
 
-	pass
+	tl = None
+	br = None
+
+	def matcher(self):
+		self.curr = yield
+		self.tl = self.curr.col-1,self.curr.row
+		rowstart = self.curr.col,self.curr.row
+		width = 0
+		height = 0
+		
+		self.curr = yield self.expect(".",meta=M_BOX_START_S|M_BOX_START_E|M_OCCUPIED)
+		i = 0
+		while True:
+			self.curr = yield self.expect("-",meta=M_BOX_START_S|M_OCCUPIED)
+			i += 1
+			if self.curr.char != "-": break
+		self.curr = yield self.expect(".",meta=M_BOX_START_S|M_OCCUPIED)
+		self.curr = yield M_BOX_AFTER_E
+		width = i+2		
+		rowstart = rowstart[0]-1,rowstart[1]+1
+		for meta in self.await_pos(rowstart):
+			self.curr = yield meta
+		
+		first = True
+		while True:
+			self.curr = yield self.expect("|",meta=M_BOX_START_E|M_OCCUPIED
+					| (M_BOX_START_S if first else M_NONE))
+			for meta in self.await_pos(self.offset(width,0)):
+				self.curr = yield meta
+			self.curr = yield self.expect("|",meta=M_OCCUPIED
+					| (M_BOX_START_S if first else M_NONE))
+			self.curr = yield M_BOX_AFTER_E
+			rowstart = rowstart[0],rowstart[1]+1
+			for meta in self.await_pos(rowstart):
+				self.curr = yield meta
+			if self.curr.char != "|": break
+			first = False
+		
+		self.curr = yield M_BOX_AFTER_S
+		self.curr = yield self.expect("'",meta=M_BOX_START_E|M_OCCUPIED)
+		for i in range(width-2):
+			self.curr = yield self.expect("-",meta=M_OCCUPIED)
+		self.curr = yield self.expect("'",meta=M_OCCUPIED)
+		self.br = self.curr.col,self.curr.row
+		self.curr = yield M_BOX_AFTER_E|M_BOX_AFTER_S
+		
+		try:
+			rowstart = rowstart[0],rowstart[1]+1
+			for i in range(width):
+				for meta in self.await_pos(self.offset(i+1,0,rowstart)):
+					self.curr = yield meta
+				self.curr = yield M_BOX_AFTER_S
+		except NoSuchPosition: pass
+		return 
+	
+	def render(self):
+		Pattern.render(self)
+		return [ Ellipse(
+			a=(self.tl[0]+0.5,self.tl[1]+0.5), b=(self.br[0]+0.5,self.br[1]+0.5),
+			z=1,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID,
+			fill=None,falpha=1.0) ]
 			
 			
 class LineSqCornerPattern(Pattern):
@@ -1482,6 +1542,7 @@ PATTERNS = [
 	DiamondBoxPattern,
 	RectangularBoxPattern,					
 	ParagmBoxPattern,
+	EllipticalBoxPattern,
 	#SmallCirclePattern,
 	#TinyCirclePattern,
 	LongHorizDashedLinePattern,		
