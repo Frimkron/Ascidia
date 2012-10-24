@@ -355,10 +355,10 @@ class EllipticalBoxPattern(Pattern):
 
 	def matcher(self):
 		self.curr = yield
-		self.tl = self.curr.col-1,self.curr.row
+		self.tl = 0,self.curr.row
 		rowstart = self.curr.col,self.curr.row
-		width = 0
-		height = 0
+		rowwidth = 0
+		slashrows = 0
 		
 		self.curr = yield self.expect(".",meta=M_BOX_START_S|M_BOX_START_E|M_OCCUPIED)
 		i = 0
@@ -368,16 +368,31 @@ class EllipticalBoxPattern(Pattern):
 			if self.curr.char != "-": break
 		self.curr = yield self.expect(".",meta=M_BOX_START_S|M_OCCUPIED)
 		self.curr = yield M_BOX_AFTER_E
-		width = i+2		
+		rowwidth = i+4
 		rowstart = rowstart[0]-1,rowstart[1]+1
 		for meta in self.await_pos(rowstart):
 			self.curr = yield meta
+			
+		while True:
+			if self.curr.char != "/": break
+			self.curr = yield self.expect("/",meta=M_OCCUPIED|M_BOX_START_E|M_BOX_START_S)
+			for meta in self.await_pos(self.offset(rowwidth-1,0,rowstart)):
+				self.curr = yield meta
+			self.curr = yield self.expect("\\",meta=M_OCCUPIED|M_BOX_START_S)
+			self.curr = yield M_BOX_AFTER_E
+			slashrows += 1
+			rowwidth += 2
+			rowstart = rowstart[0]-1,rowstart[1]+1
+			for meta in self.await_pos(rowstart):
+				self.curr = yield meta
 		
+		self.tl = self.curr.col,self.tl[1]
+		self.br = self.curr.col+(rowwidth-1),0
 		first = True
 		while True:
 			self.curr = yield self.expect("|",meta=M_BOX_START_E|M_OCCUPIED
 					| (M_BOX_START_S if first else M_NONE))
-			for meta in self.await_pos(self.offset(width,0)):
+			for meta in self.await_pos(self.offset(rowwidth-1,0,rowstart)):
 				self.curr = yield meta
 			self.curr = yield self.expect("|",meta=M_OCCUPIED
 					| (M_BOX_START_S if first else M_NONE))
@@ -388,18 +403,34 @@ class EllipticalBoxPattern(Pattern):
 			if self.curr.char != "|": break
 			first = False
 		
+		rowwidth -= 2
+		rowstart = rowstart[0]+1,rowstart[1]
+
+		while slashrows > 0:
+			self.curr = yield M_BOX_AFTER_S
+			self.curr = yield self.expect("\\",meta=M_OCCUPIED|M_BOX_START_E)
+			for meta in self.await_pos(self.offset(rowwidth-1,0,rowstart)):
+				self.curr = yield meta
+			self.curr = yield self.expect("/",meta=M_OCCUPIED)
+			self.curr = yield M_BOX_AFTER_E|M_BOX_AFTER_S
+			slashrows -= 1
+			rowwidth -= 2
+			rowstart = rowstart[0]+1,rowstart[1]+1
+			for meta in self.await_pos(self.offset(-1,0,rowstart)):
+				self.curr = yield meta
+		
 		self.curr = yield M_BOX_AFTER_S
 		self.curr = yield self.expect("'",meta=M_BOX_START_E|M_OCCUPIED)
-		for i in range(width-2):
+		for i in range(rowwidth-2):
 			self.curr = yield self.expect("-",meta=M_OCCUPIED)
 		self.curr = yield self.expect("'",meta=M_OCCUPIED)
-		self.br = self.curr.col,self.curr.row
+		self.br = self.br[0],self.curr.row
 		self.curr = yield M_BOX_AFTER_E|M_BOX_AFTER_S
 		
 		try:
 			rowstart = rowstart[0],rowstart[1]+1
-			for i in range(width):
-				for meta in self.await_pos(self.offset(i+1,0,rowstart)):
+			for i in range(rowwidth):
+				for meta in self.await_pos(self.offset(i,0,rowstart)):
 					self.curr = yield meta
 				self.curr = yield M_BOX_AFTER_S
 		except NoSuchPosition: pass

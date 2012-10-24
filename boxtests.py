@@ -2532,14 +2532,177 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,6,0,"        ")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(6,8," ",core.M_NONE))
+	
+	def test_allows_slash_corners(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   \\  \n")
+		feed_input(p,3,0,"   |     | \n")
+		feed_input(p,4,0,"    \\   /  \n")
+		feed_input(p,5,0,"     '-'   \n")
+		feed_input(p,6,0,"        ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(6,8," ",core.M_NONE))
+			
+	def test_expects_top_left_slash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,4,"/",core.M_OCCUPIED))
+		
+	def test_expects_top_right_slash(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   ")
+		with self.assertRaises(core.PatternRejected):
+				p.test(main.CurrentChar(2,8,"|",core.M_NONE))
+		
+	def test_expects_top_right_slash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   ")
+		with self.assertRaises(core.PatternRejected):
+				p.test(main.CurrentChar(2,8,"\\",core.M_OCCUPIED))
+		
+	def test_doesnt_allow_top_slashes_without_periods(self):
+		p = self.pclass()
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(1,5,"/",core.M_NONE))
 
+	def test_expects_bottom_left_slash(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   \\  \n")
+		feed_input(p,3,0,"   |     | \n")
+		feed_input(p,4,0,"    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,4,"'",core.M_NONE))
+		
+	def test_expecst_bottom_left_slash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   \\  \n")
+		feed_input(p,3,0,"   |     | \n")
+		feed_input(p,4,0,"    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,4,"\\",core.M_OCCUPIED))
+		
+	def test_expects_bottom_right_slash(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   \\  \n")
+		feed_input(p,3,0,"   |     | \n")
+		feed_input(p,4,0,"    \\   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,8,"'",core.M_NONE))
+	
+	def test_expects_bottom_right_slash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   \\  \n")
+		feed_input(p,3,0,"   |     | \n")
+		feed_input(p,4,0,"    \\   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,8,"/",core.M_OCCUPIED))
+		
+	def test_doesnt_allow_bottom_slashes_without_apos(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.   \n")
+		feed_input(p,2,0,"    /   \\  \n")
+		feed_input(p,3,0,"   |     | \n")
+		feed_input(p,4,0,"    \\   /  \n")
+		feed_input(p,5,0,"     ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(5,5,"-",core.M_NONE))
+
+	def test_allows_multiple_slashes(self):
+		p = self.pclass()
+		feed_input(p,1,5,      ".-.     \n")
+		feed_input(p,2,0, "    /   \\    \n")
+		feed_input(p,3,0, "   /     \\   \n")
+		feed_input(p,4,0, "  /       \\  \n")
+		feed_input(p,5,0, " |         | \n")
+		feed_input(p,6,0, "  \\       /  \n")
+		feed_input(p,7,0, "   \\     /   \n")
+		feed_input(p,8,0, "    \\   /    \n")
+		feed_input(p,9,0, "     '-'     \n")
+		feed_input(p,10,0,"        ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(10,8," ",core.M_NONE))
+		
+	def test_expects_matching_top_right_slashes_short(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.     \n")
+		feed_input(p,2,0,"    /   \\    \n")
+		feed_input(p,3,0,"   /     ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(3,9,"|",core.M_NONE))
+		
+	def test_expects_matching_top_right_slashes_long(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.     \n")
+		feed_input(p,2,0,"    /   \\    \n")
+		feed_input(p,3,0,"   /     \\   \n")
+		feed_input(p,4,0,"  |       ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(4,10,"\\",core.M_NONE))
+		
+	def test_expects_matching_bottom_left_slashes_short(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.     \n")
+		feed_input(p,2,0,"    /   \\    \n")
+		feed_input(p,3,0,"   /     \\   \n")
+		feed_input(p,4,0,"  |       |  \n")
+		feed_input(p,5,0,"   \\     /   \n")
+		feed_input(p,6,0,"    ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(6,4,"'",core.M_NONE))
+		
+	def test_expects_matching_bottom_left_slashes_long(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.     \n")
+		feed_input(p,2,0,"    /   \\    \n")
+		feed_input(p,3,0,"   /     \\   \n")
+		feed_input(p,4,0,"  |       |  \n")
+		feed_input(p,5,0,"   \\     /   \n")
+		feed_input(p,6,0,"    \\   /    \n")
+		feed_input(p,7,0,"     ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(7,5,"\\",core.M_NONE))
+		
+	def test_expects_matching_bottom_right_slashes_short(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.     \n")
+		feed_input(p,2,0,"    /   \\    \n")
+		feed_input(p,3,0,"   /     \\   \n")
+		feed_input(p,4,0,"  |       |  \n")
+		feed_input(p,5,0,"   \\     /   \n")
+		feed_input(p,6,0,"    \\   ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(6,8,"'",core.M_NONE))
+
+	def test_expects_matching_bottom_right_slashes_long(self):
+		p = self.pclass()
+		feed_input(p,1,5,     ".-.     \n")
+		feed_input(p,2,0,"    /   \\    \n")
+		feed_input(p,3,0,"   /     \\   \n")
+		feed_input(p,4,0,"  |       |  \n")
+		feed_input(p,5,0,"   \\     /   \n")
+		feed_input(p,6,0,"    \\   /    \n")
+		feed_input(p,7,0,"     '-")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(7,7,"/",core.M_NONE))
+	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
-		input = ((2,  ".---.  \n"),
-				 (0," |     | \n"),
-				 (0," |     | \n"),
-				 (0,"  '---'  \n"),
-				 (0,"       "    ),)
+		input = ((4,    ".---.    \n"),
+				 (0,"   /     \\   \n"),
+				 (0,"  |       |  \n"),
+				 (0,"  |       |  \n"),
+				 (0,"   \\     /   \n"),
+				 (0,"    '---'    \n"),
+				 (0,"         "      ),)
 		n = core.M_NONE
 		o = core.M_OCCUPIED
 		t = core.M_BOX_START_S | core.M_OCCUPIED
@@ -2548,80 +2711,83 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		r = core.M_BOX_AFTER_E
 		b = core.M_BOX_AFTER_S
 		z = core.M_BOX_AFTER_E | core.M_BOX_AFTER_S
-		meta = ((    a,t,t,t,t,r,n,n,),
-				(n,a,n,n,n,n,n,t,r,n,),
-				(n,l,n,n,n,n,n,o,r,n,),
-				(n,b,l,o,o,o,o,z,n,n,),
-				(n,n,b,b,b,b,b       ),)
+		meta = ((        a,t,t,t,t,r,n,n,n,n,),
+				(n,n,n,a,n,n,n,n,n,t,r,n,n,n,),
+				(n,n,a,n,n,n,n,n,n,n,t,r,n,n,),
+				(n,n,l,n,n,n,n,n,n,n,o,r,n,n,),
+				(n,n,b,l,n,n,n,n,n,o,z,n,n,n,),
+				(n,n,n,b,l,o,o,o,o,z,n,n,n,n,),
+				(n,n,n,n,b,b,b,b,b           ),)
 		for j,(linestart,line) in enumerate(input):
 			for i,char in enumerate(line):
-				#print i,j
 				self.assertEquals(meta[j][i], 
 					p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE)))
-					
+	
 	def do_render(self,x,y,w,h):
 		p = self.pclass()
-		feed_input(p,y,x,"." + "-"*(w-4) + ". \n")
-		for i in range(h-2):
-			feed_input(p,y+1+i,0," "*(x-1) + "|" + " "*(w-2) + "| \n")
-		feed_input(p,y+(h-1),0," "*x + "'" + "-"*(w-4) + "' \n")
-		feed_input(p,y+h,0," "*x + " "*(w-2))
+		feed_input(p,y,x,"." + "-"*(w-6) + ". \n")
+		feed_input(p,y+1,0," "*(x-1) + "/" + " "*(w-4) + "\\ \n")
+		for i in range(h-4):
+			feed_input(p,y+2+i,0," "*(x-2) + "|" + " "*(w-2) + "| \n")
+		feed_input(p,y+(h-2),0," "*(x-1) + "\\" + " "*(w-4) + "/ \n")
+		feed_input(p,y+(h-1),0," "*x + "'" + "-"*(w-6) + "' \n")
+		feed_input(p,y+h,0," "*x + " "*(w-4))
 		try:
 			p.test(main.CurrentChar(y+h,x+(w-2)," ",core.M_NONE))
 		except StopIteration: pass
 		return p.render()
-
+		
 	def test_render_returns_correct_shapes(self):
-		r = self.do_render(5,4,6,5)
+		r = self.do_render(5,4,7,6)
 		self.assertEquals(1,len(r))
 		self.assertTrue( isinstance(r[0],core.Ellipse) )
 		
 	def test_render_coordinates(self):    
-		e = self.do_render(5,4,6,5)[0]    
-		self.assertEquals((4.5,4.5),e.a)
-		self.assertEquals((9.5,8.5),e.b)
+		e = self.do_render(5,4,7,6)[0]    
+		self.assertEquals((3.5,4.5),e.a)
+		self.assertEquals((9.5,9.5),e.b)
 		
 	def test_render_coordinates_position(self):
-		e = self.do_render(11,20,6,5)[0]
-		self.assertEquals((10.5,20.5),e.a)
-		self.assertEquals((15.5,24.5),e.b)
+		e = self.do_render(11,20,7,6)[0]
+		self.assertEquals((9.5,20.5),e.a)
+		self.assertEquals((15.5,25.5),e.b)
 		
 	def test_render_coordinates_width(self):
-		e = self.do_render(5,4,10,5)[0]
-		self.assertEquals((4.5,4.5),e.a)
-		self.assertEquals((13.5,8.5),e.b)
+		e = self.do_render(5,4,10,6)[0]
+		self.assertEquals((3.5,4.5),e.a)
+		self.assertEquals((12.5,9.5),e.b)
 		
 	def test_render_coordinates_height(self):
-		e = self.do_render(5,4,6,3)[0]
-		self.assertEquals((4.5,4.5),e.a)
-		self.assertEquals((9.5,6.5),e.b)
+		e = self.do_render(5,4,7,8)[0]
+		self.assertEquals((3.5,4.5),e.a)
+		self.assertEquals((9.5,11.5),e.b)
 		
 	def test_render_z(self):
-		e = self.do_render(5,4,6,5)[0]
+		e = self.do_render(5,4,7,6)[0]
 		self.assertEquals(1,e.z)
 		
 	def test_render_stroke_colour(self):
-		e = self.do_render(5,4,6,5)[0]
+		e = self.do_render(5,4,7,6)[0]
 		self.assertEquals(core.C_FOREGROUND,e.stroke)
 		
 	def test_render_stroke_alpha(self):
-		e = self.do_render(5,4,6,5)[0]
+		e = self.do_render(5,4,7,6)[0]
 		self.assertEquals(1.0,e.salpha)
 		
 	def test_render_stroke_width(self):
-		e = self.do_render(5,4,6,5)[0]
+		e = self.do_render(5,4,7,6)[0]
 		self.assertEquals(1,e.w)
 		
 	def test_render_stroke_style(self):
-		e = self.do_render(5,4,6,5)[0]
+		e = self.do_render(5,4,7,6)[0]
 		self.assertEquals(core.STROKE_SOLID,e.stype)
 		
 	def test_render_fill_colour(self):
-		e = self.do_render(5,4,6,5)[0]
+		e = self.do_render(5,4,7,6)[0]
 		self.assertEquals(None,e.fill)
 		
 	def test_render_fill_alpha(self):
-		e = self.do_render(5,4,6,5)[0]
+		e = self.do_render(5,4,7,6)[0]
 		self.assertEquals(1.0,e.falpha)
 		
 
