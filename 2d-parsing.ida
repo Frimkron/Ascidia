@@ -1416,7 +1416,13 @@ Circles, then: ___     .---.            .----.     _____     ___     /        \
     [.][-]+     |  |  |    |
   [.']*         '--'   '--'
  [/]*            box  circle
-[|]+
+[|]+ 
  [\]*
   ['.]*
     ['][-]+
+
+[!] Dot corners cause an ugly syntactic wart. If the . of a top left dot corner is 
+	found, the apostraphe *must* follow it even though a slash would otherwise work
+	fine. Unfortunately-placed full stops could cause the circle box to fail.
+[*] Just forget them.
+

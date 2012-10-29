@@ -2693,7 +2693,7 @@ class TestEllipticalBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,7,0,"     '-")
 		with self.assertRaises(core.PatternRejected):
 			p.test(main.CurrentChar(7,7,"/",core.M_NONE))
-	
+
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
 		input = ((4,    ".---.    \n"),
