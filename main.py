@@ -2,7 +2,6 @@
 
 """	
 TODO:
-	* Char size option - wip!
 	* Image output (cairo?)
 	* Char ratio option
 	* Rounded corner boxes
@@ -67,15 +66,15 @@ class OutputPrefs(object):
 	def __init__(self, 
 			fgcolour="black", 
 			bgcolour="white",
-			charsize=(12,24)):
+			charheight=24):
 		for k,v in locals().items():		
 			if k!="self": setattr(self,k,v)
 			
 
 class SvgOutput(object):
 
-	STROKE_W = 2.5
-	FONT_SIZE = 16.0
+	STROKE_W = 2.5 # currently fixed
+	FONT_SIZE = 0.667 # of character height
 	DASH_PATTERN = 8,8
 
 	@staticmethod
@@ -103,10 +102,10 @@ class SvgOutput(object):
 			return colour
 	
 	def _x(self,x,prefs):
-		return str(int(x * prefs.charsize[0]))
+		return str(int(x * prefs.charheight / core.CHAR_H_RATIO))
 		
 	def _y(self,y,prefs):
-		return str(int(y * prefs.charsize[1]))
+		return str(int(y * prefs.charheight))
 		
 	def _w(self,w,prefs):
 		return str(float(w * SvgOutput.STROKE_W))
@@ -199,7 +198,7 @@ class SvgOutput(object):
 		el.appendChild(doc.createTextNode(text.text))
 		el.setAttribute("fill",self._colour(text.colour,prefs))
 		el.setAttribute("fill-opacity",self._alpha(text.alpha,prefs))
-		el.setAttribute("font-size",str(int(text.size*SvgOutput.FONT_SIZE)))
+		el.setAttribute("font-size",str(int(text.size*prefs.charheight*SvgOutput.FONT_SIZE)))
 		parent.appendChild(el)
 		
 	
@@ -304,7 +303,7 @@ if __name__ == "__main__":
 	ap.add_argument("-o","--outfile",default=None,help="output file")
 	ap.add_argument("-f","--foreground",default="black",help="foreground colour")
 	ap.add_argument("-b","--background",default="white",help="background colour")
-	ap.add_argument("-c","--charsize",default="12x24",help="character dimensions in pixels (WxH)")
+	ap.add_argument("-c","--charheight",default="24",type=int,help="character height in pixels")
 	ap.add_argument("infile",default="-",nargs="?",help="input file")
 	args = ap.parse_args()
 
@@ -331,10 +330,7 @@ if __name__ == "__main__":
 	else:
 		outstream = open(args.outfile,"w")
 		
-	if not re.match("^\d+x\d+$",args.charsize): raise ValueError(args.charsize)
-	charsize = tuple(map(int,args.charsize.split("x")))
-	
-	prefs = OutputPrefs(args.foreground,args.background,charsize)
+	prefs = OutputPrefs(args.foreground,args.background,args.charheight)
 	
 	with outstream:
 		SvgOutput.output(renderitems,outstream,prefs)

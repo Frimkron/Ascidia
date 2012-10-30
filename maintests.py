@@ -218,7 +218,7 @@ class TestMatchLookup(unittest.TestCase):
 
 class TestSvgOutput(unittest.TestCase):
 	
-	def do_output(self,items,prefs=main.OutputPrefs("black","white")):
+	def do_output(self,items,prefs=main.OutputPrefs("black","white",24)):
 		s = io.BytesIO()
 		main.SvgOutput()._output(items,s,prefs)
 		return xml.dom.minidom.parseString(s.getvalue())
@@ -249,6 +249,15 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals(48, float(l.getAttribute("y1")))
 		self.assertEquals(36, float(l.getAttribute("x2")))
 		self.assertEquals(96, float(l.getAttribute("y2")))
+		
+	def test_line_coordinates_charsize(self):
+		l = self.child_elements(self.do_output([core.Line(a=(1,2),b=(3,4),z=1,
+				stroke="red",salpha=1.0,w=1,stype=core.STROKE_SOLID)],
+			main.OutputPrefs(charheight=36)).documentElement)[0]
+		self.assertEquals(18, float(l.getAttribute("x1")))
+		self.assertEquals(72, float(l.getAttribute("y1")))
+		self.assertEquals(54, float(l.getAttribute("x2")))
+		self.assertEquals(144, float(l.getAttribute("y2")))
 		
 	def test_line_stroke_colour(self):
 		l = self.child_elements(self.do_output([core.Line(a=(1,2),b=(3,4),z=1,stroke="red",
@@ -309,6 +318,15 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals(48,float(r.getAttribute("y")))
 		self.assertEquals(24,float(r.getAttribute("width")))
 		self.assertEquals(72,float(r.getAttribute("height")))
+	
+	def test_rect_coordinates_charheight(self):
+		r = self.child_elements(self.do_output([core.Rectangle(a=(1,2),b=(3,5),z=1,
+				stroke="red",salpha=1.0,w=1,stype=core.STROKE_SOLID,fill="blue",falpha=1.0)],
+			main.OutputPrefs(charheight=36)).documentElement)[0]
+		self.assertEquals(18,float(r.getAttribute("x")))
+		self.assertEquals(72,float(r.getAttribute("y")))
+		self.assertEquals(36,float(r.getAttribute("width")))
+		self.assertEquals(108,float(r.getAttribute("height")))
 	
 	def test_rect_stroke_colour(self):
 		r = self.child_elements(self.do_output([core.Rectangle(a=(1,2),b=(3,5),z=1,
@@ -394,6 +412,15 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals(18, float(e.getAttribute("rx")))
 		self.assertEquals(24, float(e.getAttribute("ry")))
 		
+	def test_ellipse_coordinates_charheight(self):
+		e = self.child_elements(self.do_output([ core.Ellipse(a=(2,1),b=(5,3),z=1,
+				stroke="red",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="blue",falpha=1.0) ],
+			main.OutputPrefs(charheight=50)).documentElement)[0]
+		self.assertEquals(87, float(e.getAttribute("cx")))
+		self.assertEquals(100, float(e.getAttribute("cy")))
+		self.assertEquals(37, float(e.getAttribute("rx")))
+		self.assertEquals(50, float(e.getAttribute("ry")))
+		
 	def test_ellipse_stroke_colour(self):
 		e = self.child_elements(self.do_output([ core.Ellipse(a=(2,1),b=(5,3),z=1,
 			stroke="red",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="blue",falpha=1.0) ]).documentElement)[0]
@@ -473,6 +500,13 @@ class TestSvgOutput(unittest.TestCase):
 			start=-math.pi,end=math.pi/2,stroke="red",salpha=1.0,w=1,
 			stype=core.STROKE_SOLID,fill="blue",falpha=1.0) ]).documentElement)[0]
 		self.assertEquals("M 24,120 A 6,24 0 1 1 30,144", a.getAttribute("d"))
+		
+	def test_arc_coordinates_charheight(self):
+		a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,
+				start=-math.pi,end=math.pi/2,stroke="red",salpha=1.0,w=1,
+				stype=core.STROKE_SOLID,fill="blue",falpha=1.0) ],
+			main.OutputPrefs(charheight=50)).documentElement)[0]
+		self.assertEquals("M 50,250 A 12,50 0 1 1 62,300", a.getAttribute("d"))
 		
 	def test_arc_stroke_colour(self):
 		a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,
@@ -569,6 +603,13 @@ class TestSvgOutput(unittest.TestCase):
 			falpha=1.0) ]).documentElement)[0]
 		self.assertEquals("12,48 12,72 24,48", p.getAttribute("points"))
 		
+	def test_polygon_coordinates_charheight(self):
+		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
+				z=1,stroke="orange",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="red",
+				falpha=1.0) ],
+			main.OutputPrefs(charheight=50)).documentElement)[0]
+		self.assertEquals("25,100 25,150 50,100", p.getAttribute("points"))
+		
 	def test_polygon_stroke_colour(self):
 		p = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
 			z=1,stroke="orange",salpha=1.0,w=2,stype=core.STROKE_SOLID,fill="red",
@@ -656,6 +697,12 @@ class TestSvgOutput(unittest.TestCase):
 			z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID) ]).documentElement)[0]
 		self.assertEquals("M 12,48 Q 48,72 36,120",q.getAttribute("d"))
 		
+	def test_quadcurve_coordinates_charheight(self):
+		q = self.child_elements(self.do_output([ core.QuadCurve(a=(1,2),b=(3,5),c=(4,3),
+				z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID) ],
+			main.OutputPrefs(charheight=50)).documentElement)[0]
+		self.assertEquals("M 25,100 Q 100,150 75,250",q.getAttribute("d"))
+		
 	def test_quadcurve_stroke_colour(self):
 		q = self.child_elements(self.do_output([ core.QuadCurve(a=(1,2),b=(3,5),c=(4,3),
 			z=1,stroke="purple",salpha=1.0,w=2,stype=core.STROKE_SOLID) ]).documentElement)[0]
@@ -719,6 +766,13 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals(36, float(t.getAttribute("x")))
 		self.assertEquals(114,float(t.getAttribute("y")))
 		
+	def test_text_coordinates_charheight(self):
+		t = self.child_elements(self.do_output([ core.Text(pos=(3,4),z=1,text="!",
+				colour="red",alpha=1.0,size=1) ],
+			main.OutputPrefs(charheight=50)).documentElement)[0]
+		self.assertEquals(75, float(t.getAttribute("x")))
+		self.assertEquals(237,float(t.getAttribute("y")))
+		
 	def test_text_content(self):
 		t = self.child_elements(self.do_output([ core.Text(pos=(3,4),z=1,text="!",
 			colour="red",alpha=1.0,size=1) ]).documentElement)[0]
@@ -745,6 +799,12 @@ class TestSvgOutput(unittest.TestCase):
 		t = self.child_elements(self.do_output([ core.Text(pos=(3,4),z=1,text="!",
 			colour="red",alpha=1.0, size=1.25) ]).documentElement)[0]
 		self.assertEquals(20, float(t.getAttribute("font-size")))
+	
+	def test_text_size_charheight(self):
+		t = self.child_elements(self.do_output([ core.Text(pos=(3,4),z=1,text="!",
+				colour="red",alpha=1.0, size=1.25) ],
+			main.OutputPrefs(charheight=50)).documentElement)[0]
+		self.assertEquals(41, float(t.getAttribute("font-size")))
 		
 	def test_text_z(self):
 		ch = self.child_elements(self.do_output([ 
