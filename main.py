@@ -54,6 +54,7 @@ import xml.dom
 import xml.dom.minidom
 import math
 import re
+import cairo
 from collections import defaultdict
 from collections import namedtuple
 
@@ -71,6 +72,52 @@ class OutputPrefs(object):
 			if k!="self": setattr(self,k,v)
 			
 
+class PngOutput(object):
+	
+	STROKE_W = 2.5 # currently fixed
+	FONT_SIZE = 0.667 # of character heigt
+	
+	@staticmethod
+	def output(items,stream,prefs):
+		PngOutput(items,stream,prefs)._output()
+		
+	def __init__(self,items,stream,prefs):
+		self.items = items
+		self.stream = stream
+		self.prefs = prefs
+		
+	def _output(self):
+		surface = cairo.ImageSurface(cairo.FORMAT_ARGB32,512,512)
+		self.ctx = cairo.Context(surface)
+		for item in sorted(self.items,key=lambda i: i.z):
+			hname = "_do_%s" % type(item).__name__
+			getattr(self,hname,lambda i: None)(item)
+		surface.write_to_png(self.stream)
+
+	def _do_Line(self,line):
+		self.ctx.move_to(self._x(line.a[0]),self._y(line.a[1]))
+		self.ctx.line_to(self._x(line.b[0]),self._y(line.b[1]))
+		self.ctx.set_source_rgba(*self._colour(line.stroke,line.salpha))
+		self.ctx.set_line_width(PngOutput.STROKE_W)
+		self.ctx.stroke()
+		
+	def _colour(self,colour,alpha):
+		if colour is None:
+			return (0,0,0,0)
+		elif colour == core.C_FOREGROUND:
+			return tuple(list(self.prefs.fgcolour)+[alpha])
+		elif colour == core.C_BACKGROUND:
+			return tuple(list(self.prefs.bgcolour)+[alpha])
+		else:
+			return tuple(list(colour)+[alpha])
+		
+	def _x(self,x):
+		return int(x * self.prefs.charheight / core.CHAR_H_RATIO)
+		
+	def _y(self,y):
+		return int(y * self.prefs.charheight)
+
+		
 class SvgOutput(object):
 
 	STROKE_W = 2.5 # currently fixed
@@ -330,10 +377,12 @@ if __name__ == "__main__":
 	else:
 		outstream = open(args.outfile,"w")
 		
-	prefs = OutputPrefs(args.foreground,args.background,args.charheight)
+	#prefs = OutputPrefs(args.foreground,args.background,args.charheight)
+	prefs = OutputPrefs((0,0,0),(1,1,1),24)
 	
 	with outstream:
-		SvgOutput.output(renderitems,outstream,prefs)
+		#SvgOutput.output(renderitems,outstream,prefs)
+		PngOutput.output(renderitems,outstream,prefs)
 	
 	
 
