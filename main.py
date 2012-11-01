@@ -1,9 +1,23 @@
 #!/usr/bin/python2
 
 """	
+      | input   | prefs
+      v         | (fg, bg, charheight)
++-----------+   |
+| processor |   |
++-----------+   |
+      | shapes  |
+      | (coords, colour tuples)
+      v         |
++-----------+   |
+| output    |<--' [!] Needs image size
+| formatter |
++-----------+
+      |
+      v output
+
 TODO:
 	* Image output (cairo?)
-	* Char ratio option
 	* Rounded corner boxes
 	* Slash-cornered boxes
 	* Dashed round corner boxes
@@ -45,6 +59,7 @@ TODO:
 	* Diagonal jumps (X? r?)
 	* Secondary colour (why?)
 	* Image w and h options
+	* Char ratio option
 	
 """
 
@@ -61,12 +76,25 @@ from collections import namedtuple
 import core
 import patterns
 
+NAMED_COLOURS = {
+	"red": 		(0.75,0.1,0.1),
+	"orange":	(0.9,0.3,0),	
+	"yellow":	(0.9,0.9,0.2),
+	"green":	(0.1,0.75,0.1),
+	"blue":		(0.1,0.1,0.75),
+	"purple":	(0.6,0.1,0.6),
+	"pink":		(0.75,0.2,0.4),
+	"black":	(0,0,0),
+	"white":	(1,1,1),
+	"gray":		(0.5,0.5,0.5),
+	"brown":	(0.5,0.5,0.1),
+}
 
 
 class OutputPrefs(object):
 	def __init__(self, 
-			fgcolour="black", 
-			bgcolour="white",
+			fgcolour=(0,0,0), 
+			bgcolour=(1,1,1),
 			charheight=24):
 		for k,v in locals().items():		
 			if k!="self": setattr(self,k,v)
@@ -139,15 +167,11 @@ class SvgOutput(object):
 		doc.writexml(stream,addindent="\t",newl="\n")
 			
 	def _colour(self,colour,prefs):
-		if colour is None:
-			return "none"
-		elif colour == core.C_FOREGROUND:
-			return prefs.fgcolour
-		elif colour == core.C_BACKGROUND:
-			return prefs.bgcolour
-		else:
-			return colour
-	
+		if colour is None: return "none"
+		if colour == core.C_FOREGROUND: colour = prefs.fgcolour
+		if colour == core.C_BACKGROUND: colour = prefs.bgcolour
+		return "rgb(%d,%d,%d)" % tuple([int(c*255) for c in colour])
+			
 	def _x(self,x,prefs):
 		return str(int(x * prefs.charheight / core.CHAR_H_RATIO))
 		
@@ -301,6 +325,7 @@ class MatchLookup(object):
 		
 CurrentChar = namedtuple("CurrentChar","row col char meta")
 
+Diagram = namedtuple("Diagram","size content")
 
 def process_diagram(text,patternlist):
 
@@ -338,18 +363,27 @@ def process_diagram(text,patternlist):
 					else:
 						ongoing.add_meta(match,(j,i),matchmeta)
 		
-	result = sum([m.render() for m in complete_matches],[])
-	result.append( core.Rectangle(a=(0,0),b=(width,height),z=-1,stroke=None,salpha=0.0,
-		w=1,stype=core.STROKE_SOLID,fill=core.C_BACKGROUND,falpha=1.0) )
-	return result
+	content = sum([m.render() for m in complete_matches],[])
+	
+	return Diagram((width,height),content)
+	
+	
+def colour(s):
+	if s.lower() in NAMED_COLOURS: return NAMED_COLOURS[s.lower()]
+	bits = s.split(",")
+	if len(bits) != 3: raise ValueError(s)
+	for b in bits:
+		if not( 0 <= float(b) <= 1):
+			raise ValueError(s)
+	return tuple(map(float,bits))
 	
 
 if __name__ == "__main__":
 
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-o","--outfile",default=None,help="output file")
-	ap.add_argument("-f","--foreground",default="black",help="foreground colour")
-	ap.add_argument("-b","--background",default="white",help="background colour")
+	ap.add_argument("-f","--foreground",default="black",type=colour,help="foreground colour")
+	ap.add_argument("-b","--background",default="white",type=colour,help="background colour")
 	ap.add_argument("-c","--charheight",default="24",type=int,help="character height in pixels")
 	ap.add_argument("infile",default="-",nargs="?",help="input file")
 	args = ap.parse_args()
@@ -377,12 +411,12 @@ if __name__ == "__main__":
 	else:
 		outstream = open(args.outfile,"w")
 		
-	#prefs = OutputPrefs(args.foreground,args.background,args.charheight)
-	prefs = OutputPrefs((0,0,0),(1,1,1),24)
+	prefs = OutputPrefs(args.foreground,args.background,args.charheight)
+	#prefs = OutputPrefs((0,0,0),(1,1,1),24)
 	
 	with outstream:
-		#SvgOutput.output(renderitems,outstream,prefs)
-		PngOutput.output(renderitems,outstream,prefs)
+		SvgOutput.output(renderitems,outstream,prefs)
+		#PngOutput.output(renderitems,outstream,prefs)
 	
 	
 
