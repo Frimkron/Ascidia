@@ -1,21 +1,6 @@
 #!/usr/bin/python2
 
 """	
-      | input   | prefs
-      v         | (fg, bg, charheight)
-+-----------+   |
-| processor |   |
-+-----------+   |
-      | shapes  |
-      | (coords, colour tuples)
-      v         |
-+-----------+   |
-| output    |<--' [!] Needs image size
-| formatter |
-+-----------+
-      |
-      v output
-
 TODO:
 	* Image output (cairo?)
 	* Rounded corner boxes
@@ -105,6 +90,10 @@ class PngOutput(object):
 	STROKE_W = 2.5 # currently fixed
 	FONT_SIZE = 0.667 # of character heigt
 	
+	diagram = None
+	stream = None
+	prefs = None
+	
 	@staticmethod
 	def output(items,stream,prefs):
 		PngOutput(items,stream,prefs)._output()
@@ -152,84 +141,62 @@ class SvgOutput(object):
 	FONT_SIZE = 0.667 # of character height
 	DASH_PATTERN = 8,8
 
+	diagram = None
+	stream = None
+	prefs = None
+	doc = None
+
 	@staticmethod
-	def output(items,stream,prefs):
-		SvgOutput.INST._output(items,stream,prefs)
+	def output(diagram,stream,prefs):
+		SvgOutput(diagram,stream,prefs)._output()
 			
-	def _output(self,items,stream,prefs):
-		doc = xml.dom.minidom.getDOMImplementation().createDocument(None,"svg",None)
-		root = doc.documentElement
+	def __init__(self,diagram,stream,prefs):
+		self.diagram = diagram
+		self.stream = stream
+		self.prefs = prefs
+			
+	def _output(self):
+		self.doc = xml.dom.minidom.getDOMImplementation().createDocument(None,"svg",None)
+		root = self.doc.documentElement
 		root.setAttribute("xmlns","http://www.w3.org/2000/svg")
 		root.setAttribute("version","1.1")
-		for item in sorted(items,key=lambda i: i.z):
+		self._do_Rectangle(core.Rectangle(a=(0,0),b=self.diagram.size,z=0,stroke=None,salpha=1,
+			w=0,stype=core.STROKE_SOLID,fill=self.prefs.bgcolour,falpha=1), root)
+		for item in sorted(self.diagram.content,key=lambda i: i.z):
 			hname = "_do_%s" % type(item).__name__
-			getattr(self,hname,lambda i,d,r,p: None)(item,doc,root,prefs)
-		doc.writexml(stream,addindent="\t",newl="\n")
-			
-	def _colour(self,colour,prefs):
-		if colour is None: return "none"
-		if colour == core.C_FOREGROUND: colour = prefs.fgcolour
-		if colour == core.C_BACKGROUND: colour = prefs.bgcolour
-		return "rgb(%d,%d,%d)" % tuple([int(c*255) for c in colour])
-			
-	def _x(self,x,prefs):
-		return str(int(x * prefs.charheight / core.CHAR_H_RATIO))
-		
-	def _y(self,y,prefs):
-		return str(int(y * prefs.charheight))
-		
-	def _w(self,w,prefs):
-		return str(float(w * SvgOutput.STROKE_W))
-			
-	def _alpha(self,a,prefs):
-		return str(a)
-			
-	def _style_attrs(self,item,el,prefs):
-		if hasattr(item,"stroke"):
-			el.setAttribute("stroke",self._colour(item.stroke,prefs))
-		if hasattr(item,"w"):
-			el.setAttribute("stroke-width",self._w(item.w,prefs))
-		if hasattr(item,"stype"):
-			if item.stype == core.STROKE_DASHED:
-				el.setAttribute("stroke-dasharray",",".join(
-						map(str,SvgOutput.DASH_PATTERN)))
-		if hasattr(item,"salpha"):
-			el.setAttribute("stroke-opacity",self._alpha(item.salpha,prefs))
-		if hasattr(item,"fill"):
-			el.setAttribute("fill",self._colour(item.fill,prefs))
-		if hasattr(item,"falpha"):
-			el.setAttribute("fill-opacity",self._alpha(item.falpha,prefs))
-			
-	def _do_Line(self,line,doc,parent,prefs):
-		el = doc.createElement("line")
-		el.setAttribute("x1",self._x(line.a[0],prefs))
-		el.setAttribute("y1",self._y(line.a[1],prefs))
-		el.setAttribute("x2",self._x(line.b[0],prefs))
-		el.setAttribute("y2",self._y(line.b[1],prefs))
-		self._style_attrs(line,el,prefs)
+			getattr(self,hname,lambda i,p: None)(item,root)
+		self.doc.writexml(self.stream,addindent="\t",newl="\n")
+					
+	def _do_Line(self,line,parent):
+		el = self.doc.createElement("line")
+		el.setAttribute("x1",self._x(line.a[0]))
+		el.setAttribute("y1",self._y(line.a[1]))
+		el.setAttribute("x2",self._x(line.b[0]))
+		el.setAttribute("y2",self._y(line.b[1]))
+		self._style_attrs(line,el)
 		parent.appendChild(el)
 	
-	def _do_Rectangle(self,rect,doc,parent,prefs):
-		el = doc.createElement("rect")
-		el.setAttribute("x",self._x(rect.a[0],prefs))
-		el.setAttribute("y",self._y(rect.a[1],prefs))
-		el.setAttribute("width",self._x(rect.b[0]-rect.a[0],prefs))
-		el.setAttribute("height",self._y(rect.b[1]-rect.a[1],prefs))
-		self._style_attrs(rect,el,prefs)
+	def _do_Rectangle(self,rect,parent):
+		el = self.doc.createElement("rect")
+		el.setAttribute("x",self._x(rect.a[0]))
+		el.setAttribute("y",self._y(rect.a[1]))
+		el.setAttribute("width",self._x(rect.b[0]-rect.a[0]))
+		el.setAttribute("height",self._y(rect.b[1]-rect.a[1]))
+		self._style_attrs(rect,el)
 		parent.appendChild(el)
 		
-	def _do_Ellipse(self,ellipse,doc,parent,prefs):
+	def _do_Ellipse(self,ellipse,parent):
 		w = ellipse.b[0]-ellipse.a[0]
 		h = ellipse.b[1]-ellipse.a[1]
-		el = doc.createElement("ellipse")
-		el.setAttribute("cx",self._x(ellipse.a[0]+w/2.0,prefs))
-		el.setAttribute("cy",self._y(ellipse.a[1]+h/2.0,prefs))
-		el.setAttribute("rx",self._x(w/2.0,prefs))
-		el.setAttribute("ry",self._y(h/2.0,prefs))
-		self._style_attrs(ellipse,el,prefs)
+		el = self.doc.createElement("ellipse")
+		el.setAttribute("cx",self._x(ellipse.a[0]+w/2.0))
+		el.setAttribute("cy",self._y(ellipse.a[1]+h/2.0))
+		el.setAttribute("rx",self._x(w/2.0))
+		el.setAttribute("ry",self._y(h/2.0))
+		self._style_attrs(ellipse,el)
 		parent.appendChild(el)
 		
-	def _do_Arc(self,arc,doc,parent,prefs):
+	def _do_Arc(self,arc,parent):
 		rx = (arc.b[0]-arc.a[0])/2.0
 		ry = (arc.b[1]-arc.a[1])/2.0
 		cx,cy = arc.a[0]+rx, arc.a[1]+ry
@@ -237,46 +204,76 @@ class SvgOutput(object):
 		sy = cy+math.sin(arc.start)*ry
 		ex = cx+math.cos(arc.end)*rx
 		ey = cy+math.sin(arc.end)*ry
-		el = doc.createElement("path")
+		el = self.doc.createElement("path")
 		el.setAttribute("d","M %s,%s A %s,%s 0 %d 1 %s,%s" % (
-			self._x(sx,prefs),self._y(sy,prefs), self._x(rx,prefs),self._y(ry,prefs), 
-			1, self._x(ex,prefs),self._y(ey,prefs)))
-		self._style_attrs(arc,el,prefs)
+			self._x(sx),self._y(sy), self._x(rx),self._y(ry), 
+			1, self._x(ex),self._y(ey)))
+		self._style_attrs(arc,el)
 		parent.appendChild(el)
 		
-	def _do_QuadCurve(self,curve,doc,parent,prefs):
-		el = doc.createElement("path")
+	def _do_QuadCurve(self,curve,parent):
+		el = self.doc.createElement("path")
 		el.setAttribute("d","M %s,%s Q %s,%s %s,%s" % (
-			self._x(curve.a[0],prefs),self._y(curve.a[1],prefs), 
-			self._x(curve.c[0],prefs),self._y(curve.c[1],prefs),
-			self._x(curve.b[0],prefs),self._y(curve.b[1],prefs) ))
-		self._style_attrs(curve,el,prefs)
+			self._x(curve.a[0]),self._y(curve.a[1]), 
+			self._x(curve.c[0]),self._y(curve.c[1]),
+			self._x(curve.b[0]),self._y(curve.b[1]) ))
+		self._style_attrs(curve,el)
 		el.setAttribute("fill","none")
 		parent.appendChild(el)
 		
-	def _do_Polygon(self,polygon,doc,parent,prefs):
-		el = doc.createElement("polygon")
+	def _do_Polygon(self,polygon,parent):
+		el = self.doc.createElement("polygon")
 		el.setAttribute("points",
-			" ".join(["%s,%s" % (self._x(p[0],prefs),self._y(p[1],prefs)) for p in polygon.points]))
-		self._style_attrs(polygon,el,prefs)
+			" ".join(["%s,%s" % (self._x(p[0]),self._y(p[1])) for p in polygon.points]))
+		self._style_attrs(polygon,el)
 		parent.appendChild(el)
 
-	def _do_Text(self,text,doc,parent,prefs):
-		el = doc.createElement("text")
-		el.setAttribute("x",self._x(text.pos[0],prefs))
-		el.setAttribute("y",self._y(text.pos[1]+0.75,prefs))
+	def _do_Text(self,text,parent):
+		el = self.doc.createElement("text")
+		el.setAttribute("x",self._x(text.pos[0]))
+		el.setAttribute("y",self._y(text.pos[1]+0.75))
 		el.setAttribute("font-family","monospace")
-		el.appendChild(doc.createTextNode(text.text))
-		el.setAttribute("fill",self._colour(text.colour,prefs))
-		el.setAttribute("fill-opacity",self._alpha(text.alpha,prefs))
-		el.setAttribute("font-size",str(int(text.size*prefs.charheight*SvgOutput.FONT_SIZE)))
+		el.appendChild(self.doc.createTextNode(text.text))
+		el.setAttribute("fill",self._colour(text.colour))
+		el.setAttribute("fill-opacity",self._alpha(text.alpha))
+		el.setAttribute("font-size",str(int(text.size*self.prefs.charheight*SvgOutput.FONT_SIZE)))
 		parent.appendChild(el)
 		
+	def _colour(self,colour):
+		if colour is None: return "none"
+		if colour == core.C_FOREGROUND: colour = self.prefs.fgcolour
+		if colour == core.C_BACKGROUND: colour = self.prefs.bgcolour
+		return "rgb(%d,%d,%d)" % tuple([int(c*255) for c in colour])
+			
+	def _x(self,x):
+		return str(int(x * self.prefs.charheight / core.CHAR_H_RATIO))
+		
+	def _y(self,y):
+		return str(int(y * self.prefs.charheight))
+		
+	def _w(self,w):
+		return str(float(w * SvgOutput.STROKE_W))
+			
+	def _alpha(self,a):
+		return str(a)
+			
+	def _style_attrs(self,item,el):
+		if hasattr(item,"stroke"):
+			el.setAttribute("stroke",self._colour(item.stroke))
+		if hasattr(item,"w"):
+			el.setAttribute("stroke-width",self._w(item.w))
+		if hasattr(item,"stype"):
+			if item.stype == core.STROKE_DASHED:
+				el.setAttribute("stroke-dasharray",",".join(
+						map(str,SvgOutput.DASH_PATTERN)))
+		if hasattr(item,"salpha"):
+			el.setAttribute("stroke-opacity",self._alpha(item.salpha))
+		if hasattr(item,"fill"):
+			el.setAttribute("fill",self._colour(item.fill))
+		if hasattr(item,"falpha"):
+			el.setAttribute("fill-opacity",self._alpha(item.falpha))
+		
 	
-SvgOutput.INST = SvgOutput()
-
-
-
 class MatchLookup(object):
 
 	_matches = None

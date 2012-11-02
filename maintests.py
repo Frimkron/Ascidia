@@ -219,9 +219,9 @@ class TestMatchLookup(unittest.TestCase):
 class TestSvgOutput(unittest.TestCase):
 	
 	def do_output(self,content,size=(200,200),
-			prefs=main.OutputPrefs("black","white",24)):
+			prefs=main.OutputPrefs((0,0,0),(1,1,1),24)):
 		s = io.BytesIO()
-		main.SvgOutput()._output(main.Diagram(size,content),s,prefs)
+		main.SvgOutput.output(main.Diagram(size,content),s,prefs)
 		return xml.dom.minidom.parseString(s.getvalue())
 	
 	def child_elements(self,node):
@@ -240,16 +240,30 @@ class TestSvgOutput(unittest.TestCase):
 		c = self.child_elements(self.do_output([],(100,300)).documentElement)
 		self.assertEquals(1, len(c))
 		self.assertEquals("rect",c[0].tagName)
-		self.assertEquals(0, float(c[0].getAttribute("x"))
-		self.assertEquals(0, float(c[0].getAttribute("y"))
-		self.assertEquals(100, float(c[0].getAttribute("width"))
-		self.assertEquals(300, float(c[0].getAttribute("height"))
+		self.assertEquals(0, float(c[0].getAttribute("x")))
+		self.assertEquals(0, float(c[0].getAttribute("y")))
+		self.assertEquals(1200, float(c[0].getAttribute("width")))
+		self.assertEquals(7200, float(c[0].getAttribute("height")))
+		self.assertEquals("none", c[0].getAttribute("stroke"))
+		self.assertEquals("rgb(255,255,255)",c[0].getAttribute("fill"))
+		self.assertEquals(1,float(c[0].getAttribute("fill-opacity")))
+		
+	def test_background_colour(self):
+		b = self.child_elements(self.do_output([],(10,10),
+			main.OutputPrefs((1,0,0.5),(1,1,1),24)))[0]
+		self.assertEquals("rgb(255,0,127)",b.getAttribute("fill"))
+		
+	def test_background_charheight(self):
+		b = self.child_elements(self.do_output([],(100,300),
+			main.OutputPrefs((1,1,1),(0,0,0),30)))[0]
+		self.assertEquals(1500, float(b.getAttribute("width")))
+		self.assertEquals(9000, float(b.getAttribute("height")))
 			
 	def test_handles_line(self):
 		e = self.do_output([core.Line(a=(0,0),b=(1,1),z=1,stroke=(1,0,0),salpha=1.0,
 			w=1,stype=core.STROKE_SOLID)]).documentElement
 		ch = self.child_elements(e)
-		self.assertEquals(1, len(ch))
+		self.assertEquals(2, len(ch))
 		self.assertEquals("line", ch[1].tagName)
 		
 	def test_line_coordinates(self):
@@ -318,7 +332,7 @@ class TestSvgOutput(unittest.TestCase):
 	def test_handles_rectangle(self):
 		ch = self.child_elements(self.do_output([core.Rectangle(a=(1,2),b=(3,4),z=1,
 			stroke=(1,0,0),salpha=1.0,w=1,stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0)]).documentElement)
-		self.assertEquals(1, len(ch))
+		self.assertEquals(2, len(ch))
 		self.assertEquals("rect", ch[1].tagName)
 		
 	def test_rect_coordinates(self):
@@ -411,7 +425,7 @@ class TestSvgOutput(unittest.TestCase):
 	def test_handles_ellipse(self):
 		ch = self.child_elements(self.do_output([ core.Ellipse(a=(2,3),b=(5,1),z=1,
 			stroke=(1,0,0),salpha=1.0,w=2,stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0) ]).documentElement)
-		self.assertEquals(1, len(ch))
+		self.assertEquals(2, len(ch))
 		self.assertEquals("ellipse", ch[1].tagName)
 		
 	def test_ellipse_coordinates(self):
@@ -493,7 +507,7 @@ class TestSvgOutput(unittest.TestCase):
 			core.Ellipse(a=(2,1),b=(5,3),z=3,stroke=(1,0,0),salpha=1.0,w=2,stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0),
 			core.Ellipse(a=(2,2),b=(1,1),z=10,stroke=(0,0,1),salpha=1.0,w=3,stype=core.STROKE_SOLID,fill=(0,1,0),falpha=1.0),
 			core.Ellipse(a=(3,3),b=(4,5),z=1,stroke=(0,1,0),salpha=1.0,w=1,stype=core.STROKE_SOLID,fill=(1,0,0),falpha=1.0) ]).documentElement)
-		self.assertEquals(3, len(ch))
+		self.assertEquals(4, len(ch))
 		self.assertEquals("rgb(0,255,0)", ch[1].getAttribute("stroke"))
 		self.assertEquals("rgb(255,0,0)", ch[2].getAttribute("stroke"))
 		self.assertEquals("rgb(0,0,255)", ch[3].getAttribute("stroke"))
@@ -502,7 +516,7 @@ class TestSvgOutput(unittest.TestCase):
 		ch = self.child_elements(self.do_output([ core.Arc(a=(2,5),b=(3,4),z=1,
 			start=-math.pi/2,end=math.pi/4,stroke=(1,0,0),salpha=1.0,w=1,stype=core.STROKE_SOLID,
 			fill=(0,0,1),falpha=1.0) ]).documentElement)
-		self.assertEquals(1, len(ch))
+		self.assertEquals(2, len(ch))
 		self.assertEquals("path", ch[1].tagName)
 		
 	def test_arc_coordinates(self):
@@ -595,7 +609,7 @@ class TestSvgOutput(unittest.TestCase):
 				core.Arc(a=(3,4),b=(7,1),z=1,start=math.pi,end=math.pi*2,stroke=(0,1,0),
 					salpha=1.0,w=1,stype=core.STROKE_SOLID,fill=(1,0.5,0),falpha=1.0), 
 		]).documentElement)
-		self.assertEquals(3, len(ch))
+		self.assertEquals(4, len(ch))
 		self.assertEquals("rgb(0,255,0)", ch[1].getAttribute("stroke"))
 		self.assertEquals("rgb(255,0,0)", ch[2].getAttribute("stroke"))
 		self.assertEquals("rgb(0,0,255)", ch[3].getAttribute("stroke"))
@@ -604,7 +618,7 @@ class TestSvgOutput(unittest.TestCase):
 		ch = self.child_elements(self.do_output([ core.Polygon(points=((1,2),(1,3),(2,2)),
 			z=1,stroke=(1,0.5,0),salpha=1.0,w=2,stype=core.STROKE_SOLID,fill=(1,0,0),
 			falpha=1.0) ]).documentElement)
-		self.assertEquals(1, len(ch))
+		self.assertEquals(2, len(ch))
 		self.assertEquals("polygon", ch[1].tagName)
 		
 	def test_polygon_coordinates(self):
@@ -691,7 +705,7 @@ class TestSvgOutput(unittest.TestCase):
 			core.Polygon(points=((1,2),(1,3),(2,2)),z=2,stroke=(1,0.5,0),salpha=1.0,
 				w=1,stype=core.STROKE_SOLID,fill=(1,0,0),falpha=1.0), 
 		]).documentElement)
-		self.assertEquals(3, len(ch))
+		self.assertEquals(4, len(ch))
 		self.assertEquals("rgb(255,0,255)", ch[1].getAttribute("stroke"))
 		self.assertEquals("rgb(255,127,0)", ch[2].getAttribute("stroke"))
 		self.assertEquals("rgb(0,255,0)", ch[3].getAttribute("stroke"))
@@ -699,7 +713,7 @@ class TestSvgOutput(unittest.TestCase):
 	def test_handles_quadcurve(self):
 		ch = self.child_elements(self.do_output([ core.QuadCurve(a=(1,2),b=(3,5),
 			c=(4,3),z=1,stroke=(1,0,1),salpha=1.0,w=2,stype=core.STROKE_SOLID) ]).documentElement)
-		self.assertEquals(1, len(ch))
+		self.assertEquals(2, len(ch))
 		self.assertEquals("path", ch[1].tagName)
 		
 	def test_quadcurve_coordinates(self):
@@ -758,7 +772,7 @@ class TestSvgOutput(unittest.TestCase):
 			core.QuadCurve(a=(2,3),b=(4,0),c=(4,5),z=2,stroke=(1,0.5,0),salpha=1.0,
 				w=1,stype=core.STROKE_SOLID), 
 		]).documentElement)
-		self.assertEquals(3, len(ch))
+		self.assertEquals(4, len(ch))
 		self.assertEquals("rgb(25,0,25)", ch[1].getAttribute("stroke"))
 		self.assertEquals("rgb(255,127,0)", ch[2].getAttribute("stroke"))
 		self.assertEquals("rgb(0,255,0)", ch[3].getAttribute("stroke"))
@@ -766,7 +780,7 @@ class TestSvgOutput(unittest.TestCase):
 	def test_handles_text(self):
 		ch = self.child_elements(self.do_output([ core.Text(pos=(3,4),z=1,text="!",
 			colour=(1,0,0),alpha=1.0,size=1) ]).documentElement)
-		self.assertEquals(1, len(ch))
+		self.assertEquals(2, len(ch))
 		self.assertEquals("text", ch[1].tagName)
 		self.assertEquals("monospace", ch[1].getAttribute("font-family"))
 		
@@ -822,7 +836,7 @@ class TestSvgOutput(unittest.TestCase):
 			core.Text(pos=(2,2),z=12,text="?",colour=(0,0,1),alpha=1.0,size=1),
 			core.Text(pos=(4,5),z=1,text="&",colour=(0,1,0),alpha=1.0,size=1), 
 		]).documentElement)
-		self.assertEquals(3, len(ch))
+		self.assertEquals(4, len(ch))
 		self.assertEquals("rgb(0,255,0)",ch[1].getAttribute("fill"))
 		self.assertEquals("rgb(255,0,0)",ch[2].getAttribute("fill"))
 		self.assertEquals("rgb(0,0,255)",ch[3].getAttribute("fill"))
