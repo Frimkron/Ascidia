@@ -218,8 +218,8 @@ class TestMatchLookup(unittest.TestCase):
 
 class TestSvgOutput(unittest.TestCase):
 	
-	def do_output(self,content,size=(200,200),
-			prefs=main.OutputPrefs((0,0,0),(1,1,1),24)):
+	def do_output(self, content, prefs=main.OutputPrefs((0,0,0),(1,1,1),24), 
+			size=(200,200)):
 		s = io.BytesIO()
 		main.SvgOutput.output(main.Diagram(size,content),s,prefs)
 		return xml.dom.minidom.parseString(s.getvalue())
@@ -227,9 +227,6 @@ class TestSvgOutput(unittest.TestCase):
 	def child_elements(self,node):
 		return filter(lambda x: x.nodeType==xml.dom.minidom.Node.ELEMENT_NODE, node.childNodes)
 	
-	def test_can_construct(self):	
-		main.SvgOutput()
-		
 	def test_creates_root_element(self):
 		e = self.do_output([]).documentElement
 		self.assertEquals("svg", e.tagName)
@@ -237,7 +234,8 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals("http://www.w3.org/2000/svg", e.namespaceURI)
 			
 	def test_creates_background(self):
-		c = self.child_elements(self.do_output([],(100,300)).documentElement)
+		c = self.child_elements(self.do_output([],main.OutputPrefs(),
+			(100,300)).documentElement)
 		self.assertEquals(1, len(c))
 		self.assertEquals("rect",c[0].tagName)
 		self.assertEquals(0, float(c[0].getAttribute("x")))
@@ -249,13 +247,13 @@ class TestSvgOutput(unittest.TestCase):
 		self.assertEquals(1,float(c[0].getAttribute("fill-opacity")))
 		
 	def test_background_colour(self):
-		b = self.child_elements(self.do_output([],(10,10),
-			main.OutputPrefs((1,0,0.5),(1,1,1),24)))[0]
+		b = self.child_elements(self.do_output([],main.OutputPrefs((0,0,0),(1,0,0.5),24),
+				(10,10),).documentElement)[0]
 		self.assertEquals("rgb(255,0,127)",b.getAttribute("fill"))
 		
 	def test_background_charheight(self):
-		b = self.child_elements(self.do_output([],(100,300),
-			main.OutputPrefs((1,1,1),(0,0,0),30)))[0]
+		b = self.child_elements(self.do_output([],
+			main.OutputPrefs((1,1,1),(0,0,0),30),(100,300)).documentElement)[0]
 		self.assertEquals(1500, float(b.getAttribute("width")))
 		self.assertEquals(9000, float(b.getAttribute("height")))
 			

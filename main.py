@@ -89,33 +89,80 @@ class PngOutput(object):
 	
 	STROKE_W = 2.5 # currently fixed
 	FONT_SIZE = 0.667 # of character heigt
+	DASH_PATTERN = 8,8
 	
 	diagram = None
 	stream = None
 	prefs = None
+	ctx = None
 	
 	@staticmethod
-	def output(items,stream,prefs):
-		PngOutput(items,stream,prefs)._output()
+	def output(diagram,stream,prefs):
+		PngOutput(diagram,stream,prefs)._output()
 		
-	def __init__(self,items,stream,prefs):
-		self.items = items
+	def __init__(self,diagram,stream,prefs):
+		self.diagram = diagram
 		self.stream = stream
 		self.prefs = prefs
 		
 	def _output(self):
-		surface = cairo.ImageSurface(cairo.FORMAT_ARGB32,512,512)
+		surface = cairo.ImageSurface(cairo.FORMAT_ARGB32,
+			self._x(self.diagram.size[0]),self._y(self.diagram.size[1]))
 		self.ctx = cairo.Context(surface)
-		for item in sorted(self.items,key=lambda i: i.z):
+		self._do_Rectangle(core.Rectangle(a=(0,0),b=self.diagram.size,z=0,stroke=None,
+			salpha=1,w=10,stype=core.STROKE_DASHED,fill=self.prefs.bgcolour,falpha=1))
+		for item in sorted(self.diagram.content,key=lambda i: i.z):
 			hname = "_do_%s" % type(item).__name__
 			getattr(self,hname,lambda i: None)(item)
 		surface.write_to_png(self.stream)
 
-	def _do_Line(self,line):
-		self.ctx.move_to(self._x(line.a[0]),self._y(line.a[1]))
-		self.ctx.line_to(self._x(line.b[0]),self._y(line.b[1]))
-		self.ctx.set_source_rgba(*self._colour(line.stroke,line.salpha))
+	def _do_Line(self,line):		
+		if self._should_stroke(line):
+			self.ctx.move_to(self._x(line.a[0]),self._y(line.a[1]))
+			self.ctx.line_to(self._x(line.b[0]),self._y(line.b[1]))
+			self._stroke(line)
+		
+	def _do_Rectangle(self,rect):
+		r = (self._x(rect.a[0]),self._y(rect.a[1]),
+			self._x(rect.b[0]-rect.a[0]),self._y(rect.b[1]-rect.a[1]))
+		if self._should_fill(rect):
+			self.ctx.rectangle(*r)
+			self._fill(rect)
+		if self._should_stroke(rect):
+			self.ctx.rectangle(*r)
+			self._stroke(rect)
+		
+	def _do_Ellipse(self,ellipse):
+		pass
+		
+	def _do_Arc(self,arc):
+		pass
+		
+	def _do_Quadcurve(self,quad):
+		pass
+		
+	def _do_Polygon(self,poly):
+		pass
+		
+	def _do_Text(self,text):
+		pass
+		
+	def _should_fill(self,item):
+		return item.fill is not None and item.falpha > 0
+		
+	def _fill(self,item):
+		if not self._should_fill(item): return
+		self.ctx.set_source_rgba(*self._colour(item.fill,item.falpha))
+		self.ctx.fill()
+
+	def _should_stroke(self,item):
+		return item.stroke is not None and item.salpha > 0
+	
+	def _stroke(self,item):
+		if not self._should_stroke(item): return
+		self.ctx.set_source_rgba(*self._colour(item.stroke,item.salpha))
 		self.ctx.set_line_width(PngOutput.STROKE_W)
+		self.ctx.set_dash(PngOutput.DASH_PATTERN if item.stype==core.STROKE_DASHED else [])
 		self.ctx.stroke()
 		
 	def _colour(self,colour,alpha):
@@ -409,11 +456,10 @@ if __name__ == "__main__":
 		outstream = open(args.outfile,"w")
 		
 	prefs = OutputPrefs(args.foreground,args.background,args.charheight)
-	#prefs = OutputPrefs((0,0,0),(1,1,1),24)
 	
 	with outstream:
-		SvgOutput.output(renderitems,outstream,prefs)
-		#PngOutput.output(renderitems,outstream,prefs)
+		#SvgOutput.output(renderitems,outstream,prefs)
+		PngOutput.output(renderitems,outstream,prefs)
 	
 	
 
