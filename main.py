@@ -72,7 +72,7 @@ NAMED_COLOURS = {
 	"black":	(0,0,0),
 	"white":	(1,1,1),
 	"gray":		(0.5,0.5,0.5),
-	"brown":	(0.5,0.5,0.1),
+	"brown":	(0.5,0.3,0.1),
 }
 
 
@@ -86,6 +86,8 @@ class OutputPrefs(object):
 			
 
 class PngOutput(object):
+	
+	EXTS = ("png",)
 	
 	STROKE_W = 2.5 # currently fixed
 	FONT_SIZE = 0.667 # of character heigt
@@ -164,12 +166,14 @@ class PngOutput(object):
 			self._arc_path(w,h,x,y,arc.start,arc.end)
 			self._stroke(arc)
 		
-	def _do_Quadcurve(self,quad):
-		c1 = 
-		c2
+	def _do_QuadCurve(self,quad):
+		c1 = ( self._x(quad.a[0]) + ( self._x(quad.c[0]) - self._x(quad.a[0]) )*(2.0/3.0),
+				self._y(quad.a[1]) + ( self._y(quad.c[1]) - self._y(quad.a[1]) )*(2.0/3.0) )
+		c2 = ( self._x(quad.b[0]) + ( self._x(quad.c[0]) - self._x(quad.b[0]) )*(2.0/3.0),
+				self._y(quad.b[1]) + ( self._y(quad.c[1]) - self._y(quad.b[1]) )*(2.0/3.0) )
 		if self._should_stroke(quad):
 			self.ctx.move_to(self._x(quad.a[0]),self._y(quad.a[1]))
-			self.ctx.curve_to(self._x(quad.b[0]),self._y(quad.b[1]))
+			self.ctx.curve_to(c1[0],c1[1],c2[0],c2[1],self._x(quad.b[0]),self._y(quad.b[1]))
 			self._stroke(quad)
 		
 	def _poly_path(self,points):
@@ -229,6 +233,8 @@ class PngOutput(object):
 
 		
 class SvgOutput(object):
+
+	EXTS = ("svg","xml")
 
 	STROKE_W = 2.5 # currently fixed
 	FONT_SIZE = 0.667 # of character height
@@ -470,11 +476,18 @@ def colour(s):
 
 if __name__ == "__main__":
 
+	fmtbyname = { 
+		"png": PngOutput, 
+		"svg": SvgOutput }
+	fmtbyext = dict(sum([[(e,f) for e in f.EXTS] for f in fmtbyname.values()],[]))
+	fmtdefault = PngOutput
+
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-o","--outfile",default=None,help="output file")
 	ap.add_argument("-f","--foreground",default="black",type=colour,help="foreground colour")
 	ap.add_argument("-b","--background",default="white",type=colour,help="background colour")
 	ap.add_argument("-c","--charheight",default="24",type=int,help="character height in pixels")
+	ap.add_argument("-t","--type",default=None,choices=fmtbyname.keys(),help="output format")
 	ap.add_argument("infile",default="-",nargs="?",help="input file")
 	args = ap.parse_args()
 
@@ -486,26 +499,33 @@ if __name__ == "__main__":
 	with instream:
 		input = instream.read()
 	
-	renderitems = process_diagram(input,patterns.PATTERNS)
+	diagram = process_diagram(input,patterns.PATTERNS)
 
-	if args.outfile is None and args.infile == "-":
+	if args.type is not None:
+		format = fmtbyname[args.type]
+	elif args.outfile not in (None,"-") and "." in args.outfile:
+		ext = args.outfile[args.outfile.rfind(".")+1:].lower()
+		format = fmtbyext.get(ext,fmtdefault)
+	else:
+		format = fmtdefault
+
+	if args.outfile == "-":
+		outstream = sys.stdout	
+	elif args.outfile is not None:
+		outstream = open(args.outfile,"w")
+	elif args.infile == "-":
 		outstream = sys.stdout
-	elif args.outfile is None and args.infile != "-":
+	else:
 		name = args.infile
 		extpos = name.rfind(".")
 		if extpos != -1: name = name[:extpos]
-		name += ".svg"
+		name += "." + format.EXTS[0]
 		outstream = open(name,"w")
-	elif args.outfile == "-":
-		outstream = sys.stdout
-	else:
-		outstream = open(args.outfile,"w")
-		
+	
 	prefs = OutputPrefs(args.foreground,args.background,args.charheight)
 	
 	with outstream:
-		#SvgOutput.output(renderitems,outstream,prefs)
-		PngOutput.output(renderitems,outstream,prefs)
+		format.output(diagram,outstream,prefs)
 	
 	
 
