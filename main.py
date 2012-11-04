@@ -90,6 +90,7 @@ class PngOutput(object):
 	STROKE_W = 2.5 # currently fixed
 	FONT_SIZE = 0.667 # of character heigt
 	DASH_PATTERN = 8,8
+	TEXT_BASELINE = 0.75
 	
 	diagram = None
 	stream = None
@@ -133,19 +134,64 @@ class PngOutput(object):
 			self._stroke(rect)
 		
 	def _do_Ellipse(self,ellipse):
-		pass
+		w = self._x( ellipse.b[0] - ellipse.a[0] )
+		h = self._y( ellipse.b[1] - ellipse.a[1] )
+		x = self._x(ellipse.a[0]) + w/2.0
+		y = self._y(ellipse.a[1]) + h/2.0
+		if self._should_fill(ellipse):
+			self._arc_path(w,h,x,y,0,2*math.pi)
+			self._fill(ellipse)
+		if self._should_stroke(ellipse):
+			self._arc_path(w,h,x,y,0,2*math.pi)
+			self._stroke(ellipse)
+		
+	def _arc_path(self,w,h,cx,cy,start,end):
+		self.ctx.save()
+		self.ctx.translate(cx,cy)
+		self.ctx.scale(w/2.0,h/2.0)
+		self.ctx.arc(0,0, 1.0, start,end)
+		self.ctx.restore()
 		
 	def _do_Arc(self,arc):
-		pass
+		w = self._x( arc.b[0] - arc.a[0] )
+		h = self._y( arc.b[1] - arc.a[1] )
+		x = self._x(arc.a[0]) + w/2.0
+		y = self._y(arc.a[1]) + h/2.0
+		if self._should_fill(arc):
+			self._arc_path(w,h,x,y,arc.start,arc.end)
+			self._fill(arc)
+		if self._should_stroke(arc):
+			self._arc_path(w,h,x,y,arc.start,arc.end)
+			self._stroke(arc)
 		
 	def _do_Quadcurve(self,quad):
-		pass
+		c1 = 
+		c2
+		if self._should_stroke(quad):
+			self.ctx.move_to(self._x(quad.a[0]),self._y(quad.a[1]))
+			self.ctx.curve_to(self._x(quad.b[0]),self._y(quad.b[1]))
+			self._stroke(quad)
+		
+	def _poly_path(self,points):
+		self.ctx.move_to(self._x(points[0][0]),self._y(points[0][1]))
+		for point in points[1:]:
+			self.ctx.line_to(self._x(point[0]),self._y(point[1]))
+		self.ctx.close_path()
 		
 	def _do_Polygon(self,poly):
-		pass
+		if self._should_fill(poly):
+			self._poly_path(poly.points)
+			self._fill(poly)
+		if self._should_stroke(poly):
+			self._poly_path(poly.points)
+			self._stroke(poly)
 		
 	def _do_Text(self,text):
-		pass
+		self.ctx.select_font_face("monospace")
+		self.ctx.set_font_size(self.prefs.charheight*PngOutput.FONT_SIZE)
+		self.ctx.set_source_rgba(*self._colour(text.colour,text.alpha))
+		self.ctx.move_to(self._x(text.pos[0]),self._y(text.pos[1]+PngOutput.TEXT_BASELINE))
+		self.ctx.show_text(text.text)
 		
 	def _should_fill(self,item):
 		return item.fill is not None and item.falpha > 0
@@ -161,7 +207,7 @@ class PngOutput(object):
 	def _stroke(self,item):
 		if not self._should_stroke(item): return
 		self.ctx.set_source_rgba(*self._colour(item.stroke,item.salpha))
-		self.ctx.set_line_width(PngOutput.STROKE_W)
+		self.ctx.set_line_width(item.w*PngOutput.STROKE_W)
 		self.ctx.set_dash(PngOutput.DASH_PATTERN if item.stype==core.STROKE_DASHED else [])
 		self.ctx.stroke()
 		
