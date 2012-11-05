@@ -2758,49 +2758,49 @@ class TestLineSqCornerPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_coordinates_northwest(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SE)
-		l = find_with(self,r,"b",(2,2))
+		l = self.find_with(r,"b",(2,2))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_north(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
-		l = find_with(self,r,"b",(2.5,2))
+		l = self.find_with(r,"b",(2.5,2))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_northeast(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SW)
-		l = find_with(self,r,"b",(3,2))
+		l = self.find_with(r,"b",(3,2))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_east(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_E)
-		l = find_with(self,r,"b",(3,2.5))
+		l = self.find_with(r,"b",(3,2.5))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_southeast(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SE)
-		l = find_with(self,r,"b",(3,3))
+		l = self.find_with(r,"b",(3,3))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_south(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_S)
-		l = find_with(self,r,"b",(2.5,3))
+		l = self.find_with(r,"b",(2.5,3))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_southwest(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SW)
-		l = find_with(self,r,"b",(2,3))
+		l = self.find_with(r,"b",(2,3))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_west(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
-		l = find_with(self,r,"b",(2,2.5))
+		l = self.find_with(r,"b",(2,2.5))
 		self.assertEquals((2.5,2.5),l.a)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(4,6,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
-		l1 = find_with(self,r,"b",(4,6.5))
+		l1 = self.find_with(r,"b",(4,6.5))
 		self.assertEquals((4.5,6.5),l1.a)
-		l2 = find_with(self,r,"b",(4.5,6))
+		l2 = self.find_with(r,"b",(4.5,6))
 		self.assertEquals((4.5,6.5),l2.a)	
 	
 	def test_render_z(self):
@@ -2832,9 +2832,9 @@ class TestLineSqCornerPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_types_mixed(self):
 		r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
 				|core.M_LINE_AFTER_S)
-		l1 = find_with(self,r,"b",(2,2.5))
+		l1 = self.find_with(r,"b",(2,2.5))
 		self.assertEquals(core.STROKE_DASHED,l1.stype)
-		l2 = find_with(self,r,"b",(2.5,2))
+		l2 = self.find_with(r,"b",(2.5,2))
 		self.assertEquals(core.STROKE_SOLID,l2.stype)
 		
 	
@@ -3316,15 +3316,15 @@ class TestLJumpPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(3,2,core.M_NONE)
 		self.assertEquals(2,len(r))
-		self.assertEquals(1,len(find_type(self,r,core.Line)))
-		self.assertEquals(1,len(find_type(self,r,core.Arc)))
+		self.assertEquals(1,len(self.find_type(r,core.Line)))
+		self.assertEquals(1,len(self.find_type(r,core.Arc)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(3,2,core.M_NONE)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((3,2.5),l.a)
 		self.assertEquals((4,2.5),l.b)
-		a = find_type(self,r,core.Arc)[0]
+		a = self.find_type(r,core.Arc)[0]
 		self.assertEquals((2.9,2),a.a)
 		self.assertEquals((4.1,3),a.b)
 		self.assertEquals(math.pi/2,a.start)
@@ -3332,10 +3332,10 @@ class TestLJumpPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_coorinates_position(self):
 		r = self.do_render(6,5,core.M_NONE)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((6,5.5),l.a)
 		self.assertEquals((7,5.5),l.b)
-		a = find_type(self,r,core.Arc)[0]
+		a = self.find_type(r,core.Arc)[0]
 		self.assertEquals((5.9,5),a.a)
 		self.assertEquals((7.1,6),a.b)
 		self.assertEquals(math.pi/2,a.start)
@@ -3373,7 +3373,7 @@ class TestLJumpPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)
 			
 	def test_render_fill_colour(self):
-		a = find_type(self,self.do_render(3,2,core.M_NONE),core.Arc)[0]
+		a = self.find_type(self.do_render(3,2,core.M_NONE),core.Arc)[0]
 		self.assertEquals(None,a.fill)
 
 	
@@ -3468,15 +3468,15 @@ class TestRJumpPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(3,2,core.M_NONE)
 		self.assertEquals(2,len(r))
-		self.assertEquals(1,len(find_type(self,r,core.Line)))
-		self.assertEquals(1,len(find_type(self,r,core.Arc)))
+		self.assertEquals(1,len(self.find_type(r,core.Line)))
+		self.assertEquals(1,len(self.find_type(r,core.Arc)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(3,2,core.M_NONE)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((3,2.5),l.a)
 		self.assertEquals((4,2.5),l.b)
-		a = find_type(self,r,core.Arc)[0]
+		a = self.find_type(r,core.Arc)[0]
 		self.assertEquals((2.9,2),a.a)
 		self.assertEquals((4.1,3),a.b)
 		self.assertEquals(-math.pi/2,a.start)
@@ -3484,10 +3484,10 @@ class TestRJumpPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_coorinates_position(self):
 		r = self.do_render(6,5,core.M_NONE)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((6,5.5),l.a)
 		self.assertEquals((7,5.5),l.b)
-		a = find_type(self,r,core.Arc)[0]
+		a = self.find_type(r,core.Arc)[0]
 		self.assertEquals((5.9,5),a.a)
 		self.assertEquals((7.1,6),a.b)
 		self.assertEquals(-math.pi/2,a.start)
@@ -3525,7 +3525,7 @@ class TestRJumpPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)
 			
 	def test_render_fill_colour(self):
-		a = find_type(self,self.do_render(3,2,core.M_NONE),core.Arc)[0]
+		a = self.find_type(self.do_render(3,2,core.M_NONE),core.Arc)[0]
 		self.assertEquals(None,a.fill)	
 	
 	
@@ -3620,15 +3620,15 @@ class TestUJumpPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(3,2,core.M_NONE)
 		self.assertEquals(2,len(r))
-		self.assertEquals(1,len(find_type(self,r,core.Line)))
-		self.assertEquals(1,len(find_type(self,r,core.Arc)))
+		self.assertEquals(1,len(self.find_type(r,core.Line)))
+		self.assertEquals(1,len(self.find_type(r,core.Arc)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(3,2,core.M_NONE)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((3.5,2),l.a)
 		self.assertEquals((3.5,3),l.b)
-		a = find_type(self,r,core.Arc)[0]
+		a = self.find_type(r,core.Arc)[0]
 		self.assertEquals((3,2.1),a.a)
 		self.assertEquals((4,2.9),a.b)
 		self.assertEquals(math.pi/2*2,a.start)
@@ -3636,10 +3636,10 @@ class TestUJumpPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_coorinates_position(self):
 		r = self.do_render(6,5,core.M_NONE)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((6.5,5),l.a)
 		self.assertEquals((6.5,6),l.b)
-		a = find_type(self,r,core.Arc)[0]
+		a = self.find_type(r,core.Arc)[0]
 		self.assertEquals((6,5.1),a.a)
 		self.assertEquals((7,5.9),a.b)
 		self.assertEquals(math.pi/2*2,a.start)
@@ -3677,7 +3677,7 @@ class TestUJumpPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(core.STROKE_SOLID,shape.stype)
 			
 	def test_render_fill_colour(self):
-		a = find_type(self,self.do_render(3,2,core.M_NONE),core.Arc)[0]
+		a = self.find_type(self.do_render(3,2,core.M_NONE),core.Arc)[0]
 		self.assertEquals(None,a.fill)		
 
 

@@ -16,6 +16,20 @@ class PatternTests(object):
 		with self.assertRaises(core.PatternStateError):
 			p.render()
 
+	def find_with(self,items,property,value):
+		for i in items:
+			if getattr(i,property) == value:
+				return i
+		self.fail("%s not found in '%s' properties %s" % (str(value),property,
+			str([getattr(i,property) for i in items])))
+	
+	
+	def find_type(self,items,type):
+		l = filter(lambda x: isinstance(x,type), items)
+		if len(l) == 0:
+			self.fail("No %ss in %s" % (str(type),str(items)))
+		return l
+
 
 def feed_input(pattern,row,col,characters):
 	for char in characters:
@@ -23,16 +37,4 @@ def feed_input(pattern,row,col,characters):
 		col += 1
 
 
-def find_with(test,items,property,value):
-	for i in items:
-		if getattr(i,property) == value:
-			return i
-	test.fail("%s not found in '%s' properties %s" % (str(value),property,
-		str([getattr(i,property) for i in items])))
 
-
-def find_type(test,items,type):
-	l = filter(lambda x: isinstance(x,type), items)
-	if len(l) == 0:
-		test.fail("No %ss in %s" % (str(type),str(items)))
-	return l

@@ -75,33 +75,33 @@ class TestLArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(2,3,False,False)
 		self.assertEquals(3,len(r))
-		self.assertEquals(3,len(find_type(self,r,core.Line)))
+		self.assertEquals(3,len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(2,3,False,False)
-		mid = find_with(self,r,"a",(3,3.5))
+		mid = self.find_with(r,"a",(3,3.5))
 		self.assertEquals((2,3.5),mid.b)
-		lft = find_with(self,r,"a",(2.8,3.25))
+		lft = self.find_with(r,"a",(2.8,3.25))
 		self.assertEquals((2,3.5),lft.b)
-		rgt = find_with(self,r,"a",(2.8,3.75))
+		rgt = self.find_with(r,"a",(2.8,3.75))
 		self.assertEquals((2,3.5),rgt.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(5,7,False,False)
-		mid = find_with(self,r,"a",(6,7.5))
+		mid = self.find_with(r,"a",(6,7.5))
 		self.assertEquals((5,7.5),mid.b)
-		lft = find_with(self,r,"a",(5.8,7.25))
+		lft = self.find_with(r,"a",(5.8,7.25))
 		self.assertEquals((5,7.5),lft.b)
-		rgt = find_with(self,r,"a",(5.8,7.75))
+		rgt = self.find_with(r,"a",(5.8,7.75))
 		self.assertEquals((5,7.5),rgt.b)
 	
 	def test_render_coordinates_box(self):
 		r = self.do_render(2,3,True,False)
-		mid = find_with(self,r,"a",(3,3.5))
+		mid = self.find_with(r,"a",(3,3.5))
 		self.assertEquals((1.5,3.5),mid.b)
-		lft = find_with(self,r,"a",(2.3,3.25))
+		lft = self.find_with(r,"a",(2.3,3.25))
 		self.assertEquals((1.5,3.5),lft.b)
-		rgt = find_with(self,r,"a",(2.3,3.75))
+		rgt = self.find_with(r,"a",(2.3,3.75))
 		self.assertEquals((1.5,3.5),rgt.b)
 		
 	def test_render_z(self):
@@ -198,33 +198,33 @@ class TestRArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(2,3,False,False)
 		self.assertEquals(3,len(r))
-		self.assertEquals(3,len(find_type(self,r,core.Line)))
+		self.assertEquals(3,len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(2,3,False,False)
-		mid = find_with(self,r,"a",(2,3.5))
+		mid = self.find_with(r,"a",(2,3.5))
 		self.assertEquals((3,3.5),mid.b)
-		lft = find_with(self,r,"a",(2.2,3.25))
+		lft = self.find_with(r,"a",(2.2,3.25))
 		self.assertEquals((3,3.5),lft.b)
-		rgt = find_with(self,r,"a",(2.2,3.75))
+		rgt = self.find_with(r,"a",(2.2,3.75))
 		self.assertEquals((3,3.5),rgt.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(5,7,False,False)
-		mid = find_with(self,r,"a",(5,7.5))
+		mid = self.find_with(r,"a",(5,7.5))
 		self.assertEquals((6,7.5),mid.b)
-		lft = find_with(self,r,"a",(5.2,7.25))
+		lft = self.find_with(r,"a",(5.2,7.25))
 		self.assertEquals((6,7.5),lft.b)
-		rgt = find_with(self,r,"a",(5.2,7.75))
+		rgt = self.find_with(r,"a",(5.2,7.75))
 		self.assertEquals((6,7.5),rgt.b)
 	
 	def test_render_coordinates_box(self):
 		r = self.do_render(2,3,True,False)
-		mid = find_with(self,r,"a",(2,3.5))
+		mid = self.find_with(r,"a",(2,3.5))
 		self.assertEquals((3.5,3.5),mid.b)
-		lft = find_with(self,r,"a",(2.7,3.25))
+		lft = self.find_with(r,"a",(2.7,3.25))
 		self.assertEquals((3.5,3.5),lft.b)
-		rgt = find_with(self,r,"a",(2.7,3.75))
+		rgt = self.find_with(r,"a",(2.7,3.75))
 		self.assertEquals((3.5,3.5),rgt.b)
 	
 	def test_render_z(self):
@@ -350,33 +350,33 @@ class TestUArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(2,3,False,False)
 		self.assertEquals(3,len(r))
-		self.assertEquals(3,len(find_type(self,r,core.Line)))
+		self.assertEquals(3,len(self.find_type(r,core.Line)))
 	
 	def test_render_coordinates(self):
 		r = self.do_render(2,3,False,False)
-		mid = find_with(self,r,"a",(2.5,4))
+		mid = self.find_with(r,"a",(2.5,4))
 		self.assertEquals((2.5,3),mid.b)
-		lft = find_with(self,r,"a",(2,3.4))
+		lft = self.find_with(r,"a",(2,3.4))
 		self.assertEquals((2.5,3),lft.b)
-		rgt = find_with(self,r,"a",(3,3.4))
+		rgt = self.find_with(r,"a",(3,3.4))
 		self.assertEquals((2.5,3),rgt.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(5,7,False,False)
-		mid = find_with(self,r,"a",(5.5,8))
+		mid = self.find_with(r,"a",(5.5,8))
 		self.assertEquals((5.5,7),mid.b)
-		lft = find_with(self,r,"a",(5,7.4))
+		lft = self.find_with(r,"a",(5,7.4))
 		self.assertEquals((5.5,7),lft.b)
-		rgt = find_with(self,r,"a",(6,7.4))
+		rgt = self.find_with(r,"a",(6,7.4))
 		self.assertEquals((5.5,7),rgt.b)
 	
 	def test_render_coordinates_box(self):
 		r = self.do_render(2,3,True,False)
-		mid = find_with(self,r,"a",(2.5,4))
+		mid = self.find_with(r,"a",(2.5,4))
 		self.assertEquals((2.5,2.5),mid.b)
-		lft = find_with(self,r,"a",(2,2.9))
+		lft = self.find_with(r,"a",(2,2.9))
 		self.assertEquals((2.5,2.5),lft.b)
-		rgt = find_with(self,r,"a",(3,2.9))
+		rgt = self.find_with(r,"a",(3,2.9))
 		self.assertEquals((2.5,2.5),rgt.b)
 	
 	def test_render_z(self):
@@ -508,33 +508,33 @@ class TestDArrowheadPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(2,3,False,False)
 		self.assertEquals(3,len(r))
-		self.assertEquals(3,len(find_type(self,r,core.Line)))
+		self.assertEquals(3,len(self.find_type(r,core.Line)))
 	
 	def test_render_coordinates(self):
 		r = self.do_render(2,3,False,False)
-		mid = find_with(self,r,"a",(2.5,3))
+		mid = self.find_with(r,"a",(2.5,3))
 		self.assertEquals((2.5,4),mid.b)
-		lft = find_with(self,r,"a",(2,3.6))
+		lft = self.find_with(r,"a",(2,3.6))
 		self.assertEquals((2.5,4),lft.b)
-		rgt = find_with(self,r,"a",(3,3.6))
+		rgt = self.find_with(r,"a",(3,3.6))
 		self.assertEquals((2.5,4),rgt.b)
 	
 	def test_render_coordinates_position(self):
 		r = self.do_render(5,7,False,False)
-		mid = find_with(self,r,"a",(5.5,7))
+		mid = self.find_with(r,"a",(5.5,7))
 		self.assertEquals((5.5,8),mid.b)
-		lft = find_with(self,r,"a",(5,7.6))
+		lft = self.find_with(r,"a",(5,7.6))
 		self.assertEquals((5.5,8),lft.b)
-		rgt = find_with(self,r,"a",(6,7.6))
+		rgt = self.find_with(r,"a",(6,7.6))
 		self.assertEquals((5.5,8),rgt.b)
 	
 	def test_render_coordinates_box(self):
 		r = self.do_render(2,3,True,False)
-		mid = find_with(self,r,"a",(2.5,3))
+		mid = self.find_with(r,"a",(2.5,3))
 		self.assertEquals((2.5,4.5),mid.b)
-		lft = find_with(self,r,"a",(2,4.1))
+		lft = self.find_with(r,"a",(2,4.1))
 		self.assertEquals((2.5,4.5),lft.b)
-		rgt = find_with(self,r,"a",(3,4.1))
+		rgt = self.find_with(r,"a",(3,4.1))
 		self.assertEquals((2.5,4.5),rgt.b)
 	
 	def test_render_z(self):
@@ -638,24 +638,24 @@ class TestLCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_coordinates(self):
 		r = self.do_render(3,2,False)
-		stem = find_with(self,r,"a",(4,2.5))
+		stem = self.find_with(r,"a",(4,2.5))
 		self.assertEquals((3.5,2.5),stem.b)
-		mid = find_with(self,r,"b",(2.5,2.5))
+		mid = self.find_with(r,"b",(2.5,2.5))
 		self.assertEquals((3.5,2.5),mid.a)
-		lft = find_with(self,r,"b",(2.5,2.2))
+		lft = self.find_with(r,"b",(2.5,2.2))
 		self.assertEquals((3.5,2.5),lft.a)
-		rgt = find_with(self,r,"b",(2.5,2.8))
+		rgt = self.find_with(r,"b",(2.5,2.8))
 		self.assertEquals((3.5,2.5),rgt.a)
 
 	def test_render_coordinates_position(self):
 		r = self.do_render(6,9,False)
-		stem = find_with(self,r,"a",(7,9.5))
+		stem = self.find_with(r,"a",(7,9.5))
 		self.assertEquals((6.5,9.5),stem.b)
-		mid = find_with(self,r,"b",(5.5,9.5))
+		mid = self.find_with(r,"b",(5.5,9.5))
 		self.assertEquals((6.5,9.5),mid.a)
-		lft = find_with(self,r,"b",(5.5,9.2))
+		lft = self.find_with(r,"b",(5.5,9.2))
 		self.assertEquals((6.5,9.5),lft.a)
-		rgt = find_with(self,r,"b",(5.5,9.8))
+		rgt = self.find_with(r,"b",(5.5,9.8))
 		self.assertEquals((6.5,9.5),rgt.a)
 			
 	def test_render_z(self):
@@ -680,7 +680,7 @@ class TestLCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(2,3,True)
-		l = find_with(self,r,"a",(3,3.5))
+		l = self.find_with(r,"a",(3,3.5))
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		r.remove(l)
 		for shape in r:
@@ -758,24 +758,24 @@ class TestRCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_coordinates(self):
 		r = self.do_render(3,2,False)
-		stem = find_with(self,r,"a",(3,2.5))
+		stem = self.find_with(r,"a",(3,2.5))
 		self.assertEquals((3.5,2.5),stem.b)
-		mid = find_with(self,r,"b",(4.5,2.5))
+		mid = self.find_with(r,"b",(4.5,2.5))
 		self.assertEquals((3.5,2.5),mid.a)
-		lft = find_with(self,r,"b",(4.5,2.2))
+		lft = self.find_with(r,"b",(4.5,2.2))
 		self.assertEquals((3.5,2.5),lft.a)
-		rgt = find_with(self,r,"b",(4.5,2.8))
+		rgt = self.find_with(r,"b",(4.5,2.8))
 		self.assertEquals((3.5,2.5),rgt.a)
 
 	def test_render_coordinates_position(self):
 		r = self.do_render(6,9,False)
-		stem = find_with(self,r,"a",(6,9.5))
+		stem = self.find_with(r,"a",(6,9.5))
 		self.assertEquals((6.5,9.5),stem.b)
-		mid = find_with(self,r,"b",(7.5,9.5))
+		mid = self.find_with(r,"b",(7.5,9.5))
 		self.assertEquals((6.5,9.5),mid.a)
-		lft = find_with(self,r,"b",(7.5,9.2))
+		lft = self.find_with(r,"b",(7.5,9.2))
 		self.assertEquals((6.5,9.5),lft.a)
-		rgt = find_with(self,r,"b",(7.5,9.8))
+		rgt = self.find_with(r,"b",(7.5,9.8))
 		self.assertEquals((6.5,9.5),rgt.a)
 			
 	def test_render_z(self):
@@ -800,7 +800,7 @@ class TestRCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(2,3,True)
-		l = find_with(self,r,"a",(2,3.5))
+		l = self.find_with(r,"a",(2,3.5))
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		r.remove(l)
 		for shape in r:
@@ -920,24 +920,24 @@ class TestUCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_coordinates(self):
 		r = self.do_render(3,2,False)
-		stem = find_with(self,r,"a",(3.5,3))
+		stem = self.find_with(r,"a",(3.5,3))
 		self.assertEquals((3.5,2),stem.b)
-		mid = find_with(self,r,"b",(3.5,1.5))
+		mid = self.find_with(r,"b",(3.5,1.5))
 		self.assertEquals((3.5,2),mid.a)
-		lft = find_with(self,r,"b",(2.9,1.5))
+		lft = self.find_with(r,"b",(2.9,1.5))
 		self.assertEquals((3.5,2),lft.a)
-		rgt = find_with(self,r,"b",(4.1,1.5))
+		rgt = self.find_with(r,"b",(4.1,1.5))
 		self.assertEquals((3.5,2),rgt.a)
 
 	def test_render_coordinates_position(self):
 		r = self.do_render(6,9,False)
-		stem = find_with(self,r,"a",(6.5,10))
+		stem = self.find_with(r,"a",(6.5,10))
 		self.assertEquals((6.5,9),stem.b)
-		mid = find_with(self,r,"b",(6.5,8.5))
+		mid = self.find_with(r,"b",(6.5,8.5))
 		self.assertEquals((6.5,9),mid.a)
-		lft = find_with(self,r,"b",(5.9,8.5))
+		lft = self.find_with(r,"b",(5.9,8.5))
 		self.assertEquals((6.5,9),lft.a)
-		rgt = find_with(self,r,"b",(7.1,8.5))
+		rgt = self.find_with(r,"b",(7.1,8.5))
 		self.assertEquals((6.5,9),rgt.a)
 	
 	def test_render_z(self):
@@ -962,7 +962,7 @@ class TestUCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(2,3,True)
-		l = find_with(self,r,"a",(2.5,4))
+		l = self.find_with(r,"a",(2.5,4))
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		r.remove(l)
 		for shape in r:
@@ -1074,24 +1074,24 @@ class TestDCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_coordinates(self):
 		r = self.do_render(3,2,False)
-		stem = find_with(self,r,"a",(3.5,2))
+		stem = self.find_with(r,"a",(3.5,2))
 		self.assertEquals((3.5,3),stem.b)
-		mid = find_with(self,r,"b",(3.5,3.5))
+		mid = self.find_with(r,"b",(3.5,3.5))
 		self.assertEquals((3.5,3),mid.a)
-		lft = find_with(self,r,"b",(2.9,3.5))
+		lft = self.find_with(r,"b",(2.9,3.5))
 		self.assertEquals((3.5,3),lft.a)
-		rgt = find_with(self,r,"b",(4.1,3.5))
+		rgt = self.find_with(r,"b",(4.1,3.5))
 		self.assertEquals((3.5,3),rgt.a)
 
 	def test_render_coordinates_position(self):
 		r = self.do_render(6,9,False)
-		stem = find_with(self,r,"a",(6.5,9))
+		stem = self.find_with(r,"a",(6.5,9))
 		self.assertEquals((6.5,10),stem.b)
-		mid = find_with(self,r,"b",(6.5,10.5))
+		mid = self.find_with(r,"b",(6.5,10.5))
 		self.assertEquals((6.5,10),mid.a)
-		lft = find_with(self,r,"b",(5.9,10.5))
+		lft = self.find_with(r,"b",(5.9,10.5))
 		self.assertEquals((6.5,10),lft.a)
-		rgt = find_with(self,r,"b",(7.1,10.5))
+		rgt = self.find_with(r,"b",(7.1,10.5))
 		self.assertEquals((6.5,10),rgt.a)
 	
 	def test_render_z(self):
@@ -1116,7 +1116,7 @@ class TestDCrowsFeetPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(2,3,True)
-		l = find_with(self,r,"a",(2.5,3))
+		l = self.find_with(r,"a",(2.5,3))
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		r.remove(l)
 		for shape in r:
@@ -1253,35 +1253,35 @@ class TestUOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 		
 	def test_render_coordinates(self):
 		r = self.do_render(4,6)
-		ls = find_with(self,r,"b",(5,6.4))
+		ls = self.find_with(r,"b",(5,6.4))
 		self.assertEquals((5.5,6),ls.a)
-		rs = find_with(self,r,"b",(6,6.4))
+		rs = self.find_with(r,"b",(6,6.4))
 		self.assertEquals((5.5,6),rs.a)
-		bt = find_with(self,r,"a",(5,6.4))
+		bt = self.find_with(r,"a",(5,6.4))
 		self.assertEquals((6,6.4),bt.b)
-		st = find_with(self,r,"a",(5.5,6.4))
+		st = self.find_with(r,"a",(5.5,6.4))
 		self.assertEquals((5.5,7),st.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(8,2)
-		ls = find_with(self,r,"b",(9,2.4))
+		ls = self.find_with(r,"b",(9,2.4))
 		self.assertEquals((9.5,2),ls.a)
-		rs = find_with(self,r,"b",(10,2.4))
+		rs = self.find_with(r,"b",(10,2.4))
 		self.assertEquals((9.5,2),ls.a)
-		bt = find_with(self,r,"a",(9,2.4))
+		bt = self.find_with(r,"a",(9,2.4))
 		self.assertEquals((10,2.4),bt.b)
-		st = find_with(self,r,"a",(9.5,2.4))
+		st = self.find_with(r,"a",(9.5,2.4))
 		self.assertEquals((9.5,3),st.b)
 		
 	def test_render_coordinates_to_box(self):
 		r = self.do_render(4,6,tobox=True)
-		ls = find_with(self,r,"b",(5,5.9))
+		ls = self.find_with(r,"b",(5,5.9))
 		self.assertEquals((5.5,5.5),ls.a)
-		rs = find_with(self,r,"b",(6,5.9))
+		rs = self.find_with(r,"b",(6,5.9))
 		self.assertEquals((5.5,5.5),ls.a)
-		bt = find_with(self,r,"a",(5,5.9))
+		bt = self.find_with(r,"a",(5,5.9))
 		self.assertEquals((6,5.9),bt.b)
-		st = find_with(self,r,"a",(5.5,5.9))
+		st = self.find_with(r,"a",(5.5,5.9))
 		self.assertEquals((5.5,7),st.b)
 
 	def test_render_z(self):
@@ -1306,7 +1306,7 @@ class TestUOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_stroke_style_dashed(self):
 		r = list(self.do_render(4,6,dash=True))
-		st = find_with(self,r,"a",(5.5,6.4))
+		st = self.find_with(r,"a",(5.5,6.4))
 		self.assertEquals(core.STROKE_DASHED,st.stype)
 		r.remove(st)
 		for shape in r:
@@ -1526,35 +1526,35 @@ class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 		
 	def test_render_coordinates(self):
 		r = self.do_render(4,6)
-		ls = find_with(self,r,"b",(4,6.6))
+		ls = self.find_with(r,"b",(4,6.6))
 		self.assertEquals((4.5,7),ls.a)
-		rs = find_with(self,r,"b",(5,6.6))
+		rs = self.find_with(r,"b",(5,6.6))
 		self.assertEquals((4.5,7),ls.a)
-		bt = find_with(self,r,"a",(4,6.6))
+		bt = self.find_with(r,"a",(4,6.6))
 		self.assertEquals((5,6.6),bt.b)
-		st = find_with(self,r,"a",(4.5,6.6))
+		st = self.find_with(r,"a",(4.5,6.6))
 		self.assertEquals((4.5,6),st.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(8,2)
-		ls = find_with(self,r,"b",(8,2.6))
+		ls = self.find_with(r,"b",(8,2.6))
 		self.assertEquals((8.5,3),ls.a)
-		rs = find_with(self,r,"b",(9,2.6))
+		rs = self.find_with(r,"b",(9,2.6))
 		self.assertEquals((8.5,3),ls.a)
-		bt = find_with(self,r,"a",(8,2.6))
+		bt = self.find_with(r,"a",(8,2.6))
 		self.assertEquals((9,2.6),bt.b)
-		st = find_with(self,r,"a",(8.5,2.6))
+		st = self.find_with(r,"a",(8.5,2.6))
 		self.assertEquals((8.5,2),st.b)
 		
 	def test_render_coordinates_to_box(self):
 		r = self.do_render(4,6,tobox=True)
-		ls = find_with(self,r,"b",(4,7.1))
+		ls = self.find_with(r,"b",(4,7.1))
 		self.assertEquals((4.5,7.5),ls.a)
-		rs = find_with(self,r,"b",(5,7.1))
+		rs = self.find_with(r,"b",(5,7.1))
 		self.assertEquals((4.5,7.5),ls.a)
-		bt = find_with(self,r,"a",(4,7.1))
+		bt = self.find_with(r,"a",(4,7.1))
 		self.assertEquals((5,7.1),bt.b)
-		st = find_with(self,r,"a",(4.5,7.1))
+		st = self.find_with(r,"a",(4.5,7.1))
 		self.assertEquals((4.5,6),st.b)
 
 	def test_render_z(self):
@@ -1579,7 +1579,7 @@ class TestDOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_stroke_style_dashed(self):
 		r = list(self.do_render(4,6,dash=True))
-		st = find_with(self,r,"a",(4.5,6.6))
+		st = self.find_with(r,"a",(4.5,6.6))
 		self.assertEquals(core.STROKE_DASHED,st.stype)
 		r.remove(st)
 		for shape in r:
@@ -1670,35 +1670,35 @@ class TestLOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 		
 	def test_render_coordinates(self):
 		r = self.do_render(4,6)
-		ls = find_with(self,r,"b",(4.8,6.75))
+		ls = self.find_with(r,"b",(4.8,6.75))
 		self.assertEquals((4,6.5),ls.a)
-		rs = find_with(self,r,"b",(4.8,6.25))
+		rs = self.find_with(r,"b",(4.8,6.25))
 		self.assertEquals((4,6.5),ls.a)
-		bt = find_with(self,r,"a",(4.8,6.75))
+		bt = self.find_with(r,"a",(4.8,6.75))
 		self.assertEquals((4.8,6.25),bt.b)
-		st = find_with(self,r,"a",(4.8,6.5))
+		st = self.find_with(r,"a",(4.8,6.5))
 		self.assertEquals((6,6.5),st.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(8,2)
-		ls = find_with(self,r,"b",(8.8,2.75))
+		ls = self.find_with(r,"b",(8.8,2.75))
 		self.assertEquals((8,2.5),ls.a)
-		rs = find_with(self,r,"b",(8.8,2.25))
+		rs = self.find_with(r,"b",(8.8,2.25))
 		self.assertEquals((8,2.5),ls.a)
-		bt = find_with(self,r,"a",(8.8,2.75))
+		bt = self.find_with(r,"a",(8.8,2.75))
 		self.assertEquals((8.8,2.25),bt.b)
-		st = find_with(self,r,"a",(8.8,2.5))
+		st = self.find_with(r,"a",(8.8,2.5))
 		self.assertEquals((10,2.5),st.b)
 
 	def test_render_coordinates_to_box(self):
 		r = self.do_render(4,6,tobox=True)
-		ls = find_with(self,r,"b",(4.3,6.75))
+		ls = self.find_with(r,"b",(4.3,6.75))
 		self.assertEquals((3.5,6.5),ls.a)
-		rs = find_with(self,r,"b",(4.3,6.25))
+		rs = self.find_with(r,"b",(4.3,6.25))
 		self.assertEquals((3.5,6.5),ls.a)
-		bt = find_with(self,r,"a",(4.3,6.75))
+		bt = self.find_with(r,"a",(4.3,6.75))
 		self.assertEquals((4.3,6.25),bt.b)
-		st = find_with(self,r,"a",(4.3,6.5))
+		st = self.find_with(r,"a",(4.3,6.5))
 		self.assertEquals((6,6.5),st.b)
 
 	def test_render_z(self):
@@ -1723,7 +1723,7 @@ class TestLOutlineArrowheadPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_stroke_style_dashed(self):
 		r = list(self.do_render(4,6,dash=True))
-		st = find_with(self,r,"a",(4.8,6.5))
+		st = self.find_with(r,"a",(4.8,6.5))
 		self.assertEquals(core.STROKE_DASHED,st.stype)
 		r.remove(st)
 		for shape in r:
@@ -1812,35 +1812,35 @@ class TestROutlineArrowheadPattern(unittest.TestCase,PatternTests):
 
 	def test_render_coordinates(self):
 		r = self.do_render(4,6)
-		ls = find_with(self,r,"b",(4.2,6.25))
+		ls = self.find_with(r,"b",(4.2,6.25))
 		self.assertEquals((5,6.5),ls.a)
-		rs = find_with(self,r,"b",(4.2,6.75))
+		rs = self.find_with(r,"b",(4.2,6.75))
 		self.assertEquals((5,6.5),ls.a)
-		bt = find_with(self,r,"a",(4.2,6.25))
+		bt = self.find_with(r,"a",(4.2,6.25))
 		self.assertEquals((4.2,6.75),bt.b)
-		st = find_with(self,r,"a",(4.2,6.5))
+		st = self.find_with(r,"a",(4.2,6.5))
 		self.assertEquals((3,6.5),st.b)
 
 	def test_render_coordinates_position(self):
 		r = self.do_render(8,2)
-		ls = find_with(self,r,"b",(8.2,2.25))
+		ls = self.find_with(r,"b",(8.2,2.25))
 		self.assertEquals((9,2.5),ls.a)
-		rs = find_with(self,r,"b",(8.2,2.75))
+		rs = self.find_with(r,"b",(8.2,2.75))
 		self.assertEquals((9,2.5),ls.a)
-		bt = find_with(self,r,"a",(8.2,2.25))
+		bt = self.find_with(r,"a",(8.2,2.25))
 		self.assertEquals((8.2,2.75),bt.b)
-		st = find_with(self,r,"a",(8.2,2.5))
+		st = self.find_with(r,"a",(8.2,2.5))
 		self.assertEquals((7,2.5),st.b)
 
 	def test_render_coordinates_to_box(self):
 		r = self.do_render(4,6,tobox=True)
-		ls = find_with(self,r,"b",(4.7,6.25))
+		ls = self.find_with(r,"b",(4.7,6.25))
 		self.assertEquals((5.5,6.5),ls.a)
-		rs = find_with(self,r,"b",(4.7,6.75))
+		rs = self.find_with(r,"b",(4.7,6.75))
 		self.assertEquals((5.5,6.5),ls.a)
-		bt = find_with(self,r,"a",(4.7,6.25))
+		bt = self.find_with(r,"a",(4.7,6.25))
 		self.assertEquals((4.7,6.75),bt.b)
-		st = find_with(self,r,"a",(4.7,6.5))
+		st = self.find_with(r,"a",(4.7,6.5))
 		self.assertEquals((3,6.5),st.b)
 
 	def test_render_z(self):
@@ -1865,7 +1865,7 @@ class TestROutlineArrowheadPattern(unittest.TestCase,PatternTests):
 	
 	def test_render_stroke_style_dashed(self):
 		r = list(self.do_render(4,6,dash=True))
-		st = find_with(self,r,"a",(4.2,6.5))
+		st = self.find_with(r,"a",(4.2,6.5))
 		self.assertEquals(core.STROKE_DASHED,st.stype)
 		r.remove(st)
 		for shape in r:
@@ -2031,17 +2031,17 @@ class TestUOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 
 	def test_render_coordinates(self):
 		r = self.do_render(4,3)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((4.5,2.5),(5,3),(4.5,3.5),(4,3)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((4.5,3.5),l.a)
 		self.assertEquals((4.5,5),l.b)
 
 	def test_render_coordinates_position(self):
 		r = self.do_render(8,1)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((8.5,0.5),(9,1),(8.5,1.5),(8,1)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((8.5,1.5),l.a)
 		self.assertEquals((8.5,3),l.b)
 		
@@ -2072,17 +2072,17 @@ class TestUOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(4,3,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		
 	def test_render_fill_colour(self):
-		p = find_type(self,self.do_render(4,3),core.Polygon)[0]
+		p = self.find_type(self.do_render(4,3),core.Polygon)[0]
 		self.assertEquals(None,p.fill)
 		
 	def test_render_fill_alpha(self):
-		p = find_type(self,self.do_render(4,3),core.Polygon)[0]
+		p = self.find_type(self.do_render(4,3),core.Polygon)[0]
 		self.assertEquals(1.0,p.falpha)
 
 
@@ -2240,17 +2240,17 @@ class TestDOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 		
 	def test_render_coordinates(self):
 		r = self.do_render(5,6)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((5.5,7.5),(5,7),(5.5,6.5),(6,7)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((5.5,6.5),l.a)
 		self.assertEquals((5.5,5),l.b)
 
 	def test_render_coordinates_position(self):
 		r = self.do_render(8,11)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((8.5,12.5),(8,12),(8.5,11.5),(9,12)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((8.5,11.5),l.a)
 		self.assertEquals((8.5,10),l.b)
 		
@@ -2281,19 +2281,19 @@ class TestDOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(5,6,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 	
 	def test_fill_colour(self):
 		r = self.do_render(5,6)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(None,p.fill)
 		
 	def test_fill_alpha(self):
 		r = self.do_render(5,6)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(1.0,p.falpha)
 
 
@@ -2383,22 +2383,22 @@ class TestLOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(5,4)
 		self.assertEquals(2,len(r))
-		self.assertEquals(1,len(find_type(self,r,core.Polygon)))
-		self.assertEquals(1,len(find_type(self,r,core.Line)))
+		self.assertEquals(1,len(self.find_type(r,core.Polygon)))
+		self.assertEquals(1,len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((4.5,4.5),(5.5,4.75),(6.5,4.5),(5.5,4.25)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((6.5,4.5),l.a)
 		self.assertEquals((7,4.5),l.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(99,31)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((98.5,31.5),(99.5,31.75),(100.5,31.5),(99.5,31.25)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((100.5,31.5),l.a)
 		self.assertEquals((101,31.5),l.b)
 
@@ -2424,9 +2424,9 @@ class TestLOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(5,4,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 
 	def test_render_stroke_width(self):
@@ -2434,11 +2434,11 @@ class TestLOutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(1,shape.w)
 			
 	def test_render_fill_colour(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(None,p.fill)
 		
 	def test_render_fill_alpha(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(1.0,p.falpha)
 		
 		
@@ -2525,22 +2525,22 @@ class TestROutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(5,4)
 		self.assertEquals(2,len(r))
-		self.assertEquals(1,len(find_type(self,r,core.Polygon)))
-		self.assertEquals(1,len(find_type(self,r,core.Line)))
+		self.assertEquals(1,len(self.find_type(r,core.Polygon)))
+		self.assertEquals(1,len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((6.5,4.5),(5.5,4.25),(4.5,4.5),(5.5,4.75)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((4.5,4.5),l.a)
 		self.assertEquals((4,4.5),l.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(99,31)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((100.5,31.5),(99.5,31.25),(98.5,31.5),(99.5,31.75)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((98.5,31.5),l.a)
 		self.assertEquals((98,31.5),l.b)
 
@@ -2566,9 +2566,9 @@ class TestROutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(5,4,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 
 	def test_render_stroke_width(self):
@@ -2576,11 +2576,11 @@ class TestROutlineDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			self.assertEquals(1,shape.w)
 			
 	def test_render_fill_colour(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(None,p.fill)
 		
 	def test_render_fill_alpha(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(1.0,p.falpha)		
 		
 
@@ -2786,22 +2786,22 @@ class TestUDiamondConnectorPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(5,4)
 		self.assertEquals(2, len(r))
-		self.assertEquals(1, len(find_type(self,r,core.Polygon)))
-		self.assertEquals(1, len(find_type(self,r,core.Line)))
+		self.assertEquals(1, len(self.find_type(r,core.Polygon)))
+		self.assertEquals(1, len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((5.5,3.5),(6.0,4.0),(5.5,4.5),(5.0,4.0)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((5.5,4.5),l.a)
 		self.assertEquals((5.5,7.0),l.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(42,37)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((42.5,36.5),(43.0,37.0),(42.5,37.5),(42.0,37.0)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((42.5,37.5),l.a)
 		self.assertEquals((42.5,40.0),l.b)
 		
@@ -2811,9 +2811,9 @@ class TestUDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_colour(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(None,p.stroke)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.C_FOREGROUND,l.stroke)
 			
 	def test_render_stroke_alpha(self):
@@ -2830,17 +2830,17 @@ class TestUDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(5,4,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		
 	def test_render_fill_colour(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(core.C_FOREGROUND,p.fill)
 		
 	def test_render_fill_alpha(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(1.0,p.falpha)
 			
 
@@ -3030,22 +3030,22 @@ class TestDDiamondConnectorPattern(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(5,4)
 		self.assertEquals(2,len(r))
-		self.assertEquals(1,len(find_type(self,r,core.Polygon)))
-		self.assertEquals(1,len(find_type(self,r,core.Line)))
+		self.assertEquals(1,len(self.find_type(r,core.Polygon)))
+		self.assertEquals(1,len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((5.5,5.5),(5.0,5.0),(5.5,4.5),(6.0,5.0)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((5.5,4.5),l.a)
 		self.assertEquals((5.5,2.0),l.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(20,9)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((20.5,10.5),(20.0,10.0),(20.5,9.5),(21.0,10.0)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((20.5,9.5),l.a)
 		self.assertEquals((20.5,7.0),l.b)
 		
@@ -3055,9 +3055,9 @@ class TestDDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_colour(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(None,p.stroke)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.C_FOREGROUND,l.stroke)
 		
 	def test_render_stroke_alpha(self):
@@ -3074,17 +3074,17 @@ class TestDDiamondConnectorPattern(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_style_dashed(self):
 		r = self.do_render(5,4,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]		
+		l = self.find_type(r,core.Line)[0]		
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		
 	def test_render_fill(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(core.C_FOREGROUND,p.fill)
 		
 	def test_render_fill_alpha(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(1.0,p.falpha)
 	
 
@@ -3194,22 +3194,22 @@ class TestLDiamondConnector(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(5,4)
 		self.assertEquals(2, len(r))
-		self.assertEquals(1, len(find_type(self,r,core.Polygon)))
-		self.assertEquals(1, len(find_type(self,r,core.Line)))
+		self.assertEquals(1, len(self.find_type(r,core.Polygon)))
+		self.assertEquals(1, len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((4.5,4.5),(5.5,4.75),(6.5,4.5),(5.5,4.25)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((6.5,4.5),l.a)
 		self.assertEquals((8.0,4.5),l.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(11,13)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((10.5,13.5),(11.5,13.75),(12.5,13.5),(11.5,13.25)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((12.5,13.5),l.a)
 		self.assertEquals((14.0,13.5),l.b)
 		
@@ -3219,9 +3219,9 @@ class TestLDiamondConnector(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_colour(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(None,p.stroke)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.C_FOREGROUND,l.stroke)
 		
 	def test_render_stroke_alpha(self):
@@ -3238,17 +3238,17 @@ class TestLDiamondConnector(unittest.TestCase,PatternTests):
 			
 	def test_stroke_style_dashed(self):
 		r = self.do_render(5,4,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		
 	def test_fill_colour(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(core.C_FOREGROUND,p.fill)
 		
 	def test_fill_alpha(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(1.0,p.falpha)
 		
 		
@@ -3355,22 +3355,22 @@ class TestRDiamondConnector(unittest.TestCase,PatternTests):
 	def test_render_returns_correct_shapes(self):
 		r = self.do_render(5,4)
 		self.assertEquals(2,len(r))
-		self.assertEquals(1,len(find_type(self,r,core.Polygon)))
-		self.assertEquals(1,len(find_type(self,r,core.Line)))
+		self.assertEquals(1,len(self.find_type(r,core.Polygon)))
+		self.assertEquals(1,len(self.find_type(r,core.Line)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((6.5,4.5),(5.5,4.25),(4.5,4.5),(5.5,4.75)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((4.5,4.5),l.a)
 		self.assertEquals((3.0,4.5),l.b)
 		
 	def test_render_coordinates_position(self):
 		r = self.do_render(99,42)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(((100.5,42.5),(99.5,42.25),(98.5,42.5),(99.5,42.75)),p.points)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals((98.5,42.5),l.a)
 		self.assertEquals((97.0,42.5),l.b)
 			
@@ -3380,9 +3380,9 @@ class TestRDiamondConnector(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_colour(self):
 		r = self.do_render(5,4)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(None, p.stroke)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.C_FOREGROUND, l.stroke)
 		
 	def test_render_stroke_alpha(self):
@@ -3399,17 +3399,17 @@ class TestRDiamondConnector(unittest.TestCase,PatternTests):
 			
 	def test_render_stroke_type_dashed(self):
 		r = self.do_render(5,4,dash=True)
-		p = find_type(self,r,core.Polygon)[0]
+		p = self.find_type(r,core.Polygon)[0]
 		self.assertEquals(core.STROKE_SOLID,p.stype)
-		l = find_type(self,r,core.Line)[0]
+		l = self.find_type(r,core.Line)[0]
 		self.assertEquals(core.STROKE_DASHED,l.stype)
 		
 	def test_render_fill(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(core.C_FOREGROUND,p.fill)
 		
 	def test_render_fill_alpha(self):
-		p = find_type(self,self.do_render(5,4),core.Polygon)[0]
+		p = self.find_type(self.do_render(5,4),core.Polygon)[0]
 		self.assertEquals(1.0, p.falpha)
 		
 		

@@ -2,7 +2,6 @@
 
 """	
 TODO:
-	* Image output (cairo?)
 	* Rounded corner boxes
 	* Slash-cornered boxes
 	* Dashed round corner boxes

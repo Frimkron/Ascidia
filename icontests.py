@@ -270,13 +270,13 @@ class TestStickManPattern(unittest.TestCase,PatternTests):
 		head = filter(lambda x: isinstance(x,core.Ellipse), r)[0]
 		self.assertEquals((3,2.5),head.a)
 		self.assertEquals((4,3),head.b)
-		arms = find_with(self,filter(lambda x: isinstance(x,core.Line), r),"a",(2,3.25))
+		arms = self.find_with(filter(lambda x: isinstance(x,core.Line), r),"a",(2,3.25))
 		self.assertEquals((2,3.25),arms.a)
 		self.assertEquals((5,3.25),arms.b)
-		lleg = find_with(self,filter(lambda x: isinstance(x,core.Line), r),"b",(2.5,4.8))
+		lleg = self.find_with(filter(lambda x: isinstance(x,core.Line), r),"b",(2.5,4.8))
 		self.assertEquals((3.5,3.8),lleg.a)
 		self.assertEquals((2.5,4.8),lleg.b)
-		rleg = find_with(self,filter(lambda x: isinstance(x,core.Line), r),"b",(4.5,4.8))
+		rleg = self.find_with(filter(lambda x: isinstance(x,core.Line), r),"b",(4.5,4.8))
 		self.assertEquals((3.5,3.8),rleg.a)
 		self.assertEquals((4.5,4.8),rleg.b)
 
