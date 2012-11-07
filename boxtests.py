@@ -3379,16 +3379,42 @@ class TestRoundedRectangularBoxPattern(unittest.TestCase,PatternTests):
 		r = self.do_render(2,3,5,6)
 		self.assertEquals(8, len(r))
 		self.assertEquals(4, len(filter(lambda x: isinstance(x,core.Line),r)))
-		self.assertEquals(4, len(filter(lambda x: isinstance(x,core.QuadCurve),r)))
+		self.assertEquals(4, len(filter(lambda x: isinstance(x,core.Arc),r)))
 		
 	def test_render_coordinates(self):
 		r = self.do_render(2,3,5,6)
 		lines = self.find_type(r,core.Line)
-		curves = self.find_type(r,core.QuadCurve)
-		lt = find_with(lines,"a",(3.5,3.5))
-		self.assertEquals((4.5,3.5),lt.b)
-		# TODO - working here
+		curves = self.find_type(r,core.Arc)
+		                                          
+		lt = self.find_with(lines,"a",(3.5,3.5))
+		self.assertEquals((7.5,3.5),lt.b)   
+		lb = self.find_with(lines,"a",(3.5,10.5))
+		self.assertEquals((7.5,10.5),lb.b)   
+		ll = self.find_with(lines,"a",(2.5,4.0)) 
+		self.assertEquals((2.5,10.0),ll.b) 
+		lr = self.find_with(lines,"a",(8.5,4.0))
+		self.assertEquals((8.5,10.0),lr.b)
 		
+		ctl = self.find_with(curves,"a",(2.5,3.5))
+		self.assertEquals((4.5,4.5),ctl.b)
+		self.assertEquals(math.pi,ctl.start)
+		self.assertEquals(math.pi*1.5,ctl.end)
+		ctr = self.find_with(curves,"a",(6.5,3.5))
+		self.assertEquals((8.5,4.5),ctr.b)
+		self.assertEquals(math.pi*-0.5,ctr.start)
+		self.assertEquals(0,ctr.end)
+		cbl = self.find_with(curves,"a",(2.5,9.5))
+		self.assertEquals((4.5,10.5),cbl.b)
+		self.assertEquals(math.pi*0.5,cbl.start)
+		self.assertEquals(math.pi,cbl.end)
+		cbr = self.find_with(curves,"a",(6.5,9.5))
+		self.assertEquals((8.5,10.5),cbr.b)
+		self.assertEquals(0,cbr.start)
+		self.assertEquals(math.pi*0.5,cbr.end)
+
+	# TODO - working here
+
+	"""	
 	def test_render_coordinates_width(self):
 		r = self.do_render(2,3,7,6)[0]
 		self.assertEquals((2.5,3.5),r.a)
@@ -3427,7 +3453,7 @@ class TestRoundedRectangularBoxPattern(unittest.TestCase,PatternTests):
 	def test_render_fill_colour(self):
 		r = self.do_render(2,3,5,6)[0]
 		self.assertEquals(None,r.fill)
-	
+	"""
 	"""	
 	def test_render_h_sections_returns_background_shapes(self):
 		r = self.do_render(3,2,12,4,[],[4,8])

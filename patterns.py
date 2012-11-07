@@ -233,6 +233,34 @@ class RectangularBoxPattern(Pattern):
 class RoundedRectangularBoxPattern(RectangularBoxPattern):
 
 	cnrchars = [".",".","'","'"]
+	
+	def render(self):
+		Pattern.render(self)
+		return [
+			Line(a=(self.tl[0]+0.5+1.0,self.tl[1]+0.5),b=(self.br[0]+0.5-1.0,self.tl[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID),
+			Line(a=(self.tl[0]+0.5,self.tl[1]+0.5+1.0/CHAR_H_RATIO),b=(self.tl[0]+0.5,self.br[1]+0.5-1.0/CHAR_H_RATIO),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID),
+			Line(a=(self.br[0]+0.5,self.tl[1]+0.5+1.0/CHAR_H_RATIO),b=(self.br[0]+0.5,self.br[1]+0.5-1.0/CHAR_H_RATIO),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID),
+			Line(a=(self.tl[0]+0.5+1.0,self.br[1]+0.5),b=(self.br[0]+0.5-1.0,self.br[1]+0.5),
+				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID), 
+			Arc(a=(self.tl[0]+0.5,self.tl[1]+0.5),b=(self.tl[0]+0.5+2.0,self.tl[1]+0.5+2.0/CHAR_H_RATIO),
+				z=0,start=math.pi,end=math.pi*1.5,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=1.0),
+			Arc(a=(self.br[0]+0.5-2.0,self.tl[1]+0.5),b=(self.br[0]+0.5,self.tl[1]+0.5+2.0/CHAR_H_RATIO),
+				z=0,start=math.pi*-0.5,end=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=1.0),
+			Arc(a=(self.br[0]+0.5-2.0,self.br[1]+0.5-2.0/CHAR_H_RATIO),b=(self.br[0]+0.5,self.br[1]+0.5),
+				z=0,start=0,end=math.pi*0.5,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=1.0),
+			Arc(a=(self.tl[0]+0.5,self.br[1]+0.5-2.0/CHAR_H_RATIO),b=(self.tl[0]+0.5+2.0,self.br[1]+0.5),
+				z=0,start=math.pi*0.5,end=math.pi,stroke=C_FOREGROUND,salpha=1.0,w=1,
+				stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=1.0), ]
 
 
 class StraightRectangularBoxPattern(RectangularBoxPattern):
