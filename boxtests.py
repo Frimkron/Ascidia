@@ -3038,6 +3038,60 @@ class TestRoundedRectangularBoxPattern(unittest.TestCase,PatternTests):
 		feed_input(p,2,0,"'---'\n")
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
+			
+	def test_allows_slash_corners(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/--\\ \n")
+		feed_input(p,1,0,"  |  | \n")
+		feed_input(p,2,0,"  \\--/ \n")
+		feed_input(p,3,0,"      ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,6," ",core.M_NONE))
+			
+	def test_expects_top_right_backslash(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,5,".",core.M_NONE))
+			
+	def test_expects_top_right_backslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(0,5,"\\",core.M_OCCUPIED))
+			
+	def test_expects_bottom_left_backslash(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/--\\ \n")
+		feed_input(p,1,0,"  |  | \n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"'",core.M_NONE))
+			
+	def test_expects_bottom_left_backslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/--\\ \n")
+		feed_input(p,1,0,"  |  | \n")
+		feed_input(p,2,0,"  ")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,2,"\\",core.M_OCCUPIED))
+			
+	def test_expects_bottom_right_forwardslash(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/--\\ \n")
+		feed_input(p,1,0,"  |  | \n")
+		feed_input(p,2,0,"  \\--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"'",core.M_NONE))
+			
+	def test_expects_bottom_right_forwardslash_unoccupied(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "/--\\ \n")
+		feed_input(p,1,0,"  |  | \n")
+		feed_input(p,2,0,"  \\--")
+		with self.assertRaises(core.PatternRejected):
+			p.test(main.CurrentChar(2,5,"/",core.M_OCCUPIED))
+			
 	"""	
 	def test_allows_h_separator(self):
 		p = self.pclass()

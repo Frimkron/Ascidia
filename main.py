@@ -2,9 +2,6 @@
 
 """	
 TODO:
-	* Rounded corner boxes
-	* Slash-cornered boxes
-	* Dashed round corner boxes
 	* Note/document (folded corner, cutoff)
 	* Cloud boxes
 	* Tiny ellipse "o"

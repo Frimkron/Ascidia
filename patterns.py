@@ -114,7 +114,9 @@ class RectangularBoxPattern(Pattern):
 		lastvs,lasths = self.tl
 		
 		# top left corner
-		self.curr = yield self.expect(self.cnrchars[0],meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
+		tlcnrs = [c[0] for c in self.cnrchars]
+		cnrtype = tlcnrs.index(self.curr.char) if self.curr.char in tlcnrs else -1
+		self.curr = yield self.expect(tlcnrs,meta=M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
 		
 		# top line 
 		self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
@@ -122,7 +124,7 @@ class RectangularBoxPattern(Pattern):
 			# dashed box detection
 			self.dashed = True
 			self.curr = yield self.expect(" ",meta=M_OCCUPIED|M_BOX_START_S)
-		while self.curr.char != self.cnrchars[1]:
+		while self.curr.char != self.cnrchars[cnrtype][1]:
 			if self.dashed:
 				self.curr = yield self.expect("-",meta=M_OCCUPIED|M_BOX_START_S)
 				self.curr = yield self.expect(" ",meta=M_OCCUPIED|M_BOX_START_S)
@@ -131,7 +133,7 @@ class RectangularBoxPattern(Pattern):
 		w = self.curr.col-self.tl[0]+1
 		
 		# top right corner
-		self.curr = yield self.expect(self.cnrchars[1],meta=M_OCCUPIED|M_BOX_START_S)
+		self.curr = yield self.expect(self.cnrchars[cnrtype][1],meta=M_OCCUPIED|M_BOX_START_S)
 		self.curr = yield M_BOX_AFTER_E
 		
 		# next line
@@ -162,7 +164,7 @@ class RectangularBoxPattern(Pattern):
 			self.curr = yield meta
 			
 		# middle section	
-		while self.curr.char != self.cnrchars[2]:
+		while self.curr.char != self.cnrchars[cnrtype][2]:
 		
 			# left side
 			rowstart = self.curr.col,self.curr.row
@@ -198,7 +200,7 @@ class RectangularBoxPattern(Pattern):
 			
 		# bottom left corner		
 		rowstart = self.curr.col,self.curr.row
-		self.curr = yield self.expect(self.cnrchars[2],meta=M_OCCUPIED|M_BOX_START_E)
+		self.curr = yield self.expect(self.cnrchars[cnrtype][2],meta=M_OCCUPIED|M_BOX_START_E)
 		
 		# bottom line
 		if self.dashed:
@@ -211,7 +213,7 @@ class RectangularBoxPattern(Pattern):
 			
 		# bottom right corner
 		self.br = (self.curr.col,self.curr.row)
-		self.curr = yield self.expect(self.cnrchars[3],meta=M_OCCUPIED)
+		self.curr = yield self.expect(self.cnrchars[cnrtype][3],meta=M_OCCUPIED)
 		self.curr = yield M_BOX_AFTER_E
 		
 		# optional final line
@@ -232,7 +234,7 @@ class RectangularBoxPattern(Pattern):
 
 class RoundedRectangularBoxPattern(RectangularBoxPattern):
 
-	cnrchars = [".",".","'","'"]
+	cnrchars = [ [".",".","'","'"], ["/","\\","\\","/"] ]
 	
 	def render(self):
 		Pattern.render(self)
@@ -265,7 +267,7 @@ class RoundedRectangularBoxPattern(RectangularBoxPattern):
 
 class StraightRectangularBoxPattern(RectangularBoxPattern):
 	
-	cnrchars = ["+"]*4
+	cnrchars = [["+"]*4]
 		
 	def render(self):
 		Pattern.render(self)
