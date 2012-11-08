@@ -287,7 +287,7 @@ class StraightRectangularBoxPattern(RectangularBoxPattern):
 						salpha=0.0,w=1,stype=STROKE_SOLID,fill=C_FOREGROUND,falpha=falpha) )
 		retval.append( Rectangle(a=(self.tl[0]+0.5,self.tl[1]+0.5),
 			b=(self.br[0]+0.5,self.br[1]+0.5),z=0,stroke=C_FOREGROUND,salpha=1.0,
-			w=1,stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=0.0) )
+			w=1,stype=STROKE_DASHED if self.dashed else STROKE_SOLID,fill=None,falpha=1.0) )
 		return retval
 
 

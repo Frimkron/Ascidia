@@ -1049,6 +1049,10 @@ class TestStraightRectangularBoxPattern(unittest.TestCase,PatternTests):
 	def test_render_stroke_colour(self):
 		r = self.do_render(2,3,5,6)[0]
 		self.assertEquals(core.C_FOREGROUND,r.stroke)
+
+	def test_render_stroke_alpha(self):
+		r = self.do_render(2,3,5,6)[0]
+		self.assertEquals(1.0,r.salpha)
 		
 	def test_render_stroke_width(self):
 		r = self.do_render(2,3,5,6)[0]
@@ -1065,6 +1069,10 @@ class TestStraightRectangularBoxPattern(unittest.TestCase,PatternTests):
 	def test_render_fill_colour(self):
 		r = self.do_render(2,3,5,6)[0]
 		self.assertEquals(None,r.fill)
+		
+	def test_render_fill_alpha(self):
+		r = self.do_render(2,3,5,6)[0]
+		self.assertEquals(1.0,r.falpha)
 		
 	def test_render_h_sections_returns_background_shapes(self):
 		r = self.do_render(3,2,12,4,[],[4,8])
@@ -1784,8 +1792,6 @@ class TestDiamondBoxPattern(unittest.TestCase,PatternTests):
 		self.pclass = patterns.DiamondBoxPattern
 							
 	def test_accepts_box(self):
-		#import pdb
-		#pdb.set_trace()
 		p = self.pclass()
 		feed_input(p,0,4,    ".    \n")
 		feed_input(p,1,0,"  .' '.  \n")
@@ -3412,48 +3418,131 @@ class TestRoundedRectangularBoxPattern(unittest.TestCase,PatternTests):
 		self.assertEquals(0,cbr.start)
 		self.assertEquals(math.pi*0.5,cbr.end)
 
-	# TODO - working here
-
-	"""	
 	def test_render_coordinates_width(self):
-		r = self.do_render(2,3,7,6)[0]
-		self.assertEquals((2.5,3.5),r.a)
-		self.assertEquals((10.5,10.5),r.b)
+		r = self.do_render(2,3,7,6)
+		lines = self.find_type(r,core.Line)
+		curves = self.find_type(r,core.Arc)
+		                                          
+		lt = self.find_with(lines,"a",(3.5,3.5))
+		self.assertEquals((9.5,3.5),lt.b)   
+		lb = self.find_with(lines,"a",(3.5,10.5))
+		self.assertEquals((9.5,10.5),lb.b)   
+		ll = self.find_with(lines,"a",(2.5,4.0)) 
+		self.assertEquals((2.5,10.0),ll.b) 
+		lr = self.find_with(lines,"a",(10.5,4.0))
+		self.assertEquals((10.5,10.0),lr.b)
 		
+		ctl = self.find_with(curves,"a",(2.5,3.5))
+		self.assertEquals((4.5,4.5),ctl.b)
+		self.assertEquals(math.pi,ctl.start)
+		self.assertEquals(math.pi*1.5,ctl.end)
+		ctr = self.find_with(curves,"a",(8.5,3.5))
+		self.assertEquals((10.5,4.5),ctr.b)
+		self.assertEquals(math.pi*-0.5,ctr.start)
+		self.assertEquals(0,ctr.end)
+		cbl = self.find_with(curves,"a",(2.5,9.5))
+		self.assertEquals((4.5,10.5),cbl.b)
+		self.assertEquals(math.pi*0.5,cbl.start)
+		self.assertEquals(math.pi,cbl.end)
+		cbr = self.find_with(curves,"a",(8.5,9.5))
+		self.assertEquals((10.5,10.5),cbr.b)
+		self.assertEquals(0,cbr.start)
+		self.assertEquals(math.pi*0.5,cbr.end)
+	
 	def test_render_coordinates_height(self):
-		r = self.do_render(2,3,5,8)[0]
-		self.assertEquals((2.5,3.5),r.a)
-		self.assertEquals((8.5,12.5),r.b)
+		r = self.do_render(2,3,5,8)
+		lines = self.find_type(r,core.Line)
+		curves = self.find_type(r,core.Arc)
+		                                          
+		lt = self.find_with(lines,"a",(3.5,3.5))
+		self.assertEquals((7.5,3.5),lt.b)   
+		lb = self.find_with(lines,"a",(3.5,12.5))
+		self.assertEquals((7.5,12.5),lb.b)   
+		ll = self.find_with(lines,"a",(2.5,4.0)) 
+		self.assertEquals((2.5,12.0),ll.b) 
+		lr = self.find_with(lines,"a",(8.5,4.0))
+		self.assertEquals((8.5,12.0),lr.b)
+		
+		ctl = self.find_with(curves,"a",(2.5,3.5))
+		self.assertEquals((4.5,4.5),ctl.b)
+		self.assertEquals(math.pi,ctl.start)
+		self.assertEquals(math.pi*1.5,ctl.end)
+		ctr = self.find_with(curves,"a",(6.5,3.5))
+		self.assertEquals((8.5,4.5),ctr.b)
+		self.assertEquals(math.pi*-0.5,ctr.start)
+		self.assertEquals(0,ctr.end)
+		cbl = self.find_with(curves,"a",(2.5,11.5))
+		self.assertEquals((4.5,12.5),cbl.b)
+		self.assertEquals(math.pi*0.5,cbl.start)
+		self.assertEquals(math.pi,cbl.end)
+		cbr = self.find_with(curves,"a",(6.5,11.5))
+		self.assertEquals((8.5,12.5),cbr.b)
+		self.assertEquals(0,cbr.start)
+		self.assertEquals(math.pi*0.5,cbr.end)
 		
 	def test_render_coordinates_position(self):
-		r = self.do_render(7,5,5,6)[0]
-		self.assertEquals((7.5,5.5),r.a)
-		self.assertEquals((13.5,12.5),r.b)
-	
+		r = self.do_render(7,5,5,6)
+		lines = self.find_type(r,core.Line)
+		curves = self.find_type(r,core.Arc)
+		                                          
+		lt = self.find_with(lines,"a",(8.5,5.5))
+		self.assertEquals((12.5,5.5),lt.b)   
+		lb = self.find_with(lines,"a",(8.5,12.5))
+		self.assertEquals((12.5,12.5),lb.b)   
+		ll = self.find_with(lines,"a",(7.5,6.0)) 
+		self.assertEquals((7.5,12.0),ll.b) 
+		lr = self.find_with(lines,"a",(13.5,6.0))
+		self.assertEquals((13.5,12.0),lr.b)
+		
+		ctl = self.find_with(curves,"a",(7.5,5.5))
+		self.assertEquals((9.5,6.5),ctl.b)
+		self.assertEquals(math.pi,ctl.start)
+		self.assertEquals(math.pi*1.5,ctl.end)
+		ctr = self.find_with(curves,"a",(11.5,5.5))
+		self.assertEquals((13.5,6.5),ctr.b)
+		self.assertEquals(math.pi*-0.5,ctr.start)
+		self.assertEquals(0,ctr.end)
+		cbl = self.find_with(curves,"a",(7.5,11.5))
+		self.assertEquals((9.5,12.5),cbl.b)
+		self.assertEquals(math.pi*0.5,cbl.start)
+		self.assertEquals(math.pi,cbl.end)
+		cbr = self.find_with(curves,"a",(11.5,11.5))
+		self.assertEquals((13.5,12.5),cbr.b)
+		self.assertEquals(0,cbr.start)
+		self.assertEquals(math.pi*0.5,cbr.end)
+		
 	def test_render_z(self):
-		r = self.do_render(2,3,5,6)[0]
-		self.assertEquals(0,r.z)
+		for shape in self.do_render(2,3,5,6):
+			self.assertEquals(0,shape.z)
 		
 	def test_render_stroke_colour(self):
-		r = self.do_render(2,3,5,6)[0]
-		self.assertEquals(core.C_FOREGROUND,r.stroke)
+		for shape in self.do_render(2,3,5,6):
+			self.assertEquals(core.C_FOREGROUND,shape.stroke)
+		
+	def test_render_stroke_alpha(self):
+		for shape in self.do_render(2,3,5,6):
+			self.assertEquals(1.0, shape.salpha)
 		
 	def test_render_stroke_width(self):
-		r = self.do_render(2,3,5,6)[0]
-		self.assertEquals(1,r.w)
+		for shape in self.do_render(2,3,5,6):
+			self.assertEquals(1,shape.w)
 		
 	def test_render_stroke_style_solid(self):
-		r = self.do_render(2,3,6,6,dash=False)[0]
-		self.assertEquals(core.STROKE_SOLID,r.stype)
+		for shape in self.do_render(2,3,6,6,dash=False):
+			self.assertEquals(core.STROKE_SOLID,shape.stype)
 		
 	def test_render_stroke_style_dashed(self):
-		r = self.do_render(2,3,6,6,dash=True)[0]
-		self.assertEquals(core.STROKE_DASHED,r.stype)
+		for shape in self.do_render(2,3,6,6,dash=True):
+			self.assertEquals(core.STROKE_DASHED,shape.stype)
 		
 	def test_render_fill_colour(self):
-		r = self.do_render(2,3,5,6)[0]
-		self.assertEquals(None,r.fill)
-	"""
+		for shape in self.find_type(self.do_render(2,3,5,6),core.Arc):
+			self.assertEquals(None,shape.fill)
+			
+	def test_render_fill_alpha(self):
+		for shape in self.find_type(self.do_render(2,3,5,6),core.Arc):
+			self.assertEquals(1.0,shape.falpha)
+			
 	"""	
 	def test_render_h_sections_returns_background_shapes(self):
 		r = self.do_render(3,2,12,4,[],[4,8])
