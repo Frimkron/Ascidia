@@ -6,6 +6,7 @@ import main
 import io
 import xml.dom.minidom
 import math
+import mock
 
 
 class TestMatchLookup(unittest.TestCase):
@@ -843,8 +844,8 @@ class TestSvgOutput(unittest.TestCase):
 class TestProcessDiagram(unittest.TestCase):
 
 
-	def returns_diagram(self):
-		d = main.process_diagram("")
+	def test_returns_diagram(self):
+		d = main.process_diagram("",[])
 		self.assertTrue( isinstance(d, main.Diagram) )
 	
 	def test_diagram_size(self):
@@ -1054,7 +1055,41 @@ class TestProcessDiagram(unittest.TestCase):
 				return [ object() ]
 		result = main.process_diagram("a a",[MetaMatchingPattern]).content
 		self.assertEquals(2, len(result))		
+		
+	def test_reports_progress(self):
+		class StubPattern(object):
+			def test(self,curr): raise StopIteration
+			def render(self): return []
+		reporter = mock.Mock()
+		main.process_diagram("aaaa",[StubPattern]*5,reporter)
+		self.assertTrue( reporter.call_count > 2 )
+	
+	def test_progress_starts_with_zero(self):
+		class StubPattern(object):
+			def test(self,curr): raise StopIteration
+			def render(self): return []
+		reporter = mock.Mock()
+		main.process_diagram("aaaa",[StubPattern]*5,reporter)
+		self.assertEquals(((0.0,),{}),reporter.call_args_list[0])
 
-
+	def test_progress_ends_with_one(self):
+		class StubPattern(object):
+			def test(self,curr): raise StopIteration
+			def render(self): return []
+		reporter = mock.Mock()
+		main.process_diagram("aaaa",[StubPattern]*5,reporter)
+		self.assertEquals(((1.0,),{}),reporter.call_args_list[-1])
+	
+	def test_progress_increases(self):
+		class StubPattern(object):
+			def test(self,curr): raise StopIteration
+			def render(self): return []
+		reporter = mock.Mock()
+		main.process_diagram("aaaa",[StubPattern]*5,reporter)
+		last = -1
+		for args in reporter.call_args_list:
+			self.assertTrue( args[0][0] > last )
+			last = args[0][0]
+		
 if __name__ == "__main__":
 	unittest.main()

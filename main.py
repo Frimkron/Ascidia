@@ -2,6 +2,7 @@
 
 """	
 TODO:
+	* Readme
 	* Note/document (folded corner, cutoff)
 	* Cloud boxes
 	* Tiny ellipse "o"
@@ -419,7 +420,7 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 
 Diagram = namedtuple("Diagram","size content")
 
-def process_diagram(text,patternlist):
+def process_diagram(text,patternlist,proglsnr=lambda x: None):
 
 	lines = []
 	lines.append( [core.START_OF_INPUT] )
@@ -430,8 +431,8 @@ def process_diagram(text,patternlist):
 
 	complete_matches = []
 	complete_meta = {}
-	for pclass in patternlist:
-		print pclass.__name__
+	for pnum,pclass in enumerate(patternlist):
+		proglsnr(float(pnum)/len(patternlist))
 		ongoing = MatchLookup()	
 		for j,line in enumerate(lines):
 			j -= 1
@@ -454,10 +455,62 @@ def process_diagram(text,patternlist):
 						ongoing.remove_match(match)
 					else:
 						ongoing.add_meta(match,(j,i),matchmeta)
-		
+
+	proglsnr(1.0)			
 	content = sum([m.render() for m in complete_matches],[])
-	
+
 	return Diagram((width,height),content)
+	
+
+class FileOutContext(object):
+	
+	def __init__(self,filename):
+		self.filename = filename
+		
+	def __enter__(self):
+		self.stream = open(self.filename,"w")
+		return self.stream
+		
+	def __exit__(self,extype,exvalue,traceback):
+		self.stream.close()
+		
+	def report(self,message):
+		sys.stdout.write(message+"\n")
+		sys.stdout.flush()
+		
+	
+class StdOutContext(object):
+	
+	def __enter__(self):
+		return sys.stdout
+		
+	def __exit__(self,extype,exvalue,traceback): 
+		pass
+		
+	def report(self,message): 
+		pass
+	
+	
+class FileInContext(object):
+	
+	def __init__(self,filename):
+		self.filename = filename
+		
+	def __enter__(self):
+		self.stream = open(self.filename,"r")
+		return self.stream
+		
+	def __exit__(self,extype,exvalue,traceback):
+		self.stream.close()
+		
+	
+class StdInContext(object):
+	
+	def __enter__(self):
+		return sys.stdin
+		
+	def __exit__(self,extype,exvalue,traceback):
+		pass
 	
 	
 def colour(s):
@@ -484,19 +537,15 @@ if __name__ == "__main__":
 	ap.add_argument("-b","--background",default="white",type=colour,help="background colour")
 	ap.add_argument("-c","--charheight",default="24",type=int,help="character height in pixels")
 	ap.add_argument("-t","--type",default=None,choices=fmtbyname.keys(),help="output format")
+	ap.add_argument("-q","--quiet",action="store_true",help="no progress output")
 	ap.add_argument("infile",default="-",nargs="?",help="input file")
 	args = ap.parse_args()
 
 	if args.infile == "-":
-		instream = sys.stdin
+		inctx = StdInContext()
 	else:
-		instream = open(args.infile,"r")
-
-	with instream:
-		input = instream.read()
+		inctx = FileInContext(args.infile)
 	
-	diagram = process_diagram(input,patterns.PATTERNS)
-
 	if args.type is not None:
 		format = fmtbyname[args.type]
 	elif args.outfile not in (None,"-") and "." in args.outfile:
@@ -506,21 +555,28 @@ if __name__ == "__main__":
 		format = fmtdefault
 
 	if args.outfile == "-":
-		outstream = sys.stdout	
+		outctx = StdOutContext()
 	elif args.outfile is not None:
-		outstream = open(args.outfile,"w")
+		outctx = FileOutContext(args.outfile)
 	elif args.infile == "-":
-		outstream = sys.stdout
+		outctx = StdOutContext()
 	else:
 		name = args.infile
 		extpos = name.rfind(".")
 		if extpos != -1: name = name[:extpos]
 		name += "." + format.EXTS[0]
-		outstream = open(name,"w")
+		outctx = FileOutContext(name)
 	
 	prefs = OutputPrefs(args.foreground,args.background,args.charheight)
 	
-	with outstream:
+	with inctx as instream:
+		input = instream.read()
+	
+	diagram = process_diagram(input,patterns.PATTERNS, 
+		lambda x: outctx.report("%d%%" % int(x*100)) if not args.quiet 
+			else lambda x: None )
+
+	with outctx as outstream:
 		format.output(diagram,outstream,prefs)
 	
 	
