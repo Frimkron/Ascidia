@@ -2,6 +2,7 @@
 
 """	
 TODO:
+	* Fix cairo ellipse bug - see readme
 	* Readme
 	* Note/document (folded corner, cutoff)
 	* Cloud boxes
