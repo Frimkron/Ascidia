@@ -3,10 +3,42 @@ ASCII Diagram Converter
 
 Facilitates the creation of technical diagrams using ASCII art.
 
+This:
+
+```	
+               O     
+              -|-  -.
+              / \   | 
+              User  | Request
+                    V
+ Foobar         +--------+       .------.
+  Layer         |  Acme  |       '------'
+- - - - - - +   | Widget |<----->|      |
+   .----.   ;   +--------+       |      |
+  | do-  |  ;       |            '------'
+  |  dad |--^--<|---+            Database
+   '----'   ;
+            ;
+```
+
+Becomes:
+
+![](rm-images/example.png)
+
+* [Requirements](#requirements)
 * [Usage](#usage)
 * [Diagram Format](#diagram-format)
 * [Feedback](#feedback)
 * [Credits and Licence](#credits-and-licence)
+
+
+Requirements
+------------
+
+Asciidi requires the following:
+
+* [Python 2.7](http://python.org)
+* [PyCairo] ** TODO **
 
 
 Usage
@@ -94,6 +126,7 @@ following subsections describe the patterns that Asciidi understands.
 	* [Diagonal Lines](#diagonal-lines)
 	* [Square Corners](#square-corners)
 	* [Rounded Corners](#rounded-corners)
+	* [Hops](#hops)
 * [Boxes](#boxes)
 	* [Rectangular Boxes](#rectangular-boxes)
 	* [Rounded Boxes](#rounded-boxes)
@@ -111,14 +144,200 @@ following subsections describe the patterns that Asciidi understands.
 * [Misc](#misc)
 	* [Text](#text)
 
+
 ### Lines ###
 
-** TODO **
+Asciidi recognises horizontal, vertical and diagonal lines of any length. Lines
+can be on their own, or attached to [Boxes](#boxes) or 
+[Connectors](#connectors). They may have [square](#square-corners) or 
+[rounded](#rounded-corners) corners.
+
+
+#### Horizontal Lines
+
+Example Input
+
+```	
+----------	
+- - - - - 
+```
+
+Example Output
+
+![](rm-images/horiz-lines.png)
+
+Solid horizontal lines consist of one or more dash or hyphen `-` characters.
+
+Dashed horizontal lines consist of alternating dash or hyphen `-` characters, 
+and space characters. Note, a dashed horizontal line must begin with a 
+hyphen and end with a space. Dashed horizontal lines have a minimum length of
+4:
+
+```	
+- - 
+```
+
+Note that single line characters with text beside them are not recognised as
+lines:
+
+```	
+---test
+
+-test
+```
+
+![](rm-images/hline-text.png)
+
+
+#### Vertical Lines
+
+Example Input
+
+```	
+| ;
+| ;
+| ;
+| ;
+```
+
+Example Output
+
+![](rm-images/vert-lines.png)
+
+Solid vertical lines consist of one or more vertical-bar or pipe `|` characters.
+
+Dashed vertical lines consist of one or more semi-colon `;` characters.
+
+Note that single line characters with text beside them are not recognised as 
+lines:
+
+```	
+|	
+|test   |test
+|
+```
+
+![](rm-images/vline-text.png)
+
+
+#### Diagonal Lines
+
+Example Input
+
+```	
+  /  ,  \  `
+ /  ,    \  `
+/  ,      \  `
+```
+
+Example Output
+
+![](rm-images/diag-lines.png)
+
+Solid, right-leaning diagonal lines consist of one or more forwardslash `/` 
+characters. 
+
+Dashed, right-leaning diagonal lines consist of one or more comma `,` 
+characters.
+
+Solid, left-leaning diagonal lines consist of one or more backslash `\` 
+characters.
+
+And dashed, left-leaning diagonal lines consist of one or more backtick ` 
+characters.
+
+Note, the line characters should line up diagonally. Also, single line 
+characters with text beside them are not recognised as lines:
+
+```	
+\     
+ \test  \test
+  \
+```
+
+![](rm-images/dline-text.png)
+
+
+#### Square Corners
+
+Example Input
+
+```	
+    +---+
+|   |   |
+|   |   +
++---+    \ 
+       ---+---
+```
+
+Example Output
+
+![](rm-images/sq-corners.png)
+
+Square line corners are constructed using plus `+` characters. 
+
+Corners may be placed at the intersection of one or more 
+[horizontal](#horizontal-lines), [vertical](#vertical-lines) or 
+[diagonal](#diagonal-lines) lines.
+
+
+#### Rounded Corners
+
+Example Input
+
+```	
+    .---. 
+|   |   |
+|   |   :
+'---'    \
+       ---'---
+```
+
+Example Output
+
+![](rm-images/rnd-corners.png)
+
+Rounded line corners that curve upwards are constructed using apostraphe or 
+single-quote `'` characters.
+
+For corners that curve downwards, full-stop or period charaacters `.` are used.
+
+Corners that join lines above to lines below are constructed using colon `:` 
+characters.
+
+Corners may be placed at the intersection of one or more 
+[horizontal](#horizontal-lines), [vertical](#vertical-lines) or 
+[diagonal](#diagonal-lines) lines.
+
+
+#### Hops
+
+Example Input
+
+```	
+   |        |        |
+---)---  ---(---  ---^---
+   |        |        |
+```
+
+Example Output
+
+![](rm-images/hops.png)
+
+Hops are often used to indicate that two crossing lines are not connected to 
+each other.
+
+A hop may be placed at the intersection of any [horizontal](#horizontal-lines) 
+line with any [vertical](#vertical-lines) line.
+
+A left-parenthesis or left-round-bracket `(` character, right-parenthesis `)` 
+character, or caret `^` character may be used.
 
 
 ### Boxes ###
 
-Boxes enclose other content and may have lines attached to their outer edges.
+Boxes enclose other content and may have [lines](#lines) or 
+[connectors](#connectors) attached to their outer edges.
 
 
 #### Rectangular Boxes
@@ -136,6 +355,9 @@ Example Output
 
 ![](rm-images/rect-box.png)
 
+Rectangular boxes are used to represent many things including class, processes 
+and database tables.
+
 Rectangular boxes use pipe `|` characters for the sides, hyphen `-` characters 
 for the top and bottom, and plus `+` characters for the corners. They may have 
 a minimum size of 1 x 1:
@@ -148,8 +370,8 @@ a minimum size of 1 x 1:
 
 Dashed lines may be used for the sides instead of solid lines. Here, the sides 
 are semi-colon `;` characters and the top an bottom are constructed with 
-alternating hyphen `-` and space ` ` characters. Note, dashed lines must end
-with a space:
+alternating hyphen `-` and space characters. Note, dashed lines must start 
+with a hyphen and end with a space:
 
 ```	
 +- - - - +
@@ -216,8 +438,8 @@ the corners:
 
 Dashed lines may be used for the sides instead of solid lines. Here, the sides 
 are semi-colon `;` characters and the top an bottom are constructed with 
-alternating hyphen `-` and space ` ` characters. Note, dashed lines must end
-with a space:
+alternating hyphen `-` and space characters. Note, dashed lines must start 
+with a hyphen and end with a space:
 
 ```	
 .- - - - .
@@ -244,10 +466,12 @@ Example Output
 
 ![](rm-images/rhom-box.png)
 
-Right-leaning rhombus or parallelogram boxes consist of hyphen or dash `-` 
-characters for the top and bottom, forwardslash `/` characters for the sides, 
-and plus `+` characters for the corners. Rhombus boxes have a minimum size 
-of 1 x 1:
+Right-leaning rhombus or parallelogram boxes are sometimes used to represent
+I/O in data flow diagrams.
+
+Rhombus boxes consist of hyphen or dash `-` characters for the top and bottom, 
+forwardslash `/` characters for the sides, and plus `+` characters for the 
+corners. Rhombus boxes have a minimum size of 1 x 1:
 
 ```	
   +-+
@@ -271,8 +495,11 @@ Example Output
 
 ![](rm-images/ell-box.png)
 
-Elliptical or circular boxes consist of hyphen or dash `-` characters for the 
-top and bottom and pipe or vertical-bar `|` characters for the sides. The top
+Elliptical or circular boxes are used to represent many things including
+states and data flow starts and ends.
+
+Elliptical boxes consist of hyphen or dash `-` characters for the top and 
+bottom and pipe or vertical-bar `|` characters for the sides. The top
 left and top right corners are full-stop or period `.` characters, and the 
 bottom left and bottom right corners are apostraphe or single-quote `'` 
 characters. Note, ellipses differ subtley from [rounded boxes](#rounded-boxes)
@@ -322,7 +549,10 @@ Example Output
 
 ![](rm-images/diam-box.png)
 
-Diamond-shaped boxes use a left chevron or angle-bracket `<` character for the 
+Diamond-shaped boxes are used to represent a decision point in data flow 
+diagrams.
+
+Diamond boxes use a left chevron or angle-bracket `<` character for the 
 left side and a right chevron or angle-bracket `>` character for the right 
 side. The diagonal lines use alternating full-stop or period `.` characters and
 apostraphe or single-quote characters `'`. Note, the top and bottom peaks may 
@@ -337,17 +567,249 @@ be periods or apostraphes. Diamonds have a minimum size of 1 x 1:
 
 ### Connectors ###
 
-** TODO **
+Connectors can be attached to [lines](#lines) and/or [boxes](#boxes).
+
+
+#### Arrows
+
+Example Input
+
+```	
+      ^        |
+<---  |  --->  |
+      |        v
+```
+
+Example Output
+
+![](rm-images/arrows.png)
+
+Arrowheads may be attached to the end of any [horizontal](#horizontal-lines) 
+or [vertical](#vertical-lines) line.
+
+Left-pointing arrowheads use the left chevron or left angle-bracket `<` 
+character.
+
+Up-pointing arrowheads use the caret `^` character.
+
+Right-pointing arrowheads use the right chevron or right angle-bracket `>`
+character.
+
+Down-pointing arrowheads use the letter vee `v` character, either uppercase or 
+lowercase.
+
+An arrowhead pointing at a [box](#boxes) will be rendered flush against it:
+
+```	
++---+
+|   |<----
++---+
+```
+
+![](rm-images/arrow-box.png)
+
+
+#### Enclosed Arrows
+
+Example Input
+
+```	
+       /_\          |
+<|---   |   ---|>  _|_
+        |          \ /
+```
+
+Example Output
+
+![](rm-images/enc-arrows.png)
+
+Enclosed, empty arrowheads are used in UML class diagrams to represent 
+inheritence.
+
+Enclosed arrowheads may be attached to the end of almost any 
+[horizontal](#horizontal-lines) or [vertical](#vertical-lines) line. Note, 
+however, that *the line must be 2 or more characters long*:
+
+Left-pointing arrowheads consist of a left chevron or angle-bracket character 
+`<`, followed by a vertical-bar or pipe `|` character.
+
+Up-pointing arrowheads consist of a forwardslash `/` character, followed by an 
+underscore `_` character, and finally a backslash `\` character.
+
+Right-pointing arrowheads consist of a vertical-bar or pipe `|` character, 
+followed by a right chevron or angle-bracket character `>`.
+
+Down-pointing arrowheads are constructed by placing an underscore `_` character
+on either side of the vertical line, then on the next row, backslash `\` 
+followed by space, followed by forwardslash `/`.
+
+An arrowhead pointing at a [box](#boxes) will be rendered flush against it:
+
+```	
++---+
+|   |<|---
++---+
+```
+
+![](rm-images/enc-arrow-box.png)
+
+
+#### Crow's Feet
+
+Example Input
+
+```	          
+                             
+          +---+              |
++---+     |   |     +---+    ^
+|   |>--  +---+  --<|   |  +---+
++---+       v       +---+  |   |
+            |              +---+            
+```
+
+Example Output
+
+![](rm-images/crowsfeet.png)
+
+Crow's feet are often used in entity-relationship diagrams to indicate a 
+many-to-one relationship.
+
+Crow's feet connectors can be used to join any [horizontal](#horizontal-lines)
+or [vertical](#vertical-lines) line to any [box](#boxes).
+
+On the right side of a box, the right chevron or angle-bracket `>` character is
+used.
+
+On the bottom side of a box, the letter vee `v` character is used, uppercase or
+lowercase.
+
+On the left side of a box, the left chevron or angle-bracket `<` character is 
+used.
+
+On the top side of a box, the caret `^` character is used.
+
+
+#### Diamond Connectors
+
+Example Input
+
+```	
+            +---+               | |
+            |   |               | ^
++---+       +---+       +---+   ^ #
+|   |<>---   ^ ^   ---<>|   |   v v
+|   |<#>--   v #   --<#>|   |  +---+
++---+        | v        +---+  |   |
+             | |               +---+
+```
+
+Example Output
+
+![](rm-images/dmd-connectors.png)
+
+Diamond-shaped connectors are used in UML class diagrams to represent 
+composition or "has-a" relationships.
+
+Diamond connectors can be used to join any [horizontal](#horizontal-lines)
+or [vertical](#vertical-lines) line to any [box](#boxes). They come in empty
+and filled varieties.
+
+Empty, horizontal diamond connectors consist of a left chevron or angle-bracket
+`<` character, followed by a right chevron or angle-bracket `>` character. 
+
+Filled horizontal diamond connectors are similar, but with a hash or pound `#`
+character in the middle.
+
+Empty, vertical diamond connectors consist of a caret `^` character with a 
+letter vee `v` character below it, uppercase or lowercase.
+
+Filled vertical diamond connector are similar, but with a hash or pound `#`
+character in the middle.
 
 
 ### Symbols ###
 
-** TODO **
+Asciidi supports a number of commonly-used symbols, converted to ASCII 
+representations.
+
+
+#### Stick Figures
+
+Example Input
+
+```	
+ O
+-|-
+/ \
+```
+
+Example Output
+
+![](rm-images/stick-figure.png)
+
+Stick figures are often used to represent the point at which a human being 
+interacts with a system.
+
+The stick figure's head is either a letter oh `O` character (uppercase or 
+lowercase) or a zero `0` character. The midsection on the middle row consists
+of a dash or hyphen `-` character, followed by a vertical-bar or pipe `|`
+character, followed by another dash `-` character. The legs on the final row
+consist of a forwardslash `/` character, followed by a space, followed by a 
+backslash `\` character.
+
+
+#### Storage Symbols
+
+Example Input
+
+```	
+.----.
+'----'
+| DB |
+'----'
+```
+
+Example Output
+
+![](rm-images/storage.png)
+
+Storage cylinder symbols are often used in system architecture diagrams to 
+represent some kind of storage device such as a database or hard disk.
+
+The storage symbol uses dash or hyphen `-` characters for the horizontal lines
+and vertical-bar or pipe `|` characters for the vertical lines. The 
+downward-curving corners are full-stop or period `.` characters, and the 
+upward-curving corners are apostraphe or single-quote `'` characters.
+
+The symbol may vary in width or height, but has a minimum size as follows:
+
+```	
+           .----.
+.-------.  '----'  .-.
+'-------'  |    |  '-'
+| Wide  |  |tall|  | |
+'-------'  |    |  '-'
+           '----'  min
+```
 
 
 ### Misc ###
 
-** TODO **
+#### Text
+
+Example Input
+
+```	
+  The quick brown fox
+jumps over the lazy dog
+```
+
+Example Output
+
+![](rm-images/text.png)
+
+Character data which is not recognised as a diagram element is written to
+the output as plain text. The position of each character is preserved.
 
 
 Feedback

@@ -2,8 +2,9 @@
 
 """	
 TODO:
-	* Fix cairo ellipse bug - see readme
-	* Readme
+	* Think of a name
+	* No py extension
+	* Release
 	* Note/document (folded corner, cutoff)
 	* Cloud boxes
 	* Tiny ellipse "o"
@@ -21,6 +22,11 @@ TODO:
 	* One crows foot "|>|--"
 	* Only one connector "-||--"
 	* 3d boxes
+	* Python 3
+	* Stacked boxes
+	* Terminal
+	* Hexagon boxes
+	* Sketch rendering (random distortion, cursive font)
 	* Diagonal lines to boxes
 	* Pgram box separators
 	* Diamond box separators
@@ -30,15 +36,11 @@ TODO:
 	* Cloud box separators
 	* 3d box separators
 	* Disallow alphas beside down arrows
-	* Stacked boxes
 	* Open diagram format (which?)
 	* Box/Cylinder shadows
-	* Hexagon boxes
 	* Hexagon box separators
-	* Terminal
 	* Dashed Paralellogram boxes
 	* Diagonal arrowheads
-	* Sketch rendering (random distortion, cursive font)
 	* Diagonal jumps (X? r?)
 	* Secondary colour (why?)
 	* Image w and h options
@@ -194,6 +196,7 @@ class PngOutput(object):
 		self.ctx.set_source_rgba(*self._colour(text.colour,text.alpha))
 		self.ctx.move_to(self._x(text.pos[0]),self._y(text.pos[1]+PngOutput.TEXT_BASELINE))
 		self.ctx.show_text(text.text)
+		self.ctx.new_path()
 		
 	def _should_fill(self,item):
 		return item.fill is not None and item.falpha > 0
@@ -464,6 +467,10 @@ def process_diagram(text,patternlist,proglsnr=lambda x: None):
 	
 
 class FileOutContext(object):
+
+	filename = None
+	stream = None
+	last_report_len = 0
 	
 	def __init__(self,filename):
 		self.filename = filename
@@ -476,8 +483,10 @@ class FileOutContext(object):
 		self.stream.close()
 		
 	def report(self,message):
-		sys.stdout.write(message+"\n")
+		sys.stdout.write("\b"*self.last_report_len)
+		sys.stdout.write(message)
 		sys.stdout.flush()
+		self.last_report_len = len(message)
 		
 	
 class StdOutContext(object):
@@ -572,10 +581,16 @@ if __name__ == "__main__":
 	
 	with inctx as instream:
 		input = instream.read()
+
+	if not args.quiet:
+		reporter = lambda x: outctx.report(
+			"[%s] %d%%" % ("#"*int(math.floor(x*10))+":"*int(math.ceil((1-x)*10)),
+				int(x*100)) )
+	else:
+		reporter = lambda x: None
 	
-	diagram = process_diagram(input,patterns.PATTERNS, 
-		lambda x: outctx.report("%d%%" % int(x*100)) if not args.quiet 
-			else lambda x: None )
+	diagram = process_diagram(input,patterns.PATTERNS, reporter)
+	outctx.report("\n")
 
 	with outctx as outstream:
 		format.output(diagram,outstream,prefs)

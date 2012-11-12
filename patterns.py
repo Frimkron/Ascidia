@@ -1205,17 +1205,20 @@ class ConnectorPattern(Pattern):
 			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
 				self.curr = yield meta
 			self.curr = yield self.expect(char)
-			
-		for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
-			self.curr = yield meta	
-						
-		if not self.flipped:
-			if not (self.curr.meta & self.linemeta): self.reject()
-			if self.curr.meta & self.dashmeta: self.dashed = True
-		else:
-			self.pos = self.curr.col-self.xdir,self.curr.row-self.ydir
-			self.tobox = bool(self.curr.meta & self.boxmeta)
-			if self.boxrequired and not self.tobox: self.reject()
+
+		if self.flipped: self.pos = self.curr.col-1,self.curr.row			
+		try:	
+			for meta in self.await_pos(self.offset(self.xdir-1,self.ydir)):
+				self.curr = yield meta	
+							
+			if not self.flipped:
+				if not (self.curr.meta & self.linemeta): self.reject()
+				if self.curr.meta & self.dashmeta: self.dashed = True
+			else:
+				self.tobox = bool(self.curr.meta & self.boxmeta)
+				if self.boxrequired and not self.tobox: self.reject()
+		except NoSuchPosition:
+			if self.boxrequired: raise
 		
 		return
 

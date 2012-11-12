@@ -470,11 +470,34 @@ class TestDArrowheadPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(1,2," ",core.M_NONE))
 	
+	def test_final_space_optional(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(2,2,"v",core.M_LINE_AFTER_S))
+		feed_input(p,2,3,   "  \n")
+		feed_input(p,3,0," \n")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,0," ",core.M_NONE))
+	
 	def test_doesnt_error_at_top_left_corner(self):
 		p = self.pclass()
 		try:
 			p.test(main.CurrentChar(-1,0,core.START_OF_INPUT,core.M_NONE))
 		except core.PatternRejected: pass
+
+	def test_allowed_to_be_at_right_edge(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(2,3,"v",core.M_LINE_AFTER_S))
+		feed_input(p,2,4,"\n")
+		feed_input(p,3,0,"   ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,3," ",core.M_NONE))
+
+	def test_allowed_to_be_in_bottom_right_corner(self):
+		p = self.pclass()
+		p.test(main.CurrentChar(2,3,"v",core.M_LINE_AFTER_S))
+		p.test(main.CurrentChar(2,4,"\n",core.M_NONE))
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(3,0,core.END_OF_INPUT,core.M_NONE))
 	
 	def test_sets_correct_meta_flags(self):
 		p = self.pclass()
