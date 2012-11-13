@@ -1,7 +1,7 @@
 ASCII Diagram Converter
 =======================
 
-Facilitates the creation of technical diagrams using ASCII art.
+A command-line utility for creating technical diagrams using ASCII art.
 
 This:
 
@@ -21,7 +21,7 @@ This:
             ;
 ```
 
-Becomes:
+Becomes this:
 
 ![](rm-images/example.png)
 
@@ -297,10 +297,10 @@ Example Output
 
 ![](rm-images/rnd-corners.png)
 
-Rounded line corners that curve upwards are constructed using apostraphe or 
+Rounded line corners that curve upwards are constructed using apostrophe or 
 single-quote `'` characters.
 
-For corners that curve downwards, full-stop or period charaacters `.` are used.
+For corners that curve downwards, full-stop or period characters `.` are used.
 
 Corners that join lines above to lines below are constructed using colon `:` 
 characters.
@@ -417,7 +417,7 @@ Example Output
 
 Rounded boxes use pipe `|` characters for the sides and hyphen `-` characters 
 for the top and bottom. The top left and top right corners are full-stop or 
-period `.` characters. The bottom left and right corners are apostraphe or
+period `.` characters. The bottom left and right corners are apostrophe or
 single-quote characters `'`. Rounded boxes have a minimum size of 1 x 1:
 
 ```	
@@ -501,8 +501,8 @@ states and data flow starts and ends.
 Elliptical boxes consist of hyphen or dash `-` characters for the top and 
 bottom and pipe or vertical-bar `|` characters for the sides. The top
 left and top right corners are full-stop or period `.` characters, and the 
-bottom left and bottom right corners are apostraphe or single-quote `'` 
-characters. Note, ellipses differ subtley from [rounded boxes](#rounded-boxes)
+bottom left and bottom right corners are apostrophe or single-quote `'` 
+characters. Note, ellipses differ subtly from [rounded boxes](#rounded-boxes)
 in that the sides are offset from the corners by one character.
 
 Ellipses have a minimum size as follows:
@@ -513,11 +513,11 @@ Ellipses have a minimum size as follows:
  '-'
 ```
 
-Elliptical boxes may use slashes in conjunction with the period-apostraphe 
+Elliptical boxes may use slashes in conjunction with the period-apostrophe 
 corners to make large ellipses a bit more rounded. Here, the top left and 
 bottom right corners use forwardslash `/` characters, and the top right and 
 bottom left corners use backslash `\` characters. Multiple slashes may be used 
-for long diagonal corners. The periods and apostraphes must be on the top and 
+for long diagonal corners. The periods and apostrophes must be on the top and 
 bottom rows, respectively:
 
 ```	
@@ -555,8 +555,8 @@ diagrams.
 Diamond boxes use a left chevron or angle-bracket `<` character for the 
 left side and a right chevron or angle-bracket `>` character for the right 
 side. The diagonal lines use alternating full-stop or period `.` characters and
-apostraphe or single-quote characters `'`. Note, the top and bottom peaks may 
-be periods or apostraphes. Diamonds have a minimum size of 1 x 1:
+apostrophe or single-quote characters `'`. Note, the top and bottom peaks may 
+be periods or apostrophes. Diamonds have a minimum size of 1 x 1:
 
 ```	
  . 
@@ -624,7 +624,7 @@ Example Output
 ![](rm-images/enc-arrows.png)
 
 Enclosed, empty arrowheads are used in UML class diagrams to represent 
-inheritence.
+inheritance.
 
 Enclosed arrowheads may be attached to the end of almost any 
 [horizontal](#horizontal-lines) or [vertical](#vertical-lines) line. Note, 
@@ -779,7 +779,7 @@ represent some kind of storage device such as a database or hard disk.
 The storage symbol uses dash or hyphen `-` characters for the horizontal lines
 and vertical-bar or pipe `|` characters for the vertical lines. The 
 downward-curving corners are full-stop or period `.` characters, and the 
-upward-curving corners are apostraphe or single-quote `'` characters.
+upward-curving corners are apostrophe or single-quote `'` characters.
 
 The symbol may vary in width or height, but has a minimum size as follows:
 
