@@ -24,11 +24,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 """
 """	
 TODO:
-	* Complete readme TODOs
 	* Release
+	* Complete readme TODOs
+	* Note/document (folded corner, cutoff)
+	* Transparent background
 	* Box shadows
 	* Raster unit tests - find image library
-	* Note/document (folded corner, cutoff)
 	* Cloud boxes
 	* Tiny ellipse "o"
 	* Tiny box "[]"

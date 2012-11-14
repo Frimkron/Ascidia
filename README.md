@@ -85,6 +85,10 @@ the default.
 
 ### Options ###
 
+`-h, --help`
+
+Show brief help text
+
 `-o, --outfile`
 
 Path to the output file to write. Use `-` to write to standard output. This is 
