@@ -854,8 +854,8 @@ reports to the [Github project page][], or otherwise send me an [email][].
 [email]: mailto:mfrimston@gmail.com
 
 
-Credit and Licence
-------------------
+Credits and Licence
+-------------------
 
 Written by Mark Frimston
 
