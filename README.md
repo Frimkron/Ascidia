@@ -23,7 +23,7 @@ This:
 
 Becomes this:
 
-![](rm-images/example.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/example.png)
 
 
 * [About Ascidia](#about-ascidia)
@@ -196,7 +196,7 @@ Example Input
 
 Example Output
 
-![](rm-images/horiz-lines.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/horiz-lines.png)
 
 Solid horizontal lines consist of one or more dash or hyphen `-` characters.
 
@@ -218,7 +218,7 @@ lines:
 -test
 ```
 
-![](rm-images/hline-text.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/hline-text.png)
 
 
 #### Vertical Lines
@@ -234,7 +234,7 @@ Example Input
 
 Example Output
 
-![](rm-images/vert-lines.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/vert-lines.png)
 
 Solid vertical lines consist of one or more vertical-bar or pipe `|` characters.
 
@@ -249,7 +249,7 @@ lines:
 |
 ```
 
-![](rm-images/vline-text.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/vline-text.png)
 
 
 #### Diagonal Lines
@@ -264,7 +264,7 @@ Example Input
 
 Example Output
 
-![](rm-images/diag-lines.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/diag-lines.png)
 
 Solid, right-leaning diagonal lines consist of one or more forwardslash `/` 
 characters. 
@@ -287,7 +287,7 @@ characters with text beside them are not recognised as lines:
   \
 ```
 
-![](rm-images/dline-text.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/dline-text.png)
 
 
 #### Square Corners
@@ -304,7 +304,7 @@ Example Input
 
 Example Output
 
-![](rm-images/sq-corners.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/sq-corners.png)
 
 Square line corners are constructed using plus `+` characters. 
 
@@ -327,7 +327,7 @@ Example Input
 
 Example Output
 
-![](rm-images/rnd-corners.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/rnd-corners.png)
 
 Rounded line corners that curve upwards are constructed using apostrophe or 
 single-quote `'` characters.
@@ -354,7 +354,7 @@ Example Input
 
 Example Output
 
-![](rm-images/hops.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/hops.png)
 
 Hops are often used to indicate that two crossing lines are not connected to 
 each other.
@@ -385,7 +385,7 @@ Example Input
 
 Example Output
 
-![](rm-images/rect-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/rect-box.png)
 
 Rectangular boxes are used to represent many things including class, processes 
 and database tables.
@@ -412,7 +412,7 @@ with a hyphen and end with a space:
 +- - - - +
 ```
 
-![](rm-images/dash-rect-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/dash-rect-box.png)
 
 Rectangular boxes may have separator lines to partition their content, allowing
 for the creation of tables or UML class boxes. Hyphen `-` characters are used
@@ -429,7 +429,7 @@ Note, each partitioned section inside the box must be at least 1 x 1 in size:
 +-----------+
 ```
 
-![](rm-images/sep-rect-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/sep-rect-box.png)
 
 
 #### Rounded Boxes
@@ -445,7 +445,7 @@ Example Input
 
 Example Output
 
-![](rm-images/round-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/round-box.png)
 
 Rounded boxes use pipe `|` characters for the sides and hyphen `-` characters 
 for the top and bottom. The top left and top right corners are full-stop or 
@@ -480,7 +480,7 @@ with a hyphen and end with a space:
 '- - - - '
 ```
 
-![](rm-images/dash-round-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/dash-round-box.png)
 
 
 #### Rhombus Boxes
@@ -496,7 +496,7 @@ Example Input
 
 Example Output
 
-![](rm-images/rhom-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/rhom-box.png)
 
 Right-leaning rhombus or parallelogram boxes are sometimes used to represent
 I/O in data flow diagrams.
@@ -525,7 +525,7 @@ Example Input
 
 Example Output
 
-![](rm-images/ell-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/ell-box.png)
 
 Elliptical or circular boxes are used to represent many things including
 states and data flow starts and ends.
@@ -579,7 +579,7 @@ Example Input
 
 Example Output
 
-![](rm-images/diam-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/diam-box.png)
 
 Diamond-shaped boxes are used to represent a decision point in data flow 
 diagrams.
@@ -614,7 +614,7 @@ Example Input
 
 Example Output
 
-![](rm-images/arrows.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/arrows.png)
 
 Arrowheads may be attached to the end of any [horizontal](#horizontal-lines) 
 or [vertical](#vertical-lines) line.
@@ -638,7 +638,7 @@ An arrowhead pointing at a [box](#boxes) will be rendered flush against it:
 +---+
 ```
 
-![](rm-images/arrow-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/arrow-box.png)
 
 
 #### Enclosed Arrows
@@ -653,7 +653,7 @@ Example Input
 
 Example Output
 
-![](rm-images/enc-arrows.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/enc-arrows.png)
 
 Enclosed, empty arrowheads are used in UML class diagrams to represent 
 inheritance.
@@ -683,7 +683,7 @@ An arrowhead pointing at a [box](#boxes) will be rendered flush against it:
 +---+
 ```
 
-![](rm-images/enc-arrow-box.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/enc-arrow-box.png)
 
 
 #### Crow's Feet
@@ -701,7 +701,7 @@ Example Input
 
 Example Output
 
-![](rm-images/crowsfeet.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/crowsfeet.png)
 
 Crow's feet are often used in entity-relationship diagrams to indicate a 
 one-to-many relationship.
@@ -737,7 +737,7 @@ Example Input
 
 Example Output
 
-![](rm-images/dmd-connectors.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/dmd-connectors.png)
 
 Diamond-shaped connectors are used in UML class diagrams to represent 
 composition or "has-a" relationships.
@@ -777,7 +777,7 @@ Example Input
 
 Example Output
 
-![](rm-images/stick-figure.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/stick-figure.png)
 
 Stick figures are often used to represent the point at which a human being 
 interacts with a system.
@@ -803,7 +803,7 @@ Example Input
 
 Example Output
 
-![](rm-images/storage.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/storage.png)
 
 Storage cylinder symbols are often used in system architecture diagrams to 
 represent some kind of storage device such as a database or hard disk.
@@ -838,7 +838,7 @@ jumps over the lazy dog
 
 Example Output
 
-![](rm-images/text.png)
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/text.png)
 
 Character data which is not recognised as a diagram element is written to
 the output as plain text. The position of each character is preserved.
@@ -859,7 +859,7 @@ Credit and Licence
 
 Written by Mark Frimston
 
-Project page: <https://github.com/Frimkron/Ascidia>
+Project page: <https://github.com/Frimkron/Ascidia>  
 Homepage: <http://markfrimston.co.uk>  
 Email: <mfrimston@gmail.com>  
 Twitter: [@frimkron](http://twitter.com/frimkron)  
