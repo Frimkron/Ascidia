@@ -850,7 +850,7 @@ Feedback
 Any and all feedback is much appreciated. Please submit suggestions and bug 
 reports to the [Github project page][], or otherwise send me an [email][].
 
-[Github project page]: ** TODO **
+[Github project page]: https://github.com/Frimkron/Ascidia
 [email]: mailto:mfrimston@gmail.com
 
 
@@ -859,7 +859,7 @@ Credit and Licence
 
 Written by Mark Frimston
 
-Project page: ** TODO **  
+Project page: <https://github.com/Frimkron/Ascidia>
 Homepage: <http://markfrimston.co.uk>  
 Email: <mfrimston@gmail.com>  
 Twitter: [@frimkron](http://twitter.com/frimkron)  
