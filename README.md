@@ -1,7 +1,7 @@
-ASCII Diagram Converter
-=======================
+Ascidia
+=======
 
-A command-line utility for creating technical diagrams using ASCII art.
+A command-line utility for rendering technical diagrams from ASCII art.
 
 This:
 
@@ -25,26 +25,54 @@ Becomes this:
 
 ![](rm-images/example.png)
 
+
+* [About Ascidia](#about-ascidia)
 * [Requirements](#requirements)
 * [Usage](#usage)
 * [Diagram Format](#diagram-format)
 * [Feedback](#feedback)
 * [Credits and Licence](#credits-and-licence)
+* [Related Projects](#related-projects)
+
+
+About Ascidia
+-------------
+
+Ascidia converts ASCII-art technical diagrams, created using particular 
+symbols, into prettier raster and vector graphic formats. Technical diagrams
+can be created and embedded within plain text documentation (source code 
+comments, for example) so that they can be maintained in the same place. Later,
+the diagrams can be rendered as images ready for publishing.
+
+Ascidia was inspired by similar applications of this type, namely [Ditaa][] 
+and [ASCIItoSVG][]. It also takes inspiration from the philosophy of John 
+Gruber's [Markdown][], which aims to define a rich text format using intuitive 
+formatting rules in place of the syntactic clutter of a markup language.
+Ascidia attempts to do the same for ASCII diagrams, by defining a set of 
+patterns which are as recognisable in raw text as they are in their rendered 
+form.
+
+Ascidia is, apparently, another name for the [Sea Squirt][].
+
+[Ditaa]: http://ditaa.sourceforge.net/
+[ASCIItoSVG]: http://9vx.org/~dho/a2s/
+[Markdown]: http://daringfireball.net/projects/markdown/
+[Sea Squirt]: http://en.wikipedia.org/wiki/Sea_squirt
 
 
 Requirements
 ------------
 
-Asciidi requires the following:
+Ascidia requires the following:
 
 * [Python 2.7](http://python.org)
-* [PyCairo] ** TODO **
+* [PyCairo](http://www.cairographics.org/pycairo/)
 
 
 Usage
 -----
 
-`asciidi [options] [file]`
+`ascidia [options] [file]`
 
 
 ### Positional Arguments ###
@@ -100,25 +128,25 @@ output is omitted anyway when writing the diagram to standard output.
 
 Convert the ASCII diagram `diagram.txt` to a PNG image:
 
-	$ asciidi diagram.txt
+	$ ascidia diagram.txt
 	
 
 Convert diagram `foobar.txt` to the SVG file `result.svg`:
 
-	$ asciidi -o result.svg foobar.txt
+	$ ascidia -o result.svg foobar.txt
 	
 
 Convert the output of `mycommand` to an SVG file called `output`:
 
-	$ mycommand | asciidi -o output -t svg -
+	$ mycommand | ascidia -o output -t svg -
 
 
 Diagram Format
 --------------
 
-Asciidi reads ASCII character data with Unix line endings and converts it to an
+Ascidia reads ASCII character data with Unix line endings and converts it to an
 image, recognising particular character patterns as diagram elements. The 
-following subsections describe the patterns that Asciidi understands.
+following subsections describe the patterns that Ascidia understands.
 
 * [Lines](#lines)
 	* [Horizontal Lines](#horizontal-lines)
@@ -147,7 +175,7 @@ following subsections describe the patterns that Asciidi understands.
 
 ### Lines ###
 
-Asciidi recognises horizontal, vertical and diagonal lines of any length. Lines
+Ascidia recognises horizontal, vertical and diagonal lines of any length. Lines
 can be on their own, or attached to [Boxes](#boxes) or 
 [Connectors](#connectors). They may have [square](#square-corners) or 
 [rounded](#rounded-corners) corners.
@@ -243,8 +271,8 @@ characters.
 Solid, left-leaning diagonal lines consist of one or more backslash `\` 
 characters.
 
-And dashed, left-leaning diagonal lines consist of one or more backtick ` 
-characters.
+And dashed, left-leaning diagonal lines consist of one or more grave-accent or 
+backtick ` characters.
 
 Note, the line characters should line up diagonally. Also, single line 
 characters with text beside them are not recognised as lines:
@@ -590,7 +618,7 @@ or [vertical](#vertical-lines) line.
 Left-pointing arrowheads use the left chevron or left angle-bracket `<` 
 character.
 
-Up-pointing arrowheads use the caret `^` character.
+Up-pointing arrowheads use the hat or caret `^` character.
 
 Right-pointing arrowheads use the right chevron or right angle-bracket `>`
 character.
@@ -628,7 +656,7 @@ inheritance.
 
 Enclosed arrowheads may be attached to the end of almost any 
 [horizontal](#horizontal-lines) or [vertical](#vertical-lines) line. Note, 
-however, that *the line must be 2 or more characters long*:
+however, that *the line must be 2 or more characters long*.
 
 Left-pointing arrowheads consist of a left chevron or angle-bracket character 
 `<`, followed by a vertical-bar or pipe `|` character.
@@ -672,7 +700,7 @@ Example Output
 ![](rm-images/crowsfeet.png)
 
 Crow's feet are often used in entity-relationship diagrams to indicate a 
-many-to-one relationship.
+one-to-many relationship.
 
 Crow's feet connectors can be used to join any [horizontal](#horizontal-lines)
 or [vertical](#vertical-lines) line to any [box](#boxes).
@@ -686,7 +714,7 @@ lowercase.
 On the left side of a box, the left chevron or angle-bracket `<` character is 
 used.
 
-On the top side of a box, the caret `^` character is used.
+On the top side of a box, the hat or caret `^` character is used.
 
 
 #### Diamond Connectors
@@ -720,8 +748,8 @@ Empty, horizontal diamond connectors consist of a left chevron or angle-bracket
 Filled horizontal diamond connectors are similar, but with a hash or pound `#`
 character in the middle.
 
-Empty, vertical diamond connectors consist of a caret `^` character with a 
-letter vee `v` character below it, uppercase or lowercase.
+Empty, vertical diamond connectors consist of a hat or caret `^` character with
+a letter vee `v` character below it, uppercase or lowercase.
 
 Filled vertical diamond connector are similar, but with a hash or pound `#`
 character in the middle.
@@ -729,7 +757,7 @@ character in the middle.
 
 ### Symbols ###
 
-Asciidi supports a number of commonly-used symbols, converted to ASCII 
+Ascidia supports a number of commonly-used symbols, converted to ASCII 
 representations.
 
 
@@ -834,3 +862,19 @@ Twitter: [@frimkron](http://twitter.com/frimkron)
 
 Released under the MIT Licence. See the source code for the full text of this 
 licence.
+
+
+Related Projects
+----------------
+
+Some other related projects that you might find interesting:
+
+* [Ditaa](http://ditaa.sourceforge.net/) - A similar, more popular ASCII diagram 
+  converter written in Java
+* [ASCIItoSVG](http://9vx.org/~dho/a2s/) - Another ASCII diagram converter, influenced
+  by Markdown and written in PHP
+* [Asciio](http://search.cpan.org/dist/App-Asciio/lib/App/Asciio.pm) - A Perl application
+  for drawing ASCII diagrams using a graphical user interface
+* [AsciiFlow](http://www.asciiflow.com) - An online editor for drawing ASCII diagrams
+* [Fossil Draw](http://www.fossildraw.com/) - Another online ASCII diagram editor
+* [Text Bunny](http://www2.b3ta.com/_bunny/texbunny.gif) - an ASCII bunny
