@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 Main import stuff
 """
 
-import mrf.ascii
+#import mrf.ascii
 from collections import namedtuple
 
 
