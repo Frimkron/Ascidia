@@ -24,8 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 """
 """	
 TODO:
-	* Release
-	* Complete readme TODOs
 	* Note/document (folded corner, cutoff)
 	* Transparent background
 	* Box shadows
