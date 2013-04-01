@@ -41,11 +41,20 @@ class PatternTests(object):
 		with self.assertRaises(core.PatternStateError):
 			p.render()
 
-	def find_with(self,items,property,value):
+	def find_with(self,items,properties,value=None):
+		if not isinstance(properties,dict):
+			properties = {properties: value}
 		for i in items:
-			if getattr(i,property) == value:
+			for k,v in properties.items():
+				try:
+					if getattr(i,k) != v: break
+				except AttributeError: break
+			else:
 				return i
-		self.fail("%s not found in '%s' properties %s" % (str(value),property,
+		# TODO - WIP
+		expstr = ", ".join(["%s=%s" % map(str,p) for p in properties.items()])
+		actstr = ", ".join([", ".join(["%s=%s" % (k,) for k in properties.keys()]) for i in items])
+		self.fail("%s not found in properties %s" % (str(value),property,
 			str([getattr(i,property) for i in items])))
 	
 	
