@@ -51,12 +51,11 @@ class PatternTests(object):
 				except AttributeError: break
 			else:
 				return i
-		# TODO - WIP
-		expstr = ", ".join(["%s=%s" % map(str,p) for p in properties.items()])
-		actstr = ", ".join([", ".join(["%s=%s" % (k,) for k in properties.keys()]) for i in items])
-		self.fail("%s not found in properties %s" % (str(value),property,
-			str([getattr(i,property) for i in items])))
-	
+		expstr = "[" + ", ".join(["%s=%s" % tuple(map(str,p)) for p in properties.items()]) + "]"
+		actstr = ", ".join([( "[" +
+			", ".join(["%s=%s" % (k,str(getattr(i,k,"<Not Found>"))) for k in properties.keys()]) 
+				+ "]" ) for i in items ])
+		self.fail("%s not found in items %s" % (expstr,actstr))	
 	
 	def find_type(self,items,type):
 		l = filter(lambda x: isinstance(x,type), items)
