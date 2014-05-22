@@ -63,36 +63,28 @@ class DocumentBoxPattern(Pattern):
 	
 	def matcher(self):
 		w,h = 0,0
-		fold = False
 		self.curr = yield
 		
 		# Top part with fold
 		self.tl = self.curr.col,self.curr.row
 		self.curr = yield self.expect("+",M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
 		self.curr = yield self.expect("-",M_OCCUPIED|M_BOX_START_S)
-		while self.curr.char == "-":
+		while self.curr.char != ".":
 			self.curr = yield self.expect("-",M_OCCUPIED|M_BOX_START_S)
-		if self.curr.char == "+":
-			w = self.curr.col-self.tl[0]+1
-			fold = False
-			self.curr = yield self.expect("+",M_OCCUPIED|M_BOX_START_S)
-		else:
-			w = self.curr.col-self.tl[0]+1 + 2
-			fold = True
-			self.curr = yield self.expect(".",M_OCCUPIED|M_BOX_START_S)
+		w = self.curr.col-self.tl[0]+1 + 2
+		self.curr = yield self.expect(".",M_OCCUPIED|M_BOX_START_S)
 		self.curr = yield M_BOX_AFTER_E
 		for meta in self.await_pos(self.offset(0,1,self.tl)):
 			self.curr = yield meta
-		if fold:
-			self.curr = yield self.expect("|",M_OCCUPIED|M_BOX_START_E)
-			for meta in self.await_pos(self.offset(w-4,1,self.tl)):
-				self.curr = yield meta
-			self.curr = yield self.expect("|",M_OCCUPIED)
-			self.curr = yield self.expect("_",M_OCCUPIED)
-			self.curr = yield self.expect("\\",M_OCCUPIED|M_BOX_START_S)
-			self.curr = yield M_BOX_AFTER_E
-			for meta in self.await_pos(self.offset(0,2,self.tl)):
-				self.curr = yield meta
+		self.curr = yield self.expect("|",M_OCCUPIED|M_BOX_START_E)
+		for meta in self.await_pos(self.offset(w-4,1,self.tl)):
+			self.curr = yield meta
+		self.curr = yield self.expect("|",M_OCCUPIED)
+		self.curr = yield self.expect("_",M_OCCUPIED)
+		self.curr = yield self.expect("\\",M_OCCUPIED|M_BOX_START_S)
+		self.curr = yield M_BOX_AFTER_E
+		for meta in self.await_pos(self.offset(0,2,self.tl)):
+			self.curr = yield meta
 		
 		# middle section
 		while True:
@@ -104,31 +96,16 @@ class DocumentBoxPattern(Pattern):
 			self.curr = yield M_BOX_AFTER_E
 			for meta in self.await_pos(self.offset(0,1,linestart)):
 				self.curr = yield meta
-			if self.curr.char != "|": break
+			if self.curr.char == "+": break
 			
-		# bottom 
+		# bottom
 		linestart = self.curr.col,self.curr.row
-		if self.curr.char == "'" or not fold:
-			self.curr = yield self.expect("'",M_OCCUPIED|M_BOX_START_E)
-			while self.curr.col != linestart[0]+w-2:
-				self.curr = yield self.expect(".",M_OCCUPIED)
-				while True:
-					self.curr = yield self.expect("_",M_OCCUPIED)
-					if self.curr.char == ".": break
-				self.curr = yield self.expect(".",M_OCCUPIED)
-				while True:
-					self.curr = yield self.expect("-",M_OCCUPIED)
-					if self.curr.char == ".": break
-			self.curr = yield self.expect(".",M_OCCUPIED)
-			self.curr = yield self.expect("|",M_OCCUPIED)
-			self.curr = yield M_BOX_AFTER_E
-		else:
-			self.curr = yield self.expect("+",M_OCCUPIED|M_BOX_START_E)
-			for n in range(w-2):
-				self.curr = yield self.expect("-",M_OCCUPIED)
-			self.br = self.curr.col,self.curr.row
-			self.curr = yield self.expect("+",M_OCCUPIED)
-			self.curr = yield M_BOX_AFTER_E
+		self.curr = yield self.expect("+",M_OCCUPIED|M_BOX_START_E)
+		for n in range(w-2):
+			self.curr = yield self.expect("-",M_OCCUPIED)
+		self.br = self.curr.col,self.curr.row
+		self.curr = yield self.expect("+",M_OCCUPIED)
+		self.curr = yield M_BOX_AFTER_E
 		try:
 			for meta in self.await_pos(self.offset(0,1,linestart)):
 				self.curr = yield meta

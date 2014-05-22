@@ -79,24 +79,24 @@ class TestDocumentBoxPattern(unittest.TestCase,PatternTests):
 		p = self.pclass()
 		feed_input(p,0,2,"+----------------.")
 			
-	def test_expects_top_right_dot_or_plus(self):
+	def test_expects_top_right_dot(self):
 		p = self.pclass()
 		feed_input(p,0,2,"+--")
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,5,"?",core.M_NONE))
+			p.test(main.CurrentChar(0,3,"+",core.M_NONE))
 	
 	def test_expects_top_right_dot_unoccupied(self):
 		p = self.pclass()
 		feed_input(p,0,2,"+--")
 		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,5,".",core.M_OCCUPIED))
+			p.test(main.CurrentChar(0,3,".",core.M_OCCUPIED))
 			
-	def test_allows_rest_of_top_line_following_dot(self):
+	def test_allows_rest_of_top_line(self):
 		p = self.pclass()
 		feed_input(p,0,2,"+--.")
-		p.test(main.CurrentChar(0,6,"a",core.M_OCCUPIED))
-		p.test(main.CurrentChar(0,7,"b",core.M_OCCUPIED))
-		p.test(main.CurrentChar(0,8,"\n",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,4,"a",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,5,"b",core.M_OCCUPIED))
+		p.test(main.CurrentChar(0,6,"\n",core.M_OCCUPIED))
 			
 	def test_allows_start_of_second_line(self):
 		p = self.pclass()
@@ -386,189 +386,6 @@ class TestDocumentBoxPattern(unittest.TestCase,PatternTests):
 		with self.assertRaises(StopIteration):
 			p.test(main.CurrentChar(4,4,core.END_OF_INPUT,core.M_NONE))
 		
-	def test_accepts_cutoff_document(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+\n")
-		feed_input(p,1,0,"  |     |\n")
-		feed_input(p,2,0,"  |     |\n")
-		feed_input(p,3,0,"  '._.-.|\n")
-		feed_input(p,4,0,"         ")
-		with self.assertRaises(StopIteration):
-			p.test(main.CurrentChar(4,9," ",core.M_NONE))
-			
-	def test_expects_top_right_plus_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,"+----")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(0,7,"+",core.M_OCCUPIED))
-			
-	def test_allows_rest_of_top_line_following_plus(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+")
-		p.test(main.CurrentChar(0,8,"a",core.M_OCCUPIED))
-		p.test(main.CurrentChar(0,9,"b",core.M_OCCUPIED))
-		p.test(main.CurrentChar(0,10,"\n",core.M_OCCUPIED))
-			
-	def test_allows_single_content_line_for_no_fold(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+----+")
-		feed_input(p,1,0,"  |    |")
-		feed_input(p,2,0,"  '")
-			
-	def test_expects_bottom_left_apostraphe_unoccupied(self):
-		p = self.pclass() 
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  ")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,2,"'",core.M_OCCUPIED))
-			
-	def test_doesnt_accept_bottom_left_plus_if_no_fold(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  ")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,2,"+",core.M_NONE))
-			
-	def test_expects_bottom_left_dot(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,3,"_",core.M_NONE))
-		
-	def test_expects_bottom_left_dot_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,3,".",core.M_OCCUPIED))
-			
-	def test_expects_first_wave_underscore(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '.")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,4,".",core.M_NONE))
-		
-	def test_expects_first_wave_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '.")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,4,"_",core.M_OCCUPIED))
-			
-	def test_allows_wide_wave_trough(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-------+")
-		feed_input(p,1,0,"  |       |")
-		feed_input(p,2,0,"  |       |")
-		feed_input(p,3,0,"  '.___")
-		
-	def test_expects_first_wave_middle_dot(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,5,"?",core.M_NONE))
-		
-	def test_expects_first_wave_middle_dot_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,5,".",core.M_OCCUPIED))
-			
-	def test_expects_first_wave_hyphen(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._.")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,6,".",core.M_NONE))
-			
-	def test_expects_first_wave_hyphen_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._.")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,6,"-",core.M_OCCUPIED))
-		
-	def test_allows_wide_wave_peak(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-------+")
-		feed_input(p,1,0,"  |       |")
-		feed_input(p,2,0,"  |       |")
-		feed_input(p,3,0,"  '._.---")
-		
-	def test_expects_bottom_right_dot(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._.--")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,8,".",core.M_NONE))
-		
-	def test_expects_bottom_right_dot_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._.-")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,7,".",core.M_OCCUPIED))
-		
-	def test_allows_multiple_waves(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-------------+")
-		feed_input(p,1,0,"  |             |")
-		feed_input(p,2,0,"  |             |")
-		feed_input(p,3,0,"  '._.-._.-._.-.")
-		
-	def test_allows_multiple_wide_waves(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-------------+")
-		feed_input(p,1,0,"  |             |")
-		feed_input(p,2,0,"  |             |")
-		feed_input(p,3,0,"  '.__.--.__.--.")
-		
-	def test_expects_bottom_right_pipe(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._.-.")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,8,"_",core.M_NONE))
-		
-	def test_expects_bottom_right_pipe_unoccupied(self):
-		p = self.pclass()
-		feed_input(p,0,2,  "+-----+")
-		feed_input(p,1,0,"  |     |")
-		feed_input(p,2,0,"  |     |")
-		feed_input(p,3,0,"  '._.-.")
-		with self.assertRaises(core.PatternRejected):
-			p.test(main.CurrentChar(3,8,"|",core.M_OCCUPIED))
-		
 	def test_sets_correct_meta_flags(self):
 		input = ((2,  "+--.   \n",),
 		         (0,"  | |_\\  \n",),
@@ -592,6 +409,18 @@ class TestDocumentBoxPattern(unittest.TestCase,PatternTests):
 			for i,char in enumerate(line):
 				m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
 				self.assertEquals(meta[j][i],m)
+			 
+	"""			
+	def test_accepts_cutoff_document(self):
+		p = self.pclass()
+		feed_input(p,0,2,  "+-----+\n")
+		feed_input(p,1,0,"  |     |\n")
+		feed_input(p,2,0,"  |     |\n")
+		feed_input(p,3,0,"  '._.-.|\n")
+		feed_input(p,4,0,"         ")
+		with self.assertRaises(StopIteration):
+			p.test(main.CurrentChar(4,9," ",core.M_NONE))
+	"""
 	
 	def do_render(self,x,y,w,h):
 		p = self.pclass()
@@ -648,42 +477,6 @@ class TestDocumentBoxPattern(unittest.TestCase,PatternTests):
 		self.assertEquals((15.5,22.0),cbtm.b)
 		cdyg = self.find_with(r,{"a":(13.0,20.5),"b":(15.5,22.0)})
 		
-	def test_render_coordinates_size(self):
-		r = self.do_render(2,2,10,7)
-		lft = self.find_with(r,"b",(2.5,8.5))
-		self.assertEquals((2.5,2.5),lft.a)
-		btm = self.find_with(r,"a",(2.5,8.5))
-		self.assertEquals((11.5,8.5),btm.b)
-		rgt = self.find_with(r,"a",(11.5,4.0))
-		self.assertEquals((11.5,8.5),rgt.b)
-		top = self.find_with(r,"b",(9.0,2.5))
-		self.assertEquals((2.5,2.5),top.a)
-		clft = self.find_with(r,"b",(9.0,4.0))
-		self.assertEquals((9.0,2.5),clft.a)
-		cbtm = self.find_with(r,"a",(9.0,4.0))
-		self.assertEquals((11.5,4.0),cbtm.b)
-		cdyg = self.find_with(r,{"a":(9.0,2.5),"b":(11.5,4.0)})
-		
-	def test_render_z(self):
-		result = self.do_render(2,2,7,5)
-		for r in result:
-			self.assertEquals(0,r.z)
-				
-	def test_render_stroke_colour(self):
-		result = self.do_render(2,2,7,5)
-		for r in result:
-			self.assertEquals(core.C_FOREGROUND,r.stroke)
-			
-	def test_render_stroke_width(self):
-		result = self.do_render(2,2,7,5)
-		for r in result:
-			self.assertEquals(1,r.w)
-
-	def test_render_stroke_style(self):
-		result = self.do_render(2,2,7,5)
-		for r in result:
-			self.assertEquals(core.STROKE_SOLID,r.stype)
-			
 
 class TestDbCylinderPattern(unittest.TestCase,PatternTests):
 
