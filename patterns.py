@@ -54,68 +54,6 @@ class LiteralPattern(Pattern):
 	def render(self):
 		Pattern.render(self)
 		return [ Text(pos=self.pos,z=0,text=self.char,colour=C_FOREGROUND,alpha=1.0,size=1) ]
-	
-	
-class DocumentBoxPattern(Pattern):
-
-	tl = None
-	br = None
-	
-	def matcher(self):
-		w,h = 0,0
-		self.curr = yield
-		
-		# Top part with fold
-		self.tl = self.curr.col,self.curr.row
-		self.curr = yield self.expect("+",M_OCCUPIED|M_BOX_START_S|M_BOX_START_E)
-		self.curr = yield self.expect("-",M_OCCUPIED|M_BOX_START_S)
-		while self.curr.char != ".":
-			self.curr = yield self.expect("-",M_OCCUPIED|M_BOX_START_S)
-		w = self.curr.col-self.tl[0]+1 + 2
-		self.curr = yield self.expect(".",M_OCCUPIED|M_BOX_START_S)
-		self.curr = yield M_BOX_AFTER_E
-		for meta in self.await_pos(self.offset(0,1,self.tl)):
-			self.curr = yield meta
-		self.curr = yield self.expect("|",M_OCCUPIED|M_BOX_START_E)
-		for meta in self.await_pos(self.offset(w-4,1,self.tl)):
-			self.curr = yield meta
-		self.curr = yield self.expect("|",M_OCCUPIED)
-		self.curr = yield self.expect("_",M_OCCUPIED)
-		self.curr = yield self.expect("\\",M_OCCUPIED|M_BOX_START_S)
-		self.curr = yield M_BOX_AFTER_E
-		for meta in self.await_pos(self.offset(0,2,self.tl)):
-			self.curr = yield meta
-		
-		# middle section
-		while True:
-			linestart = self.curr.col,self.curr.row
-			self.curr = yield self.expect("|",M_OCCUPIED|M_BOX_START_E)
-			for meta in self.await_pos(self.offset(w-2,0)):
-				self.curr = yield meta
-			self.curr = yield self.expect("|",M_OCCUPIED)
-			self.curr = yield M_BOX_AFTER_E
-			for meta in self.await_pos(self.offset(0,1,linestart)):
-				self.curr = yield meta
-			if self.curr.char == "+": break
-			
-		# bottom
-		linestart = self.curr.col,self.curr.row
-		self.curr = yield self.expect("+",M_OCCUPIED|M_BOX_START_E)
-		for n in range(w-2):
-			self.curr = yield self.expect("-",M_OCCUPIED)
-		self.curr = yield self.expect("+",M_OCCUPIED)
-		self.curr = yield M_BOX_AFTER_E
-		try:
-			for meta in self.await_pos(self.offset(0,1,linestart)):
-				self.curr = yield meta
-			for meta in self.await_pos(self.offset(w,1,linestart)):
-				self.curr = yield M_BOX_AFTER_S
-		except NoSuchPosition: pass
-			
-		return
-		
-	def render(self):
-		Pattern.render(self)
 		
 		
 class DbCylinderPattern(Pattern):
