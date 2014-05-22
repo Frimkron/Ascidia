@@ -103,7 +103,6 @@ class DocumentBoxPattern(Pattern):
 		self.curr = yield self.expect("+",M_OCCUPIED|M_BOX_START_E)
 		for n in range(w-2):
 			self.curr = yield self.expect("-",M_OCCUPIED)
-		self.br = self.curr.col,self.curr.row
 		self.curr = yield self.expect("+",M_OCCUPIED)
 		self.curr = yield M_BOX_AFTER_E
 		try:
@@ -117,21 +116,6 @@ class DocumentBoxPattern(Pattern):
 		
 	def render(self):
 		Pattern.render(self)
-		return [
-			Line(a=(self.tl[0]+0.5,self.tl[1]+0.5),b=(self.tl[0]+0.5,self.br[1]+0.5), 
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=(self.tl[0]+0.5,self.tl[1]+0.5),b=(self.br[0]-2.0,self.tl[1]+0.5), 
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=(self.br[0]+0.5,self.tl[1]+2.0),b=(self.br[0]+0.5,self.br[1]+0.5), 
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=(self.tl[0]+0.5,self.br[1]+0.5),b=(self.br[0]+0.5,self.br[1]+0.5), 
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=(self.br[0]-2.0,self.tl[1]+0.5),b=(self.br[0]-2.0,self.tl[1]+2.0), 
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=(self.br[0]-2.0,self.tl[1]+2.0),b=(self.br[0]+0.5,self.tl[1]+2.0), 
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
-			Line(a=(self.br[0]-2.0,self.tl[1]+0.5),b=(self.br[0]+0.5,self.tl[1]+2.0), 
-				z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),		]
 		
 		
 class DbCylinderPattern(Pattern):
@@ -1716,8 +1700,7 @@ class RDiamondConnectorPattern(DiamondConnectorPattern):
 		
 PATTERNS = [
 	StickManPattern,			
-	DbCylinderPattern,
-	DocumentBoxPattern,
+	DbCylinderPattern,			
 	DiamondBoxPattern,
 	StraightRectangularBoxPattern,					
 	RoundedRectangularBoxPattern,

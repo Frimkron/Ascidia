@@ -459,23 +459,6 @@ class TestDocumentBoxPattern(unittest.TestCase,PatternTests):
 		self.assertEquals((6.0,2.5),clft.a)
 		cbtm = self.find_with(r,"a",(6.0,4.0))
 		self.assertEquals((8.5,4.0),cbtm.b)
-		cdyg = self.find_with(r,{"a":(6.0,2.5),"b":(8.5,4.0)})
-		
-	def test_render_coordinates_position(self):
-		r = self.do_render(9,20,7,5)
-		lft = self.find_with(r,"b",(9.5,24.5))
-		self.assertEquals((9.5,20.5),lft.a)
-		btm = self.find_with(r,"a",(9.5,24.5))
-		self.assertEquals((15.5,24.5),btm.b)
-		rgt = self.find_with(r,"a",(15.5,22.0))
-		self.assertEquals((15.5,24.5),rgt.b)
-		top = self.find_with(r,"b",(13.0,20.5))
-		self.assertEquals((9.5,20.5),top.a)
-		clft = self.find_with(r,"b",(13.0,22.0))
-		self.assertEquals((13.0,20.5),clft.a)
-		cbtm = self.find_with(r,"a",(13.0,22.0))
-		self.assertEquals((15.5,22.0),cbtm.b)
-		cdyg = self.find_with(r,{"a":(13.0,20.5),"b":(15.5,22.0)})
 		
 
 class TestDbCylinderPattern(unittest.TestCase,PatternTests):
