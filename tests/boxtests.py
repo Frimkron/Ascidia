@@ -436,29 +436,14 @@ class TestDocumentBoxPattern(unittest.TestCase,PatternTests):
 		return p.render()
 		 
 	def test_render_returns_correct_shapes(self):
-		""" o--o.
-		    |  | '. <-- 2.5 x 1.5
-		    |  o---o
-		    |      |
-		    o------o """
 		result = self.do_render(2,2,7,5)
 		self.assertEquals(7,len(result))
 		self.assertEquals(7,len(filter(lambda x: isinstance(x,core.Line), result)))
 		
-	def test_render_coordinates(self):
-		r = self.do_render(2,2,7,5)
-		lft = self.find_with(r,"b",(2.5,6.5))
-		self.assertEquals((2.5,2.5),lft.a)
-		btm = self.find_with(r,"a",(2.5,6.5))
-		self.assertEquals((8.5,6.5),btm.b)
-		rgt = self.find_with(r,"a",(8.5,4.0))
-		self.assertEquals((8.5,6.5),rgt.b)
-		top = self.find_with(r,"b",(6.0,2.5))
-		self.assertEquals((2.5,2.5),top.a)
-		clft = self.find_with(r,"b",(6.0,4.0))
-		self.assertEquals((6.0,2.5),clft.a)
-		cbtm = self.find_with(r,"a",(6.0,4.0))
-		self.assertEquals((8.5,4.0),cbtm.b)
+	#def test_render_coordinates(self):
+	#	r = self.do_render(2,2,7,5)
+	#	lft = find_with(r,"a",(2.5,2.5))
+	#	self.assertEquals((),lft.b)
 		
 
 class TestDbCylinderPattern(unittest.TestCase,PatternTests):
