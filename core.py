@@ -1,4 +1,4 @@
-"""	
+"""    
 Copyright (c) 2012 Mark Frimston
 
 Permission is hereby granted, free of charge, to any person
@@ -23,7 +23,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
 ----------------------------------------------------
-	
+    
 Main import stuff
 """
 
@@ -71,13 +71,13 @@ M_LINE_AFTER_SW = (1<<19)
 M_DASH_AFTER_SW = (1<<20)
 
 class NonChar(object):
-	def isalnum(self): return False
-	def isalpha(self): return False
-	def isdigit(self): return False
-	def islower(self): return False
-	def isspace(self): return False
-	def istitle(self): return False
-	def isupper(self): return False
+    def isalnum(self): return False
+    def isalpha(self): return False
+    def isdigit(self): return False
+    def islower(self): return False
+    def isspace(self): return False
+    def istitle(self): return False
+    def isupper(self): return False
 
 START_OF_INPUT = NonChar()
 END_OF_INPUT = NonChar()
@@ -88,69 +88,69 @@ class NoSuchPosition(Exception): pass
 
 
 class Pattern(object):
-	"""Pattern base class with utility methods"""
-	
-	gen = None
-	is_finished = False
-	curr = None
-	
-	def __init__(self):
-		self.curr = None
-		self.gen = self.matcher()
-		self.gen.next()
-		#self.debug_canvas = mrf.ascii.Canvas()
-		
-	def matcher(self):
-		yield
-		self.reject()
-		
-	def reject(self):
-		raise PatternRejected()
-		
-	def occupied(self):
-		return self.curr.meta & M_OCCUPIED
-		
-	def expect(self,chars,meta=M_OCCUPIED):
-		if self.occupied() or not self.is_in(self.curr.char,chars):
-			self.reject()
-		else:
-			return meta		
+    """Pattern base class with utility methods"""
+    
+    gen = None
+    is_finished = False
+    curr = None
+    
+    def __init__(self):
+        self.curr = None
+        self.gen = self.matcher()
+        self.gen.next()
+        #self.debug_canvas = mrf.ascii.Canvas()
+        
+    def matcher(self):
+        yield
+        self.reject()
+        
+    def reject(self):
+        raise PatternRejected()
+        
+    def occupied(self):
+        return self.curr.meta & M_OCCUPIED
+        
+    def expect(self,chars,meta=M_OCCUPIED):
+        if self.occupied() or not self.is_in(self.curr.char,chars):
+            self.reject()
+        else:
+            return meta        
 
-	def offset(self,x,y,pos=None):	
-		if pos is None: pos = (self.curr.col,self.curr.row)
-		return (pos[0]+x,pos[1]+y)
+    def offset(self,x,y,pos=None):    
+        if pos is None: pos = (self.curr.col,self.curr.row)
+        return (pos[0]+x,pos[1]+y)
 
-	def await_pos(self,pos):
-		while (self.curr.col,self.curr.row) != pos:
-			if( self.curr.row > pos[1] 
-					or (self.curr.row == pos[1] and self.curr.col > pos[0])
-					or self.curr.char == END_OF_INPUT ):
-				raise NoSuchPosition(pos)
-			yield M_NONE
-			
-	def is_in(self,c,chars):
-		try:
-			return c in chars
-		except TypeError:
-			return False
-			
-	def test(self,currentchar):
-		try:
-			#if currentchar.char != "\n":
-			#	self.debug_canvas.set(currentchar.col,currentchar.row,
-			#		currentchar.char if currentchar.char != " " else "*")
-			return self.gen.send(currentchar)
-		except StopIteration:
-			self.is_finished = True
-			raise
-		except NoSuchPosition as e:
-			raise PatternRejected(e)
-		
-	def render(self):
-		if not self.is_finished: 
-			raise PatternStateError("Pattern not matched")
-		return []
-		
-	#def debug(self):
-	#	self.debug_canvas.print_out()
+    def await_pos(self,pos):
+        while (self.curr.col,self.curr.row) != pos:
+            if( self.curr.row > pos[1] 
+                    or (self.curr.row == pos[1] and self.curr.col > pos[0])
+                    or self.curr.char == END_OF_INPUT ):
+                raise NoSuchPosition(pos)
+            yield M_NONE
+            
+    def is_in(self,c,chars):
+        try:
+            return c in chars
+        except TypeError:
+            return False
+            
+    def test(self,currentchar):
+        try:
+            #if currentchar.char != "\n":
+            #    self.debug_canvas.set(currentchar.col,currentchar.row,
+            #        currentchar.char if currentchar.char != " " else "*")
+            return self.gen.send(currentchar)
+        except StopIteration:
+            self.is_finished = True
+            raise
+        except NoSuchPosition as e:
+            raise PatternRejected(e)
+        
+    def render(self):
+        if not self.is_finished: 
+            raise PatternStateError("Pattern not matched")
+        return []
+        
+    #def debug(self):
+    #    self.debug_canvas.print_out()
 
