@@ -102,7 +102,7 @@ class Pattern(object):
 		
 	def matcher(self):
 		yield
- 		self.reject()
+		self.reject()
 		
 	def reject(self):
 		raise PatternRejected()

@@ -44,15 +44,15 @@ can be created and embedded within plain text documentation (source code
 comments, for example) so that they can be maintained in the same place. Later,
 the diagrams can be rendered as images ready for publishing.
 
-Ascidia was inspired by similar applications of this type, namely [Ditaa][] 
-and [ASCIItoSVG][]. It also takes inspiration from the philosophy of John 
-Gruber's [Markdown][], which aims to define a rich text format using intuitive 
+Ascidia was inspired by similar applications of this type, namely [Ditaa] 
+and [ASCIItoSVG]. It also takes inspiration from the philosophy of John 
+Gruber's [Markdown], which aims to define a rich text format using intuitive 
 formatting rules in place of the syntactic clutter of a markup language.
 Ascidia attempts to do the same for ASCII diagrams, by defining a set of 
 patterns which are as recognisable in raw text as they are in their rendered 
 form.
 
-Ascidia is, apparently, another name for the [Sea Squirt][].
+Ascidia is, apparently, another name for the [Sea Squirt].
 
 [Ditaa]: http://ditaa.sourceforge.net/
 [ASCIItoSVG]: http://9vx.org/~dho/a2s/
@@ -173,6 +173,7 @@ following subsections describe the patterns that Ascidia understands.
 * [Symbols](#symbols)
 	* [Stick Figures](#stick-figures)
 	* [Storage Symbols](#storage-symbols)
+	* [Document Symbols](#document-symbols)
 * [Misc](#misc)
 	* [Text](#text)
 
@@ -824,6 +825,52 @@ The symbol may vary in width or height, but has a minimum size as follows:
            '----'  min
 ```
 
+#### Document Symbols
+
+Example Input
+
+``` 
++-------+  +----.
+| File  |  |   |_\
+|       |  | File |
+|       |  |      |  
+'.__.--.|  +------+
+
+```
+
+Example Output
+
+![](https://raw.github.com/Frimkron/Ascidia/master/rm-images/document.png)
+
+Document symbols are often used to represent a computer file or physical
+document.
+
+The document symbol is constructed like a regular [box](#rectangular-boxes), but
+with either a folded corner or a wavy bottom line, or both.
+
+The folded corner consists of a period `.`, then pipe `|` underscore `_` 
+backslash `\` on the line below so that the period is above the underscore.
+
+The wavy line consists of apostraphe `'`, period `.`, one or more underscores 
+`_`, period `.`, one or more hyphens `-`, period `.` and `pipe`. There may be 
+multiple waves, and each peak and trough can use multiple hypens or underscores
+respectively:
+
+``` 
++-----------+  +-------------+
+|           |  |             |
+'.____.----.|  '._.-._.-._.-.|
+
+```
+
+Document boxes have a minimum size as follows:
+
+``` 
++-----+  +-.
+|     |  ||_\
+'._.-.|  |   |
+         +---+
+```
 
 ### Misc ###
 
@@ -873,12 +920,14 @@ Related Projects
 
 Some other related projects that you might find interesting:
 
-* [Ditaa](http://ditaa.sourceforge.net/) - A similar, more popular ASCII diagram 
-  converter written in Java
-* [ASCIItoSVG](http://9vx.org/~dho/a2s/) - Another ASCII diagram converter, influenced
-  by Markdown and written in PHP
-* [Asciio](http://search.cpan.org/dist/App-Asciio/lib/App/Asciio.pm) - A Perl application
-  for drawing ASCII diagrams using a graphical user interface
-* [AsciiFlow](http://www.asciiflow.com) - An online editor for drawing ASCII diagrams
-* [Fossil Draw](http://www.fossildraw.com/) - Another online ASCII diagram editor
+* [Ditaa](http://ditaa.sourceforge.net/) - A similar, more popular ASCII
+  diagram converter written in Java
+* [ASCIItoSVG](http://9vx.org/~dho/a2s/) - Another ASCII diagram converter,
+  influenced by Markdown and written in PHP
+* [Asciio](http://search.cpan.org/dist/App-Asciio/lib/App/Asciio.pm) - A Perl
+  application for drawing ASCII diagrams using a graphical user interface
+* [AsciiFlow](http://www.asciiflow.com) - An online editor for drawing ASCII
+  diagrams
+* [Fossil Draw](http://www.fossildraw.com/) - Another online ASCII diagram
+  editor
 * [Text Bunny](http://www2.b3ta.com/_bunny/texbunny.gif) - an ASCII bunny
