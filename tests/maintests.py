@@ -281,6 +281,12 @@ class TestSvgOutput(unittest.TestCase):
             main.OutputPrefs((1,1,1),(0,0,0),30),(100,300)).documentElement)[0]
         self.assertEquals(1500, float(b.getAttribute("width")))
         self.assertEquals(9000, float(b.getAttribute("height")))
+
+    def test_transparent_background(self):
+        c = self.child_elements(self.do_output([],main.OutputPrefs(bgcolour=None),
+            (100,300)).documentElement)
+        self.assertEquals(1, len(c))
+        self.assertEquals("none",c[0].getAttribute("fill"))
             
     def test_handles_line(self):
         e = self.do_output([core.Line(a=(0,0),b=(1,1),z=1,stroke=(1,0,0),salpha=1.0,

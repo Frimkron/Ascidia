@@ -69,7 +69,12 @@ def colour(s):
 		if not( 0 <= float(b) <= 1):
 			raise ValueError(s)
 	return tuple(map(float,bits))
-	
+
+
+def opt_colour(s):
+    if s == 'none':
+        return None
+    return colour(s)	
 
 
 if __name__ == "__main__":
@@ -83,7 +88,7 @@ if __name__ == "__main__":
 	ap = argparse.ArgumentParser()
 	ap.add_argument("-o","--outfile",default=None,help="output file")
 	ap.add_argument("-f","--foreground",default="black",type=colour,help="foreground colour")
-	ap.add_argument("-b","--background",default="white",type=colour,help="background colour")
+	ap.add_argument("-b","--background",default="white",type=opt_colour,help="background colour")
 	ap.add_argument("-c","--charheight",default="24",type=int,help="character height in pixels")
 	ap.add_argument("-t","--type",default=None,choices=fmtbyname.keys(),help="output format")
 	ap.add_argument("-q","--quiet",action="store_true",help="no progress output")

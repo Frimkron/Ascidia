@@ -105,7 +105,7 @@ Defaults to black.
 
 The background colour, as comma-separated RGB values between 0 and 1. Some
 basic predefined colour names are also supported ("black", "red", "blue", etc).
-Defaults to white.
+"none" can also be used to use a transparent background. Defaults to white.
 
 `-c, --charheight`
 
