@@ -922,6 +922,9 @@ Some other related projects that you might find interesting:
 
 * [Ditaa](http://ditaa.sourceforge.net/) - A similar, more popular ASCII
   diagram converter written in Java
+* [Asciidia](https://github.com/aurora/asciidia) - A similar project with a
+  very similar name (it has an extra 'i'), in PHP. Creates ditaa-like
+  diagrams, directory trees, syntax-diagrams and identicons.
 * [ASCIItoSVG](http://9vx.org/~dho/a2s/) - Another ASCII diagram converter,
   influenced by Markdown and written in PHP
 * [Asciio](http://search.cpan.org/dist/App-Asciio/lib/App/Asciio.pm) - A Perl
