@@ -527,9 +527,13 @@ class TestSvgOutput(unittest.TestCase):
         
     def test_ellipse_z(self):
         ch = self.child_elements(self.do_output([ 
-            core.Ellipse(a=(2,1),b=(5,3),z=3,stroke=(1,0,0),salpha=1.0,w=2,stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0),
-            core.Ellipse(a=(2,2),b=(1,1),z=10,stroke=(0,0,1),salpha=1.0,w=3,stype=core.STROKE_SOLID,fill=(0,1,0),falpha=1.0),
-            core.Ellipse(a=(3,3),b=(4,5),z=1,stroke=(0,1,0),salpha=1.0,w=1,stype=core.STROKE_SOLID,fill=(1,0,0),falpha=1.0) ]).documentElement)
+            core.Ellipse(a=(2,1),b=(5,3),z=3,stroke=(1,0,0),salpha=1.0,w=2,stype=core.STROKE_SOLID,fill=(0,0,1),
+                         falpha=1.0),
+            core.Ellipse(a=(2,2),b=(1,1),z=10,stroke=(0,0,1),salpha=1.0,w=3,stype=core.STROKE_SOLID,fill=(0,1,0),
+                         falpha=1.0),
+            core.Ellipse(a=(3,3),b=(4,5),z=1,stroke=(0,1,0),salpha=1.0,w=1,stype=core.STROKE_SOLID,fill=(1,0,0),
+                         falpha=1.0)
+        ]).documentElement)
         self.assertEquals(4, len(ch))
         self.assertEquals("rgb(0,255,0)", ch[1].getAttribute("stroke"))
         self.assertEquals("rgb(255,0,0)", ch[2].getAttribute("stroke"))
@@ -547,13 +551,37 @@ class TestSvgOutput(unittest.TestCase):
             start=-math.pi,end=math.pi/2,stroke=(1,0,0),salpha=1.0,w=1,
             stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0) ]).documentElement)[1]
         self.assertEquals("M 24,120 A 6,24 0 1 1 30,144", a.getAttribute("d"))
-        
+
     def test_arc_coordinates_charheight(self):
         a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,
                 start=-math.pi,end=math.pi/2,stroke=(1,0,0),salpha=1.0,w=1,
                 stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0) ],
             main.OutputPrefs(charheight=50)).documentElement)[1]
         self.assertEquals("M 50,250 A 12,50 0 1 1 62,300", a.getAttribute("d"))
+
+    def test_arc_coords_small_arc(self):
+        a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,
+                                start=math.pi/2,end=math.pi,stroke=(1,0,0),salpha=1.0,w=1,
+                                stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0) ]).documentElement)[1]
+        self.assertEquals("M 30,144 A 6,24 0 0 1 24,120", a.getAttribute("d"))
+
+    def test_arc_coords_large_arc(self):
+        a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,
+                                start=-math.pi/2,end=math.pi,stroke=(1,0,0),salpha=1.0,w=1,
+                                stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0) ]).documentElement)[1]
+        self.assertEquals("M 30,96 A 6,24 0 1 1 24,120", a.getAttribute("d"))
+        
+    def test_arc_coords_small_arc_across_pi_minus_pi(self):
+        a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,
+                                start=math.pi,end=-math.pi/2,stroke=(1,0,0),salpha=1.0,w=1,
+                                stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0) ]).documentElement)[1]
+        self.assertEquals("M 24,120 A 6,24 0 0 1 30,96", a.getAttribute("d"))
+        
+    def test_arc_coords_large_arc_across_pi_minus_pi(self):
+        a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,
+                                start=0,end=-math.pi/2,stroke=(1,0,0),salpha=1.0,w=1,
+                                stype=core.STROKE_SOLID,fill=(0,0,1),falpha=1.0) ]).documentElement)[1]
+        self.assertEquals("M 36,120 A 6,24 0 1 1 30,96", a.getAttribute("d"))
         
     def test_arc_stroke_colour(self):
         a = self.child_elements(self.do_output([ core.Arc(a=(2,4),b=(3,6),z=1,

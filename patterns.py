@@ -172,13 +172,13 @@ class DocumentBoxPattern(Pattern):
             Line(a=(self.br[0]+0.5,self.tl[1]+0.5),b=(self.br[0]+0.5,self.br[1]+0.5), 
                 z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,stype=STROKE_SOLID),
         ]) + ([
-            # trough arc
+            # trough curve
             QuadCurve(a=(self.tl[0]+0.5,self.br[1]+0.5),
                 b=(self.tl[0]+0.5+float(self.br[0]-self.tl[0])/2,self.br[1]+0.5),
                 c=(self.tl[0]+0.5+float(self.br[0]-self.tl[0])/4,self.br[1]+1.0),
                 z=0,stroke=C_FOREGROUND,salpha=1.0,w=1,
                 stype=STROKE_SOLID),
-            # peak arc
+            # peak curve
             QuadCurve(a=(self.tl[0]+0.5+float(self.br[0]-self.tl[0])/2,self.br[1]+0.5),
                 b=(self.br[0]+0.5,self.br[1]+0.5),
                 c=(self.tl[0]+0.5+float(self.br[0]-self.tl[0])/4*3,self.br[1]+0.0),

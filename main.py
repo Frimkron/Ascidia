@@ -321,14 +321,21 @@ class SvgOutput(object):
         rx = (arc.b[0]-arc.a[0])/2.0
         ry = (arc.b[1]-arc.a[1])/2.0
         cx,cy = arc.a[0]+rx, arc.a[1]+ry
-        sx = cx+math.cos(arc.start)*rx
-        sy = cy+math.sin(arc.start)*ry
-        ex = cx+math.cos(arc.end)*rx
-        ey = cy+math.sin(arc.end)*ry
+        astart = ((arc.start+math.pi) % (math.pi*2)) - math.pi
+        aend   = ((arc.end  +math.pi) % (math.pi*2)) - math.pi
+        sx = cx+math.cos(astart)*rx
+        sy = cy+math.sin(astart)*ry
+        ex = cx+math.cos(aend)*rx
+        ey = cy+math.sin(aend)*ry        
+        if astart <= aend:
+            ang_diff = aend - astart
+        else:
+            ang_diff = (math.pi - astart) + (aend - -math.pi)
+        long_arc = 1 if ang_diff >= math.pi else 0
         el = self.doc.createElement("path")
         el.setAttribute("d","M %s,%s A %s,%s 0 %d 1 %s,%s" % (
             self._x(sx),self._y(sy), self._x(rx),self._y(ry), 
-            1, self._x(ex),self._y(ey)))
+            long_arc, self._x(ex),self._y(ey)))
         self._style_attrs(arc,el)
         parent.appendChild(el)
         
