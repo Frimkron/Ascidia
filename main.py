@@ -24,7 +24,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 """
 """    
 TODO:
-    * Transparent background
     * Box shadows
     * Raster unit tests - find image library
     * Cloud boxes
