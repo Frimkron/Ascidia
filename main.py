@@ -65,6 +65,7 @@ TODO:
     * Secondary colour (why?)
     * Image w and h options
     * Char ratio option    
+    * Output to intermediate format describing diagram structure for custom rendering
 """
 
 import sys
