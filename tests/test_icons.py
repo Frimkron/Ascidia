@@ -1,35 +1,9 @@
-#!/usr/bin/python2
-"""    
-Copyright (c) 2012 Mark Frimston
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-
 import unittest
-import core
-import main
-import patterns
 
-from ptests import *
+from ascidia import core
+from ascidia import main
+from ascidia import patterns
+from .test_patterns import *
 
 
 class TestLiteralPattern(unittest.TestCase,PatternTests):
@@ -84,28 +58,28 @@ class TestLiteralPattern(unittest.TestCase,PatternTests):
             
     def test_render_returns_text(self):
         result = self.do_render(0,0,"a")
-        self.assertEquals(1,len(result))
+        self.assertEqual(1,len(result))
         self.assertTrue(isinstance(result[0],core.Text))
         
     def test_render_coordinates(self):
         text = self.do_render(3,2,"a")[0]
-        self.assertEquals((2,3), text.pos)
+        self.assertEqual((2,3), text.pos)
     
     def test_render_z(self):
         text = self.do_render(3,2,"a")[0]
-        self.assertEquals(0, text.z)
+        self.assertEqual(0, text.z)
         
     def test_render_text(self):
         text = self.do_render(2,1,"H")[0]
-        self.assertEquals("H", text.text)
+        self.assertEqual("H", text.text)
         
     def test_render_colour(self):
         text = self.do_render(2,1,"a")[0]
-        self.assertEquals(core.C_FOREGROUND, text.colour)
+        self.assertEqual(core.C_FOREGROUND, text.colour)
         
     def test_render_size(self):
         text = self.do_render(2,1,"a")[0]
-        self.assertEquals(1, text.size)
+        self.assertEqual(1, text.size)
 
 
 class TestStickManPattern(unittest.TestCase,PatternTests):
@@ -271,7 +245,7 @@ class TestStickManPattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i], m)
+                self.assertEqual(meta[j][i], m)
 
     def do_render(self,x,y):
         p = self.pclass()
@@ -285,50 +259,46 @@ class TestStickManPattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_correct_shapes(self):
         r = self.do_render(3,2)
-        self.assertEquals(5,len(r))
-        self.assertEquals(1,len(filter(lambda x: isinstance(x,core.Ellipse), r)))
-        self.assertEquals(4,len(filter(lambda x: isinstance(x,core.Line), r)))
+        self.assertEqual(5,len(r))
+        self.assertEqual(1,len(list(filter(lambda x: isinstance(x,core.Ellipse), r))))
+        self.assertEqual(4,len(list(filter(lambda x: isinstance(x,core.Line), r))))
         
     def test_render_coordinates(self):
         r = self.do_render(3,2)
-        head = filter(lambda x: isinstance(x,core.Ellipse), r)[0]
-        self.assertEquals((3,2.5),head.a)
-        self.assertEquals((4,3),head.b)
+        head = list(filter(lambda x: isinstance(x,core.Ellipse), r))[0]
+        self.assertEqual((3,2.5),head.a)
+        self.assertEqual((4,3),head.b)
         arms = self.find_with(filter(lambda x: isinstance(x,core.Line), r),"a",(2,3.25))
-        self.assertEquals((2,3.25),arms.a)
-        self.assertEquals((5,3.25),arms.b)
+        self.assertEqual((2,3.25),arms.a)
+        self.assertEqual((5,3.25),arms.b)
         lleg = self.find_with(filter(lambda x: isinstance(x,core.Line), r),"b",(2.5,4.8))
-        self.assertEquals((3.5,3.8),lleg.a)
-        self.assertEquals((2.5,4.8),lleg.b)
+        self.assertEqual((3.5,3.8),lleg.a)
+        self.assertEqual((2.5,4.8),lleg.b)
         rleg = self.find_with(filter(lambda x: isinstance(x,core.Line), r),"b",(4.5,4.8))
-        self.assertEquals((3.5,3.8),rleg.a)
-        self.assertEquals((4.5,4.8),rleg.b)
+        self.assertEqual((3.5,3.8),rleg.a)
+        self.assertEqual((4.5,4.8),rleg.b)
 
     def test_render_z(self):
         r = self.do_render(3,2)
         for shape in r:
-            self.assertEquals(0,shape.z)
+            self.assertEqual(0,shape.z)
             
     def test_render_stroke_colour(self):
         r = self.do_render(3,2)
         for shape in r:
-            self.assertEquals(core.C_FOREGROUND,shape.stroke)
+            self.assertEqual(core.C_FOREGROUND,shape.stroke)
             
     def test_render_stroke_width(self):
         r = self.do_render(3,2)
         for shape in r:
-            self.assertEquals(1,shape.w)
+            self.assertEqual(1,shape.w)
             
     def test_render_stroke_style(self):
         r = self.do_render(3,2)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID, shape.stype)
+            self.assertEqual(core.STROKE_SOLID, shape.stype)
             
     def test_render_fill_colour(self):
         r = self.do_render(3,2)
-        e = filter(lambda x: isinstance(x,core.Ellipse), r)[0]
-        self.assertEquals(None, e.fill)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        e = list(filter(lambda x: isinstance(x,core.Ellipse), r))[0]
+        self.assertEqual(None, e.fill)

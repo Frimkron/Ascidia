@@ -1,36 +1,10 @@
-#!/usr/bin/python2
-"""    
-Copyright (c) 2012 Mark Frimston
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-
-import unittest
-import core
-import patterns
-import main
 import math
+import unittest
 
-from ptests import *
+from ascidia import core
+from ascidia import patterns
+from ascidia import main
+from .test_patterns import *
 
 
 class TestShortUpDiagLinePattern(unittest.TestCase,PatternTests):
@@ -157,7 +131,7 @@ class TestShortUpDiagLinePattern(unittest.TestCase,PatternTests):
         for j,(linestart,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y):
         p = self.pclass()
@@ -170,29 +144,29 @@ class TestShortUpDiagLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2)[0]
-        self.assertEquals((5,2),l.a)
-        self.assertEquals((4,3),l.b)
+        self.assertEqual((5,2),l.a)
+        self.assertEqual((4,3),l.b)
         
     def test_render_z(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)
+        self.assertEqual(core.STROKE_SOLID,l.stype)
         
 
 class TestLongUpDiagLinePattern(unittest.TestCase,PatternTests):
@@ -311,7 +285,7 @@ class TestLongUpDiagLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,l):
         p = self.pclass()
@@ -326,34 +300,34 @@ class TestLongUpDiagLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,2)[0]
-        self.assertEquals((5,2),l.a)
-        self.assertEquals((3,4),l.b)
+        self.assertEqual((5,2),l.a)
+        self.assertEqual((3,4),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,3)[0]
-        self.assertEquals((6,1),l.a)
-        self.assertEquals((3,4),l.b)
+        self.assertEqual((6,1),l.a)
+        self.assertEqual((3,4),l.b)
     
     def test_render_z(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)
+        self.assertEqual(core.STROKE_SOLID,l.stype)
     
     
 class TestShortDownDiagLinePattern(unittest.TestCase,PatternTests):
@@ -488,7 +462,7 @@ class TestShortDownDiagLinePattern(unittest.TestCase,PatternTests):
         for j,(linestart,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y):
         p = self.pclass()
@@ -501,29 +475,29 @@ class TestShortDownDiagLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2)[0]
-        self.assertEquals((4,2),l.a)
-        self.assertEquals((5,3),l.b)
+        self.assertEqual((4,2),l.a)
+        self.assertEqual((5,3),l.b)
         
     def test_render_z(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)    
+        self.assertEqual(core.STROKE_SOLID,l.stype)    
     
 
 class TestLongDownDiagLinePattern(unittest.TestCase,PatternTests):
@@ -660,7 +634,7 @@ class TestLongDownDiagLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,l):
         p = self.pclass()
@@ -675,34 +649,34 @@ class TestLongDownDiagLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,2)[0]
-        self.assertEquals((4,2),l.a)
-        self.assertEquals((6,4),l.b)
+        self.assertEqual((4,2),l.a)
+        self.assertEqual((6,4),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,3)[0]
-        self.assertEquals((5,1),l.a)
-        self.assertEquals((8,4),l.b)
+        self.assertEqual((5,1),l.a)
+        self.assertEqual((8,4),l.b)
     
     def test_render_z(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)    
+        self.assertEqual(core.STROKE_SOLID,l.stype)    
 
 
 class TestShortVertLinePattern(unittest.TestCase,PatternTests):
@@ -838,7 +812,7 @@ class TestShortVertLinePattern(unittest.TestCase,PatternTests):
         for j,(linestart,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,smeta=core.M_NONE,emeta=core.M_NONE):
         p = self.pclass()
@@ -854,44 +828,44 @@ class TestShortVertLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,3),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,3),l.b)
         
     def test_render_coordinates_start_box(self):
         l = self.do_render(4,2,smeta=core.M_BOX_AFTER_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,3),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,3),l.b)
 
     def test_render_coordinates_end_box(self):
         l = self.do_render(4,2,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,3.5),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,3.5),l.b)
 
     def test_render_coordinates_start_and_end_box(self):
         l = self.do_render(4,2,smeta=core.M_BOX_AFTER_S,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,3.5),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,3.5),l.b)
         
     def test_render_z(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)    
+        self.assertEqual(core.STROKE_SOLID,l.stype)    
 
     
 class TestLongVertLinePattern(unittest.TestCase,PatternTests):
@@ -1033,7 +1007,7 @@ class TestLongVertLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
         p = self.pclass()
@@ -1049,49 +1023,49 @@ class TestLongVertLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,2)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,4),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,4),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,3)[0]
-        self.assertEquals((5.5,1),l.a)
-        self.assertEquals((5.5,4),l.b)
+        self.assertEqual((5.5,1),l.a)
+        self.assertEqual((5.5,4),l.b)
     
     def test_render_coordinates_start_box(self):
         l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,4),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,4),l.b)
 
     def test_render_coordinates_end_box(self):
         l = self.do_render(4,2,2,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,4.5),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,4.5),l.b)
 
     def test_render_coordinates_start_and_end_box(self):
         l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,4.5),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,4.5),l.b)
 
     def test_render_z(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)    
+        self.assertEqual(core.STROKE_SOLID,l.stype)    
 
 
 class TestShortHorizLinePattern(unittest.TestCase,PatternTests):
@@ -1192,7 +1166,7 @@ class TestShortHorizLinePattern(unittest.TestCase,PatternTests):
         for j,(linestart,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,smeta=core.M_NONE,emeta=core.M_NONE):
         p = self.pclass()
@@ -1206,44 +1180,44 @@ class TestShortHorizLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2)[0]
-        self.assertEquals((4,2.5),l.a)
-        self.assertEquals((5,2.5),l.b)
+        self.assertEqual((4,2.5),l.a)
+        self.assertEqual((5,2.5),l.b)
         
     def test_render_coordinates_start_box(self):
         l = self.do_render(4,2,smeta=core.M_BOX_AFTER_E)[0]
-        self.assertEquals((3.5,2.5),l.a)
-        self.assertEquals((5,2.5),l.b)
+        self.assertEqual((3.5,2.5),l.a)
+        self.assertEqual((5,2.5),l.b)
 
     def test_render_coordinates_end_box(self):
         l = self.do_render(4,2,emeta=core.M_BOX_START_E)[0]
-        self.assertEquals((4,2.5),l.a)
-        self.assertEquals((5.5,2.5),l.b)
+        self.assertEqual((4,2.5),l.a)
+        self.assertEqual((5.5,2.5),l.b)
 
     def test_render_coordinates_start_and_end_box(self):
         l = self.do_render(4,2,smeta=core.M_BOX_AFTER_E,emeta=core.M_BOX_START_E)[0]
-        self.assertEquals((3.5,2.5),l.a)
-        self.assertEquals((5.5,2.5),l.b)
+        self.assertEqual((3.5,2.5),l.a)
+        self.assertEqual((5.5,2.5),l.b)
         
     def test_render_z(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)    
+        self.assertEqual(core.STROKE_SOLID,l.stype)    
 
                                 
 class TestLongHorizLinePattern(unittest.TestCase,PatternTests):
@@ -1315,7 +1289,7 @@ class TestLongHorizLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
         p = self.pclass()
@@ -1329,49 +1303,49 @@ class TestLongHorizLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,2)[0]
-        self.assertEquals((4,2.5),l.a)
-        self.assertEquals((6,2.5),l.b)
+        self.assertEqual((4,2.5),l.a)
+        self.assertEqual((6,2.5),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,3)[0]
-        self.assertEquals((5,1.5),l.a)
-        self.assertEquals((8,1.5),l.b)
+        self.assertEqual((5,1.5),l.a)
+        self.assertEqual((8,1.5),l.b)
     
     def test_render_coordinates_start_box(self):
         l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_E)[0]
-        self.assertEquals((3.5,2.5),l.a)
-        self.assertEquals((6,2.5),l.b)
+        self.assertEqual((3.5,2.5),l.a)
+        self.assertEqual((6,2.5),l.b)
 
     def test_render_coordinates_end_box(self):
         l = self.do_render(4,2,2,emeta=core.M_BOX_START_E)[0]
-        self.assertEquals((4,2.5),l.a)
-        self.assertEquals((6.5,2.5),l.b)
+        self.assertEqual((4,2.5),l.a)
+        self.assertEqual((6.5,2.5),l.b)
         
     def test_render_coordinates_start_and_end_box(self):
         l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_E,emeta=core.M_BOX_START_E)[0]
-        self.assertEquals((3.5,2.5),l.a)
-        self.assertEquals((6.5,2.5),l.b)
+        self.assertEqual((3.5,2.5),l.a)
+        self.assertEqual((6.5,2.5),l.b)
 
     def test_render_z(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)    
+        self.assertEqual(core.STROKE_SOLID,l.stype)    
 
 
 class TestShortUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
@@ -1498,7 +1472,7 @@ class TestShortUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
         for j,(linestart,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y):
         p = self.pclass()
@@ -1511,29 +1485,29 @@ class TestShortUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2)[0]
-        self.assertEquals((5,2),l.a)
-        self.assertEquals((4,3),l.b)
+        self.assertEqual((5,2),l.a)
+        self.assertEqual((4,3),l.b)
         
     def test_render_z(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.STROKE_DASHED,l.stype)
+        self.assertEqual(core.STROKE_DASHED,l.stype)
 
 
 class TestLongUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
@@ -1652,7 +1626,7 @@ class TestLongUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,l):
         p = self.pclass()
@@ -1667,34 +1641,34 @@ class TestLongUpDiagDashedLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,2)[0]
-        self.assertEquals((5,2),l.a)
-        self.assertEquals((3,4),l.b)
+        self.assertEqual((5,2),l.a)
+        self.assertEqual((3,4),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,3)[0]
-        self.assertEquals((6,1),l.a)
-        self.assertEquals((3,4),l.b)
+        self.assertEqual((6,1),l.a)
+        self.assertEqual((3,4),l.b)
     
     def test_render_z(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.STROKE_DASHED,l.stype)
+        self.assertEqual(core.STROKE_DASHED,l.stype)
 
 
 class TestShortDownDiagDashedLinePattern(unittest.TestCase,PatternTests):
@@ -1829,7 +1803,7 @@ class TestShortDownDiagDashedLinePattern(unittest.TestCase,PatternTests):
         for j,(linestart,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y):
         p = self.pclass()
@@ -1842,29 +1816,29 @@ class TestShortDownDiagDashedLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2)[0]
-        self.assertEquals((4,2),l.a)
-        self.assertEquals((5,3),l.b)
+        self.assertEqual((4,2),l.a)
+        self.assertEqual((5,3),l.b)
         
     def test_render_z(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.STROKE_DASHED,l.stype)    
+        self.assertEqual(core.STROKE_DASHED,l.stype)    
 
 
 class TestLongDownDiagDasheLinePattern(unittest.TestCase,PatternTests):
@@ -2001,7 +1975,7 @@ class TestLongDownDiagDasheLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,l):
         p = self.pclass()
@@ -2016,34 +1990,34 @@ class TestLongDownDiagDasheLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,2)[0]
-        self.assertEquals((4,2),l.a)
-        self.assertEquals((6,4),l.b)
+        self.assertEqual((4,2),l.a)
+        self.assertEqual((6,4),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,3)[0]
-        self.assertEquals((5,1),l.a)
-        self.assertEquals((8,4),l.b)
+        self.assertEqual((5,1),l.a)
+        self.assertEqual((8,4),l.b)
     
     def test_render_z(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.STROKE_DASHED,l.stype)    
+        self.assertEqual(core.STROKE_DASHED,l.stype)    
     
     
 class TestShortVertDashedLinePattern(unittest.TestCase,PatternTests):
@@ -2179,7 +2153,7 @@ class TestShortVertDashedLinePattern(unittest.TestCase,PatternTests):
         for j,(linestart,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,linestart+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,smeta=core.M_NONE,emeta=core.M_NONE):
         p = self.pclass()
@@ -2195,44 +2169,44 @@ class TestShortVertDashedLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,3),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,3),l.b)
         
     def test_render_coordinates_start_box(self):
         l = self.do_render(4,2,smeta=core.M_BOX_AFTER_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,3),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,3),l.b)
 
     def test_render_coordinates_end_box(self):
         l = self.do_render(4,2,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,3.5),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,3.5),l.b)
 
     def test_render_coordinates_start_and_end_box(self):
         l = self.do_render(4,2,smeta=core.M_BOX_AFTER_S,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,3.5),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,3.5),l.b)
         
     def test_render_z(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3)[0]
-        self.assertEquals(core.STROKE_DASHED,l.stype)    
+        self.assertEqual(core.STROKE_DASHED,l.stype)    
     
     
 class TestLongVertDashedLinePattern(unittest.TestCase,PatternTests):
@@ -2374,7 +2348,7 @@ class TestLongVertDashedLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
                 
     def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
         p = self.pclass()
@@ -2390,49 +2364,49 @@ class TestLongVertDashedLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,2)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,2)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,4),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,4),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,3)[0]
-        self.assertEquals((5.5,1),l.a)
-        self.assertEquals((5.5,4),l.b)
+        self.assertEqual((5.5,1),l.a)
+        self.assertEqual((5.5,4),l.b)
     
     def test_render_coordinates_start_box(self):
         l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,4),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,4),l.b)
 
     def test_render_coordinates_end_box(self):
         l = self.do_render(4,2,2,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,2),l.a)
-        self.assertEquals((4.5,4.5),l.b)
+        self.assertEqual((4.5,2),l.a)
+        self.assertEqual((4.5,4.5),l.b)
 
     def test_render_coordinates_start_and_end_box(self):
         l = self.do_render(4,2,2,smeta=core.M_BOX_AFTER_S,emeta=core.M_BOX_START_S)[0]
-        self.assertEquals((4.5,1.5),l.a)
-        self.assertEquals((4.5,4.5),l.b)
+        self.assertEqual((4.5,1.5),l.a)
+        self.assertEqual((4.5,4.5),l.b)
 
     def test_render_z(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,3)[0]
-        self.assertEquals(core.STROKE_DASHED,l.stype)        
+        self.assertEqual(core.STROKE_DASHED,l.stype)        
         
         
 class TestLongHorizDashedLinePattern(unittest.TestCase,PatternTests):
@@ -2529,7 +2503,7 @@ class TestLongHorizDashedLinePattern(unittest.TestCase,PatternTests):
         for j,(startcol,line) in enumerate(input):
             for i,char in enumerate(line):
                 m = p.test(main.CurrentChar(j,startcol+i,char,core.M_NONE))
-                self.assertEquals(meta[j][i],m)
+                self.assertEqual(meta[j][i],m)
     
     def do_render(self,x,y,l,smeta=core.M_NONE,emeta=core.M_NONE):
         p = self.pclass()
@@ -2544,54 +2518,54 @@ class TestLongHorizDashedLinePattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_line(self):
         r = self.do_render(4,2,4)
-        self.assertEquals(1,len(r))
+        self.assertEqual(1,len(r))
         self.assertTrue(isinstance(r[0],core.Line))
     
     def test_render_coordinates(self):
         l = self.do_render(4,2,6)[0]
-        self.assertEquals((4,2.5),l.a)
-        self.assertEquals((10,2.5),l.b)
+        self.assertEqual((4,2.5),l.a)
+        self.assertEqual((10,2.5),l.b)
         
     def test_render_coordinates_longer(self):
         l = self.do_render(5,1,8)[0]
-        self.assertEquals((5,1.5),l.a)
-        self.assertEquals((13,1.5),l.b)
+        self.assertEqual((5,1.5),l.a)
+        self.assertEqual((13,1.5),l.b)
     
     def test_render_coordinates_shorter(self):
         l = self.do_render(6,3,4)[0]
-        self.assertEquals((6,3.5),l.a)
-        self.assertEquals((10,3.5),l.b)
+        self.assertEqual((6,3.5),l.a)
+        self.assertEqual((10,3.5),l.b)
 
     def test_render_coordinates_box_start(self):
         l = self.do_render(4,2,6,smeta=core.M_BOX_AFTER_E)[0]
-        self.assertEquals((3.5,2.5),l.a)
-        self.assertEquals((10,2.5),l.b)
+        self.assertEqual((3.5,2.5),l.a)
+        self.assertEqual((10,2.5),l.b)
         
     def test_render_coordinates_box_end(self):
         l = self.do_render(4,2,6,emeta=core.M_BOX_START_E)[0]
-        self.assertEquals((4,2.5),l.a)
-        self.assertEquals((10.5,2.5),l.b)
+        self.assertEqual((4,2.5),l.a)
+        self.assertEqual((10.5,2.5),l.b)
         
     def test_render_coordinates_box_start_and_end(self):
         l = self.do_render(4,2,6,smeta=core.M_BOX_AFTER_E,emeta=core.M_BOX_START_E)[0]
-        self.assertEquals((3.5,2.5),l.a)
-        self.assertEquals((10.5,2.5),l.b)
+        self.assertEqual((3.5,2.5),l.a)
+        self.assertEqual((10.5,2.5),l.b)
 
     def test_render_z(self):
         l = self.do_render(3,3,4)[0]
-        self.assertEquals(0,l.z)
+        self.assertEqual(0,l.z)
         
     def test_render_stroke_colour(self):
         l = self.do_render(3,3,4)[0]
-        self.assertEquals(core.C_FOREGROUND,l.stroke)
+        self.assertEqual(core.C_FOREGROUND,l.stroke)
     
     def test_render_stroke_width(self):
         l = self.do_render(3,3,4)[0]
-        self.assertEquals(1,l.w)
+        self.assertEqual(1,l.w)
     
     def test_render_stroke_style(self):
         l = self.do_render(3,3,4)[0]
-        self.assertEquals(core.STROKE_DASHED,l.stype)    
+        self.assertEqual(core.STROKE_DASHED,l.stype)    
 
 
 class TestLineSqCornerPattern(unittest.TestCase,PatternTests):
@@ -2749,7 +2723,7 @@ class TestLineSqCornerPattern(unittest.TestCase,PatternTests):
             for i,char in enumerate(line):
                 im = inmeta[j][i]
                 om = outmeta[j][i]
-                self.assertEquals(om,p.test(main.CurrentChar(j,startcol+i,char,im)))        
+                self.assertEqual(om,p.test(main.CurrentChar(j,startcol+i,char,im)))        
             
     def do_render(self,x,y,lines):
         p = self.pclass()
@@ -2773,93 +2747,93 @@ class TestLineSqCornerPattern(unittest.TestCase,PatternTests):
             
     def test_render_returns_two_lines_for_two_directions_(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E)
-        self.assertEquals(2, len(r))
+        self.assertEqual(2, len(r))
         
     def test_render_returns_six_lines_for_six_directions(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E|core.M_LINE_START_SE
                 |core.M_LINE_AFTER_SE|core.M_LINE_AFTER_E|core.M_LINE_START_SW)
-        self.assertEquals(6, len(r))
+        self.assertEqual(6, len(r))
     
     def test_render_coordinates_northwest(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SE)
         l = self.find_with(r,"b",(2,2))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_north(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         l = self.find_with(r,"b",(2.5,2))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_northeast(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SW)
         l = self.find_with(r,"b",(3,2))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_east(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_E)
         l = self.find_with(r,"b",(3,2.5))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_southeast(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SE)
         l = self.find_with(r,"b",(3,3))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_south(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_S)
         l = self.find_with(r,"b",(2.5,3))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_southwest(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SW)
         l = self.find_with(r,"b",(2,3))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_west(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         l = self.find_with(r,"b",(2,2.5))
-        self.assertEquals((2.5,2.5),l.a)
+        self.assertEqual((2.5,2.5),l.a)
         
     def test_render_coordinates_position(self):
         r = self.do_render(4,6,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         l1 = self.find_with(r,"b",(4,6.5))
-        self.assertEquals((4.5,6.5),l1.a)
+        self.assertEqual((4.5,6.5),l1.a)
         l2 = self.find_with(r,"b",(4.5,6))
-        self.assertEquals((4.5,6.5),l2.a)    
+        self.assertEqual((4.5,6.5),l2.a)    
     
     def test_render_z(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(0,shape.z)
+            self.assertEqual(0,shape.z)
     
     def test_render_stroke_colour(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(core.C_FOREGROUND,shape.stroke)
+            self.assertEqual(core.C_FOREGROUND,shape.stroke)
             
     def test_render_stroke_width(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(1,shape.w)
+            self.assertEqual(1,shape.w)
             
     def test_render_stroke_style_solid(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
             
     def test_render_stroke_type_dashed(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
                 |core.M_LINE_AFTER_S|core.M_DASH_AFTER_S)
         for shape in r:
-            self.assertEquals(core.STROKE_DASHED,shape.stype)
+            self.assertEqual(core.STROKE_DASHED,shape.stype)
             
     def test_render_stroke_types_mixed(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
                 |core.M_LINE_AFTER_S)
         l1 = self.find_with(r,"b",(2,2.5))
-        self.assertEquals(core.STROKE_DASHED,l1.stype)
+        self.assertEqual(core.STROKE_DASHED,l1.stype)
         l2 = self.find_with(r,"b",(2.5,2))
-        self.assertEquals(core.STROKE_SOLID,l2.stype)
+        self.assertEqual(core.STROKE_SOLID,l2.stype)
         
     
 class TestLineRdCornerPattern(unittest.TestCase,PatternTests):
@@ -3132,7 +3106,7 @@ class TestLineRdCornerPattern(unittest.TestCase,PatternTests):
             for i,char in enumerate(line):
                 im = inmeta[j][i]
                 om = outmeta[j][i]
-                self.assertEquals(om,p.test(main.CurrentChar(j,startcol+i,char,im)))        
+                self.assertEqual(om,p.test(main.CurrentChar(j,startcol+i,char,im)))        
     
     def do_render(self,x,y,lines):
         p = self.pclass()
@@ -3156,97 +3130,97 @@ class TestLineRdCornerPattern(unittest.TestCase,PatternTests):
     
     def test_render_returns_one_curve_for_two_directions(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E)
-        self.assertEquals(1, len(r))
+        self.assertEqual(1, len(r))
     
     def test_render_returns_fifteen_curves_for_six_directions(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_S|core.M_LINE_START_E|core.M_LINE_START_SE
                 |core.M_LINE_AFTER_SE|core.M_LINE_AFTER_E|core.M_LINE_START_SW)
-        self.assertEquals(15, len(r))
+        self.assertEqual(15, len(r))
     
     def test_render_coordinates_northwest(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SE)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((2,2),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((2,2),l.b)
+        self.assertEqual((2.5,2.5),l.c)
         
     def test_render_coordinates_north(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((2.5,2),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((2.5,2),l.b)
+        self.assertEqual((2.5,2.5),l.c)
     
     def test_render_coordinates_northeast(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_SW)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((3,2),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((3,2),l.b)
+        self.assertEqual((2.5,2.5),l.c)
         
     def test_render_coordinates_east(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_E)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((3,2.5),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((3,2.5),l.b)
+        self.assertEqual((2.5,2.5),l.c)
         
     def test_render_coordinates_southeast(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SE)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((3,3),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((3,3),l.b)
+        self.assertEqual((2.5,2.5),l.c)
     
     def test_render_coordinates_south(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_S)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((2.5,3),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((2.5,3),l.b)
+        self.assertEqual((2.5,2.5),l.c)
         
     def test_render_coordinates_southwest(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_START_SW)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((2,3),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((2,3),l.b)
+        self.assertEqual((2.5,2.5),l.c)
     
     def test_render_coordinates_west(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)[0]
-        self.assertEquals((2,2.5),l.a)
-        self.assertEquals((2.5,2),l.b)
-        self.assertEquals((2.5,2.5),l.c)
+        self.assertEqual((2,2.5),l.a)
+        self.assertEqual((2.5,2),l.b)
+        self.assertEqual((2.5,2.5),l.c)
         
     def test_render_coordinates_position(self):
         l = self.do_render(4,6,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)[0]
-        self.assertEquals((4,6.5),l.a)
-        self.assertEquals((4.5,6),l.b)    
-        self.assertEquals((4.5,6.5),l.c)    
+        self.assertEqual((4,6.5),l.a)
+        self.assertEqual((4.5,6),l.b)    
+        self.assertEqual((4.5,6.5),l.c)    
     
     def test_render_z(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(0,shape.z)
+            self.assertEqual(0,shape.z)
     
     def test_render_stroke_colour(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(core.C_FOREGROUND,shape.stroke)
+            self.assertEqual(core.C_FOREGROUND,shape.stroke)
             
     def test_render_stroke_width(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(1,shape.w)
+            self.assertEqual(1,shape.w)
             
     def test_render_stroke_style_solid(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_LINE_AFTER_S)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
             
     def test_render_stroke_type_dashed(self):
         r = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
                 |core.M_LINE_AFTER_S|core.M_DASH_AFTER_S)
         for shape in r:
-            self.assertEquals(core.STROKE_DASHED,shape.stype)
+            self.assertEqual(core.STROKE_DASHED,shape.stype)
             
     def test_render_stroke_types_mixed(self):
         l = self.do_render(2,2,core.M_LINE_AFTER_E|core.M_DASH_AFTER_E
                 |core.M_LINE_AFTER_S)[0]
-        self.assertEquals(core.STROKE_SOLID,l.stype)        
+        self.assertEqual(core.STROKE_SOLID,l.stype)        
 
 
 class TestLJumpPattern(unittest.TestCase,PatternTests):
@@ -3322,7 +3296,7 @@ class TestLJumpPattern(unittest.TestCase,PatternTests):
             for i,char in enumerate(line):
                 mi = metain[j][i]
                 mo = metaout[j][i]
-                self.assertEquals(mo,p.test(main.CurrentChar(j,startcol+i,char,mi)))
+                self.assertEqual(mo,p.test(main.CurrentChar(j,startcol+i,char,mi)))
     
     def do_render(self,x,y,dashes):
         p = self.pclass()
@@ -3339,66 +3313,66 @@ class TestLJumpPattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_correct_shapes(self):
         r = self.do_render(3,2,core.M_NONE)
-        self.assertEquals(2,len(r))
-        self.assertEquals(1,len(self.find_type(r,core.Line)))
-        self.assertEquals(1,len(self.find_type(r,core.Arc)))
+        self.assertEqual(2,len(r))
+        self.assertEqual(1,len(self.find_type(r,core.Line)))
+        self.assertEqual(1,len(self.find_type(r,core.Arc)))
         
     def test_render_coordinates(self):
         r = self.do_render(3,2,core.M_NONE)
         l = self.find_type(r,core.Line)[0]
-        self.assertEquals((3,2.5),l.a)
-        self.assertEquals((4,2.5),l.b)
+        self.assertEqual((3,2.5),l.a)
+        self.assertEqual((4,2.5),l.b)
         a = self.find_type(r,core.Arc)[0]
-        self.assertEquals((2.9,2),a.a)
-        self.assertEquals((4.1,3),a.b)
-        self.assertEquals(math.pi/2,a.start)
-        self.assertEquals(math.pi/2*3,a.end)
+        self.assertEqual((2.9,2),a.a)
+        self.assertEqual((4.1,3),a.b)
+        self.assertEqual(math.pi/2,a.start)
+        self.assertEqual(math.pi/2*3,a.end)
     
     def test_render_coorinates_position(self):
         r = self.do_render(6,5,core.M_NONE)
         l = self.find_type(r,core.Line)[0]
-        self.assertEquals((6,5.5),l.a)
-        self.assertEquals((7,5.5),l.b)
+        self.assertEqual((6,5.5),l.a)
+        self.assertEqual((7,5.5),l.b)
         a = self.find_type(r,core.Arc)[0]
-        self.assertEquals((5.9,5),a.a)
-        self.assertEquals((7.1,6),a.b)
-        self.assertEquals(math.pi/2,a.start)
-        self.assertEquals(math.pi/2*3,a.end)
+        self.assertEqual((5.9,5),a.a)
+        self.assertEqual((7.1,6),a.b)
+        self.assertEqual(math.pi/2,a.start)
+        self.assertEqual(math.pi/2*3,a.end)
         
     def test_render_z(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(0,shape.z)
+            self.assertEqual(0,shape.z)
             
     def test_render_stroke_colour(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(core.C_FOREGROUND,shape.stroke)
+            self.assertEqual(core.C_FOREGROUND,shape.stroke)
             
     def test_render_stroke_width(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(1,shape.w)
+            self.assertEqual(1,shape.w)
             
     def test_render_stroke_style_solid(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
 
     def test_render_stroke_style_dashed(self):
         r = self.do_render(3,2,core.M_DASH_AFTER_E|core.M_DASH_AFTER_S
                 |core.M_DASH_START_E|core.M_DASH_START_S)
         for shape in r:
-            self.assertEquals(core.STROKE_DASHED,shape.stype)
+            self.assertEqual(core.STROKE_DASHED,shape.stype)
             
     def test_render_stroke_style_mixed(self):
         r = self.do_render(3,2,core.M_DASH_AFTER_E|core.M_DASH_AFTER_S)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
             
     def test_render_fill_colour(self):
         a = self.find_type(self.do_render(3,2,core.M_NONE),core.Arc)[0]
-        self.assertEquals(None,a.fill)
+        self.assertEqual(None,a.fill)
 
     
 class TestRJumpPattern(unittest.TestCase,PatternTests):
@@ -3474,7 +3448,7 @@ class TestRJumpPattern(unittest.TestCase,PatternTests):
             for i,char in enumerate(line):
                 mi = metain[j][i]
                 mo = metaout[j][i]
-                self.assertEquals(mo,p.test(main.CurrentChar(j,startcol+i,char,mi)))
+                self.assertEqual(mo,p.test(main.CurrentChar(j,startcol+i,char,mi)))
     
     def do_render(self,x,y,dashes):
         p = self.pclass()
@@ -3491,66 +3465,66 @@ class TestRJumpPattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_correct_shapes(self):
         r = self.do_render(3,2,core.M_NONE)
-        self.assertEquals(2,len(r))
-        self.assertEquals(1,len(self.find_type(r,core.Line)))
-        self.assertEquals(1,len(self.find_type(r,core.Arc)))
+        self.assertEqual(2,len(r))
+        self.assertEqual(1,len(self.find_type(r,core.Line)))
+        self.assertEqual(1,len(self.find_type(r,core.Arc)))
         
     def test_render_coordinates(self):
         r = self.do_render(3,2,core.M_NONE)
         l = self.find_type(r,core.Line)[0]
-        self.assertEquals((3,2.5),l.a)
-        self.assertEquals((4,2.5),l.b)
+        self.assertEqual((3,2.5),l.a)
+        self.assertEqual((4,2.5),l.b)
         a = self.find_type(r,core.Arc)[0]
-        self.assertEquals((2.9,2),a.a)
-        self.assertEquals((4.1,3),a.b)
-        self.assertEquals(-math.pi/2,a.start)
-        self.assertEquals(math.pi/2,a.end)
+        self.assertEqual((2.9,2),a.a)
+        self.assertEqual((4.1,3),a.b)
+        self.assertEqual(-math.pi/2,a.start)
+        self.assertEqual(math.pi/2,a.end)
     
     def test_render_coorinates_position(self):
         r = self.do_render(6,5,core.M_NONE)
         l = self.find_type(r,core.Line)[0]
-        self.assertEquals((6,5.5),l.a)
-        self.assertEquals((7,5.5),l.b)
+        self.assertEqual((6,5.5),l.a)
+        self.assertEqual((7,5.5),l.b)
         a = self.find_type(r,core.Arc)[0]
-        self.assertEquals((5.9,5),a.a)
-        self.assertEquals((7.1,6),a.b)
-        self.assertEquals(-math.pi/2,a.start)
-        self.assertEquals(math.pi/2,a.end)
+        self.assertEqual((5.9,5),a.a)
+        self.assertEqual((7.1,6),a.b)
+        self.assertEqual(-math.pi/2,a.start)
+        self.assertEqual(math.pi/2,a.end)
         
     def test_render_z(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(0,shape.z)
+            self.assertEqual(0,shape.z)
             
     def test_render_stroke_colour(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(core.C_FOREGROUND,shape.stroke)
+            self.assertEqual(core.C_FOREGROUND,shape.stroke)
             
     def test_render_stroke_width(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(1,shape.w)
+            self.assertEqual(1,shape.w)
             
     def test_render_stroke_style_solid(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
 
     def test_render_stroke_style_dashed(self):
         r = self.do_render(3,2,core.M_DASH_AFTER_E|core.M_DASH_AFTER_S
                 |core.M_DASH_START_E|core.M_DASH_START_S)
         for shape in r:
-            self.assertEquals(core.STROKE_DASHED,shape.stype)
+            self.assertEqual(core.STROKE_DASHED,shape.stype)
             
     def test_render_stroke_style_mixed(self):
         r = self.do_render(3,2,core.M_DASH_AFTER_E|core.M_DASH_AFTER_S)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
             
     def test_render_fill_colour(self):
         a = self.find_type(self.do_render(3,2,core.M_NONE),core.Arc)[0]
-        self.assertEquals(None,a.fill)    
+        self.assertEqual(None,a.fill)    
     
     
 class TestUJumpPattern(unittest.TestCase,PatternTests):
@@ -3626,7 +3600,7 @@ class TestUJumpPattern(unittest.TestCase,PatternTests):
             for i,char in enumerate(line):
                 mi = metain[j][i]
                 mo = metaout[j][i]
-                self.assertEquals(mo,p.test(main.CurrentChar(j,startcol+i,char,mi)))
+                self.assertEqual(mo,p.test(main.CurrentChar(j,startcol+i,char,mi)))
     
     def do_render(self,x,y,dashes):
         p = self.pclass()
@@ -3643,67 +3617,63 @@ class TestUJumpPattern(unittest.TestCase,PatternTests):
         
     def test_render_returns_correct_shapes(self):
         r = self.do_render(3,2,core.M_NONE)
-        self.assertEquals(2,len(r))
-        self.assertEquals(1,len(self.find_type(r,core.Line)))
-        self.assertEquals(1,len(self.find_type(r,core.Arc)))
+        self.assertEqual(2,len(r))
+        self.assertEqual(1,len(self.find_type(r,core.Line)))
+        self.assertEqual(1,len(self.find_type(r,core.Arc)))
         
     def test_render_coordinates(self):
         r = self.do_render(3,2,core.M_NONE)
         l = self.find_type(r,core.Line)[0]
-        self.assertEquals((3.5,2),l.a)
-        self.assertEquals((3.5,3),l.b)
+        self.assertEqual((3.5,2),l.a)
+        self.assertEqual((3.5,3),l.b)
         a = self.find_type(r,core.Arc)[0]
-        self.assertEquals((3,2.1),a.a)
-        self.assertEquals((4,2.9),a.b)
-        self.assertEquals(math.pi/2*2,a.start)
-        self.assertEquals(math.pi/2*4,a.end)
+        self.assertEqual((3,2.1),a.a)
+        self.assertEqual((4,2.9),a.b)
+        self.assertEqual(math.pi/2*2,a.start)
+        self.assertEqual(math.pi/2*4,a.end)
     
     def test_render_coorinates_position(self):
         r = self.do_render(6,5,core.M_NONE)
         l = self.find_type(r,core.Line)[0]
-        self.assertEquals((6.5,5),l.a)
-        self.assertEquals((6.5,6),l.b)
+        self.assertEqual((6.5,5),l.a)
+        self.assertEqual((6.5,6),l.b)
         a = self.find_type(r,core.Arc)[0]
-        self.assertEquals((6,5.1),a.a)
-        self.assertEquals((7,5.9),a.b)
-        self.assertEquals(math.pi/2*2,a.start)
-        self.assertEquals(math.pi/2*4,a.end)
+        self.assertEqual((6,5.1),a.a)
+        self.assertEqual((7,5.9),a.b)
+        self.assertEqual(math.pi/2*2,a.start)
+        self.assertEqual(math.pi/2*4,a.end)
         
     def test_render_z(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(0,shape.z)
+            self.assertEqual(0,shape.z)
             
     def test_render_stroke_colour(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(core.C_FOREGROUND,shape.stroke)
+            self.assertEqual(core.C_FOREGROUND,shape.stroke)
             
     def test_render_stroke_width(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(1,shape.w)
+            self.assertEqual(1,shape.w)
             
     def test_render_stroke_style_solid(self):
         r = self.do_render(3,2,core.M_NONE)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
 
     def test_render_stroke_style_dashed(self):
         r = self.do_render(3,2,core.M_DASH_AFTER_E|core.M_DASH_AFTER_S
                 |core.M_DASH_START_E|core.M_DASH_START_S)
         for shape in r:
-            self.assertEquals(core.STROKE_DASHED,shape.stype)
+            self.assertEqual(core.STROKE_DASHED,shape.stype)
             
     def test_render_stroke_style_mixed(self):
         r = self.do_render(3,2,core.M_DASH_AFTER_E|core.M_DASH_AFTER_S)
         for shape in r:
-            self.assertEquals(core.STROKE_SOLID,shape.stype)
+            self.assertEqual(core.STROKE_SOLID,shape.stype)
             
     def test_render_fill_colour(self):
         a = self.find_type(self.do_render(3,2,core.M_NONE),core.Arc)[0]
-        self.assertEquals(None,a.fill)        
-
-
-if __name__ == "__main__":
-    unittest.main()
+        self.assertEqual(None,a.fill)        

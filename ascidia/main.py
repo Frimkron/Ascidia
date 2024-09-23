@@ -1,28 +1,4 @@
 """    
-Copyright (c) 2012 Mark Frimston
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-"""
-"""    
 TODO:
     * Box shadows
     * Raster unit tests - find image library
@@ -67,19 +43,17 @@ TODO:
     * Char ratio option    
     * Output to intermediate format describing diagram structure for custom rendering
 """
-
-import sys
-import argparse
-import xml.dom
-import xml.dom.minidom
 import math
 import re
-import cairo
-from collections import defaultdict
-from collections import namedtuple
+import sys
+import xml.dom
+import xml.dom.minidom
+from collections import defaultdict, namedtuple
 
-import core
-import patterns
+import cairo
+
+from . import core
+from . import patterns
 
 
 NAMED_COLOURS = {
@@ -97,7 +71,7 @@ NAMED_COLOURS = {
 }
 
 
-class OutputPrefs(object):
+class OutputPrefs:
     def __init__(self, 
             fgcolour=(0,0,0), 
             bgcolour=(1,1,1),
@@ -106,12 +80,13 @@ class OutputPrefs(object):
             if k!="self": setattr(self,k,v)
             
 
-class PngOutput(object):
+class PngOutput:
     
     EXTS = ("png",)
+    IS_BINARY = True
     
     STROKE_W = 2.5 # currently fixed
-    FONT_SIZE = 0.667 # of character heigt
+    FONT_SIZE = 0.667 # of character height
     DASH_PATTERN = 8,8
     TEXT_BASELINE = 0.75
     
@@ -254,9 +229,10 @@ class PngOutput(object):
         return int(y * self.prefs.charheight)
 
         
-class SvgOutput(object):
+class SvgOutput:
 
     EXTS = ("svg","xml")
+    IS_BINARY = False
 
     STROKE_W = 2.5 # currently fixed
     FONT_SIZE = 0.667 # of character height
@@ -402,7 +378,7 @@ class SvgOutput(object):
             el.setAttribute("fill-opacity",self._alpha(item.falpha))
         
     
-class MatchLookup(object):
+class MatchLookup:
 
     _matches = None
     _occupants = None

@@ -1,33 +1,7 @@
-"""    
-Copyright (c) 2012 Mark Frimston
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
-----------------------------------------------------
-    
+"""     
 Main import stuff
 """
 
-#import mrf.ascii
 from collections import namedtuple
 
 
@@ -70,7 +44,7 @@ M_DASH_START_SW = (1<<18)
 M_LINE_AFTER_SW = (1<<19)
 M_DASH_AFTER_SW = (1<<20)
 
-class NonChar(object):
+class NonChar:
     def isalnum(self): return False
     def isalpha(self): return False
     def isdigit(self): return False
@@ -87,7 +61,7 @@ class PatternStateError(Exception): pass
 class NoSuchPosition(Exception): pass
 
 
-class Pattern(object):
+class Pattern:
     """Pattern base class with utility methods"""
     
     gen = None
@@ -97,8 +71,7 @@ class Pattern(object):
     def __init__(self):
         self.curr = None
         self.gen = self.matcher()
-        self.gen.next()
-        #self.debug_canvas = mrf.ascii.Canvas()
+        next(self.gen)
         
     def matcher(self):
         yield
@@ -136,9 +109,6 @@ class Pattern(object):
             
     def test(self,currentchar):
         try:
-            #if currentchar.char != "\n":
-            #    self.debug_canvas.set(currentchar.col,currentchar.row,
-            #        currentchar.char if currentchar.char != " " else "*")
             return self.gen.send(currentchar)
         except StopIteration:
             self.is_finished = True
@@ -150,7 +120,3 @@ class Pattern(object):
         if not self.is_finished: 
             raise PatternStateError("Pattern not matched")
         return []
-        
-    #def debug(self):
-    #    self.debug_canvas.print_out()
-

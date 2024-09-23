@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ascidia"
+authors = [
+    { name = "Mark Frimston", email = "mfrimston@gmail.com" },
+]
+description = "Diagrams from ASCII art, with added Markdown philosophy"
+requires-python = ">=3.10"
+license = { text = "MIT-License" }
+dependencies = [
+    "pycairo~=1.27"
+]
+dynamic = ["version"]
+
+[project.scripts]
+ascidia = "ascidia.__main__:main"
+
+[project.urls]
+Repository = "https://github.com/frimkron/ascidia.git"
+
+[tool.setuptools]
+packages = ["ascidia"]
+
+[tool.setuptools.dynamic]
+version = { attr = "ascidia.__version__" }

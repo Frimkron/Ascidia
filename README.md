@@ -909,7 +909,6 @@ Written by Mark Frimston
 Project page: <https://github.com/Frimkron/Ascidia>  
 Homepage: <http://markfrimston.co.uk>  
 Email: <mfrimston@gmail.com>  
-Twitter: [@frimkron](http://twitter.com/frimkron)  
 
 Released under the MIT Licence. See the source code for the full text of this 
 licence.
