@@ -72,6 +72,7 @@ NAMED_COLOURS = {
 
 
 class OutputPrefs:
+
     def __init__(self, 
             fgcolour=(0,0,0), 
             bgcolour=(1,1,1),
@@ -96,10 +97,10 @@ class PngOutput:
     ctx = None
     
     @staticmethod
-    def output(diagram,stream,prefs):
+    def output(diagram, stream, prefs=OutputPrefs()):
         PngOutput(diagram,stream,prefs)._output()
         
-    def __init__(self,diagram,stream,prefs):
+    def __init__(self, diagram, stream, prefs):
         self.diagram = diagram
         self.stream = stream
         self.prefs = prefs
@@ -115,13 +116,13 @@ class PngOutput:
             getattr(self,hname,lambda i: None)(item)
         surface.write_to_png(self.stream)
 
-    def _do_Line(self,line):        
+    def _do_Line(self, line):        
         if self._should_stroke(line):
             self.ctx.move_to(self._x(line.a[0]),self._y(line.a[1]))
             self.ctx.line_to(self._x(line.b[0]),self._y(line.b[1]))
             self._stroke(line)
         
-    def _do_Rectangle(self,rect):
+    def _do_Rectangle(self, rect):
         r = (self._x(rect.a[0]),self._y(rect.a[1]),
             self._x(rect.b[0]-rect.a[0]),self._y(rect.b[1]-rect.a[1]))
         if self._should_fill(rect):
@@ -131,7 +132,7 @@ class PngOutput:
             self.ctx.rectangle(*r)
             self._stroke(rect)
         
-    def _do_Ellipse(self,ellipse):
+    def _do_Ellipse(self, ellipse):
         w = self._x( ellipse.b[0] - ellipse.a[0] )
         h = self._y( ellipse.b[1] - ellipse.a[1] )
         x = self._x(ellipse.a[0]) + w/2.0
@@ -143,14 +144,14 @@ class PngOutput:
             self._arc_path(w,h,x,y,0,2*math.pi)
             self._stroke(ellipse)
         
-    def _arc_path(self,w,h,cx,cy,start,end):
+    def _arc_path(self, w, h, cx, cy, start, end):
         self.ctx.save()
         self.ctx.translate(cx,cy)
         self.ctx.scale(w/2.0,h/2.0)
         self.ctx.arc(0,0, 1.0, start,end)
         self.ctx.restore()
         
-    def _do_Arc(self,arc):
+    def _do_Arc(self, arc):
         w = self._x( arc.b[0] - arc.a[0] )
         h = self._y( arc.b[1] - arc.a[1] )
         x = self._x(arc.a[0]) + w/2.0
@@ -162,7 +163,7 @@ class PngOutput:
             self._arc_path(w,h,x,y,arc.start,arc.end)
             self._stroke(arc)
         
-    def _do_QuadCurve(self,quad):
+    def _do_QuadCurve(self, quad):
         c1 = ( self._x(quad.a[0]) + ( self._x(quad.c[0]) - self._x(quad.a[0]) )*(2.0/3.0),
                 self._y(quad.a[1]) + ( self._y(quad.c[1]) - self._y(quad.a[1]) )*(2.0/3.0) )
         c2 = ( self._x(quad.b[0]) + ( self._x(quad.c[0]) - self._x(quad.b[0]) )*(2.0/3.0),
@@ -172,13 +173,13 @@ class PngOutput:
             self.ctx.curve_to(c1[0],c1[1],c2[0],c2[1],self._x(quad.b[0]),self._y(quad.b[1]))
             self._stroke(quad)
         
-    def _poly_path(self,points):
+    def _poly_path(self, points):
         self.ctx.move_to(self._x(points[0][0]),self._y(points[0][1]))
         for point in points[1:]:
             self.ctx.line_to(self._x(point[0]),self._y(point[1]))
         self.ctx.close_path()
         
-    def _do_Polygon(self,poly):
+    def _do_Polygon(self, poly):
         if self._should_fill(poly):
             self._poly_path(poly.points)
             self._fill(poly)
@@ -186,7 +187,7 @@ class PngOutput:
             self._poly_path(poly.points)
             self._stroke(poly)
         
-    def _do_Text(self,text):
+    def _do_Text(self, text):
         self.ctx.select_font_face("monospace")
         self.ctx.set_font_size(self.prefs.charheight*PngOutput.FONT_SIZE)
         self.ctx.set_source_rgba(*self._colour(text.colour,text.alpha))
@@ -194,25 +195,25 @@ class PngOutput:
         self.ctx.show_text(text.text)
         self.ctx.new_path()
         
-    def _should_fill(self,item):
+    def _should_fill(self, item):
         return item.fill is not None and item.falpha > 0
         
-    def _fill(self,item):
+    def _fill(self, item):
         if not self._should_fill(item): return
         self.ctx.set_source_rgba(*self._colour(item.fill,item.falpha))
         self.ctx.fill()
 
-    def _should_stroke(self,item):
+    def _should_stroke(self, item):
         return item.stroke is not None and item.salpha > 0
     
-    def _stroke(self,item):
+    def _stroke(self, item):
         if not self._should_stroke(item): return
         self.ctx.set_source_rgba(*self._colour(item.stroke,item.salpha))
         self.ctx.set_line_width(item.w*PngOutput.STROKE_W)
         self.ctx.set_dash(PngOutput.DASH_PATTERN if item.stype==core.STROKE_DASHED else [])
         self.ctx.stroke()
         
-    def _colour(self,colour,alpha):
+    def _colour(self, colour, alpha):
         if colour is None:
             return (0,0,0,0)
         elif colour == core.C_FOREGROUND:
@@ -222,10 +223,10 @@ class PngOutput:
         else:
             return tuple(list(colour)+[alpha])
         
-    def _x(self,x):
+    def _x(self, x):
         return int(x * self.prefs.charheight / core.CHAR_H_RATIO)
         
-    def _y(self,y):
+    def _y(self, y):
         return int(y * self.prefs.charheight)
 
         
@@ -244,10 +245,10 @@ class SvgOutput:
     doc = None
 
     @staticmethod
-    def output(diagram,stream,prefs):
-        SvgOutput(diagram,stream,prefs)._output()
+    def output(diagram, stream, prefs=OutputPrefs()):
+        SvgOutput(diagram, stream, prefs)._output()
             
-    def __init__(self,diagram,stream,prefs):
+    def __init__(self, diagram, stream, prefs):
         self.diagram = diagram
         self.stream = stream
         self.prefs = prefs
@@ -264,7 +265,7 @@ class SvgOutput:
             getattr(self,hname,lambda i,p: None)(item,root)
         self.doc.writexml(self.stream,addindent="\t",newl="\n")
                     
-    def _do_Line(self,line,parent):
+    def _do_Line(self, line, parent):
         el = self.doc.createElement("line")
         el.setAttribute("x1",self._x(line.a[0]))
         el.setAttribute("y1",self._y(line.a[1]))
@@ -273,7 +274,7 @@ class SvgOutput:
         self._style_attrs(line,el)
         parent.appendChild(el)
     
-    def _do_Rectangle(self,rect,parent):
+    def _do_Rectangle(self, rect, parent):
         el = self.doc.createElement("rect")
         el.setAttribute("x",self._x(rect.a[0]))
         el.setAttribute("y",self._y(rect.a[1]))
@@ -282,7 +283,7 @@ class SvgOutput:
         self._style_attrs(rect,el)
         parent.appendChild(el)
         
-    def _do_Ellipse(self,ellipse,parent):
+    def _do_Ellipse(self, ellipse, parent):
         w = ellipse.b[0]-ellipse.a[0]
         h = ellipse.b[1]-ellipse.a[1]
         el = self.doc.createElement("ellipse")
@@ -293,7 +294,7 @@ class SvgOutput:
         self._style_attrs(ellipse,el)
         parent.appendChild(el)
         
-    def _do_Arc(self,arc,parent):
+    def _do_Arc(self, arc, parent):
         rx = (arc.b[0]-arc.a[0])/2.0
         ry = (arc.b[1]-arc.a[1])/2.0
         cx,cy = arc.a[0]+rx, arc.a[1]+ry
@@ -315,7 +316,7 @@ class SvgOutput:
         self._style_attrs(arc,el)
         parent.appendChild(el)
         
-    def _do_QuadCurve(self,curve,parent):
+    def _do_QuadCurve(self, curve, parent):
         el = self.doc.createElement("path")
         el.setAttribute("d","M %s,%s Q %s,%s %s,%s" % (
             self._x(curve.a[0]),self._y(curve.a[1]), 
@@ -325,14 +326,14 @@ class SvgOutput:
         el.setAttribute("fill","none")
         parent.appendChild(el)
         
-    def _do_Polygon(self,polygon,parent):
+    def _do_Polygon(self, polygon, parent):
         el = self.doc.createElement("polygon")
         el.setAttribute("points",
             " ".join(["%s,%s" % (self._x(p[0]),self._y(p[1])) for p in polygon.points]))
         self._style_attrs(polygon,el)
         parent.appendChild(el)
 
-    def _do_Text(self,text,parent):
+    def _do_Text(self, text, parent):
         el = self.doc.createElement("text")
         el.setAttribute("x",self._x(text.pos[0]))
         el.setAttribute("y",self._y(text.pos[1]+0.75))
@@ -343,7 +344,7 @@ class SvgOutput:
         el.setAttribute("font-size",str(int(text.size*self.prefs.charheight*SvgOutput.FONT_SIZE)))
         parent.appendChild(el)
         
-    def _colour(self,colour):
+    def _colour(self, colour):
         if colour is None: return "none"
         if colour == core.C_FOREGROUND: colour = self.prefs.fgcolour
         if colour == core.C_BACKGROUND: colour = self.prefs.bgcolour
@@ -361,7 +362,7 @@ class SvgOutput:
     def _alpha(self,a):
         return str(a)
             
-    def _style_attrs(self,item,el):
+    def _style_attrs(self, item, el):
         if hasattr(item,"stroke"):
             el.setAttribute("stroke",self._colour(item.stroke))
         if hasattr(item,"w"):
@@ -392,21 +393,21 @@ class MatchLookup:
     def get_all_matches(self):
         return list(self._matches)
         
-    def get_occupants_at(self,pos):
+    def get_occupants_at(self, pos):
         return list(self._occupants[pos])
         
-    def get_meta_for(self,match):
+    def get_meta_for(self, match):
         return dict(self._match_meta[match])
         
-    def add_match(self,match):
+    def add_match(self, match):
         self._matches.append(match)
         
-    def add_meta(self,match,pos,meta):
+    def add_meta(self, match, pos, meta):
         if meta & core.M_OCCUPIED:
             self._occupants[pos].append(match)
         self._match_meta[match][pos] = meta
         
-    def remove_match(self,match):
+    def remove_match(self, match):
         try: 
             self._matches.remove(match)
         except ValueError: pass
@@ -417,7 +418,7 @@ class MatchLookup:
                 except ValueError: pass
         del(self._match_meta[match])
         
-    def remove_cooccupants(self,match):
+    def remove_cooccupants(self, match):
         for pos,meta in self.get_meta_for(match).items():
             if meta & core.M_OCCUPIED:
                 for m in self.get_occupants_at(pos):
@@ -429,7 +430,8 @@ CurrentChar = namedtuple("CurrentChar","row col char meta")
 Diagram = namedtuple("Diagram","size content")
 
 
-def process_diagram(text,patternlist,proglsnr=lambda x: None):
+def process_diagram(
+        text, patternlist=patterns.PATTERNS, proglsnr=lambda x: None):
 
     lines = []
     lines.append( [core.START_OF_INPUT] )

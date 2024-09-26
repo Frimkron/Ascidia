@@ -86,6 +86,7 @@ def opt_colour(s):
 
 
 def main():
+
     fmtbyname = { 
         "png": PngOutput, 
         "svg": SvgOutput }
@@ -143,7 +144,7 @@ def main():
         name += "." + fmt.EXTS[0]
         outctx = FileOutContext(name, fmt.IS_BINARY)
     
-    prefs = OutputPrefs(args.foreground,args.background,args.charheight)
+    prefs = OutputPrefs(args.foreground, args.background, args.charheight)
     
     with inctx as instream:
         ipt = instream.read()
@@ -156,11 +157,11 @@ def main():
     else:
         reporter = lambda x: None
     
-    diagram = process_diagram(ipt,patterns.PATTERNS, reporter)
+    diagram = process_diagram(ipt, patterns.PATTERNS, reporter)
     if not args.quiet: outctx.report("\n")
 
     with outctx as outstream:
-        fmt.output(diagram,outstream,prefs)
+        fmt.output(diagram, outstream, prefs)
 
 
 if __name__ == "__main__":

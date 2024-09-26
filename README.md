@@ -15,7 +15,7 @@ This:
   Layer         |  Acme  |       '------'
 - - - - - - +   | Widget |<----->|      |
    .----.   ;   +--------+       |      |
-  | do-  |  ;       |            '------'
+  | doo- |  ;       |            '------'
   |  dad |--^--<|---+            Database
    '----'   ;
             ;
@@ -65,8 +65,24 @@ Requirements
 
 Ascidia requires the following:
 
-* [Python 2.7](http://python.org)
+* [Python 3.10 or higher](http://python.org)
 * [PyCairo](http://www.cairographics.org/pycairo/)
+
+
+Installation
+------------
+
+### From the Python Package Index ###
+
+1. `pip install ascidia` (use `sudo` to install for all users on Linux)
+2. Check installation by running `ascidia --help`
+
+### From Source ###
+
+1. Clone the git repository or download and extract the release archive
+2. Change into the project directory
+3. `pip install --upgrade .` (use `sudo` to install for all users on Linux)
+4. Check installation by running `ascidia --help`
 
 
 Usage
@@ -143,6 +159,32 @@ Convert diagram `foobar.txt` to the SVG file `result.svg`:
 Convert the output of `mycommand` to an SVG file called `output`:
 
 	$ mycommand | ascidia -o output -t svg -
+
+
+### Invoking from Python Code ###
+
+Ascidia can be invoked as a Python library, as per the following example:
+
+``` python
+
+import ascidia as asc
+
+# create diagram object from string
+diagram = asc.process_diagram("""\
+.---.    +-------+    +-----+
+| ? |--->|  abc  |<-->|     |
+'---'    +-------+    '._.-.|
+""")
+
+# configure output preferences
+prefs = asc.OutputPrefs(fgcolour=asc.NAMED_COLOURS["blue"])
+
+# write to a png file. SvgOutput takes the same arguments but the stream 
+# passed to it should be in text mode instead
+with open('example.png', 'wb') as stream:
+    asc.PngOutput.output(diagram, stream, prefs)
+    
+```
 
 
 Diagram Format
@@ -379,7 +421,7 @@ Example Input
 
 ```	
 +-------+
-|  My   |
+|   A   |
 |  Box  |
 +-------+
 ```
@@ -408,7 +450,7 @@ with a hyphen and end with a space:
 
 ```	
 +- - - - +
-;  My    ;
+;   A    ;
 ;  Box   ;
 +- - - - +
 ```
@@ -439,7 +481,7 @@ Example Input
 
 ```	
 .-------.
-|  My   |
+|   A   |
 |  Box  |
 '-------'	
 ```
@@ -464,7 +506,7 @@ the corners:
 
 ```	
 /-------\
-|  My   |
+|   A   |
 |  Box  |
 \-------/
 ```
@@ -476,7 +518,7 @@ with a hyphen and end with a space:
 
 ```	
 .- - - - .
-;  My    ;
+;   A    ;
 ;  Box   ;
 '- - - - '
 ```
@@ -490,7 +532,7 @@ Example Input
 
 ```	
    +------+
-  / My   /
+  /  A   /
  /  Box /
 +------+
 ```
@@ -519,7 +561,7 @@ Example Input
 
 ```	
  .-----.
-|  My   |
+|   A   |
 |  Box  |
  '-----'
 ```
@@ -572,7 +614,7 @@ Example Input
 
 ```	
      .'.
-   .'My '.
+   .' A '.
   <  Box  >
    '.   .'
      '.'
@@ -910,8 +952,8 @@ Project page: <https://github.com/Frimkron/Ascidia>
 Homepage: <http://markfrimston.co.uk>  
 Email: <mfrimston@gmail.com>  
 
-Released under the MIT Licence. See the source code for the full text of this 
-licence.
+Released under the MIT License. See LICENSE.txt for the full text of this 
+license.
 
 
 Related Projects

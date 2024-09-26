@@ -7,7 +7,8 @@ name = "ascidia"
 authors = [
     { name = "Mark Frimston", email = "mfrimston@gmail.com" },
 ]
-description = "Diagrams from ASCII art, with added Markdown philosophy"
+description = "Technical diagrams from ASCII art, with added Markdown philosophy"
+readme = { file = "README.md", content-type = "text/markdown" }
 requires-python = ">=3.10"
 license = { text = "MIT-License" }
 dependencies = [
