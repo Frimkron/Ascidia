@@ -72,17 +72,28 @@ Ascidia requires the following:
 Installation
 ------------
 
-### From the Python Package Index ###
+Installation via [pipx](https://pipx.pypa.io) is recommended to avoid potential
+conflicts with other system-managed Python modules. Regular 
+[pip](https://packaging.python.org/en/latest/tutorials/installing-packages/)
+will work too, though.
 
-1. `pip install ascidia` (use `sudo` to install for all users on Linux)
-2. Check installation by running `ascidia --help`
+To install the latest stable release from the
+[Python Package Index](https://pypi.org):
 
-### From Source ###
+    pipx install ascidia
 
-1. Clone the git repository or download and extract the release archive
-2. Change into the project directory
-3. `pip install --upgrade .` (use `sudo` to install for all users on Linux)
-4. Check installation by running `ascidia --help`
+Or to install from Github:
+
+    pipx install git+https://github.com/Frimkron/Ascidia.git
+
+Or to install from the downloaded source code:
+
+1. Change into code directory
+2. `pipx install .`
+
+Finally, check the install by running:
+
+    ascidia --help
 
 
 Usage
