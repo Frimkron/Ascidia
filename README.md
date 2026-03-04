@@ -979,8 +979,8 @@ Some other related projects that you might find interesting:
   diagrams, directory trees, syntax-diagrams and identicons.
 * [ASCIItoSVG](http://9vx.org/~dho/a2s/) - Another ASCII diagram converter,
   influenced by Markdown and written in PHP
-* [Asciio](http://search.cpan.org/dist/App-Asciio/lib/App/Asciio.pm) - A Perl
-  application for drawing ASCII diagrams using a graphical user interface
+* [Asciio](https://github.com/nkh/P5-App-Asciio) - A Perl
+  application for drawing ASCII diagrams using a GTK3 user interface
 * [AsciiFlow](http://www.asciiflow.com) - An online editor for drawing ASCII
   diagrams
 * [Fossil Draw](http://www.fossildraw.com/) - Another online ASCII diagram
